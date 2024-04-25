@@ -2,13 +2,13 @@
 import {HeaderTitle} from "./component/HeaderTitle"
 import {SideNav} from "@/app/component/SideNav"
 import {Header} from "@/app/component/Header"
-import useStore from '@/store/nav-store';
+import {useStore} from '@/store/nav-store';
 import {UserDetails} from "./component/UserDetails"
 import {Upload} from "./component/Upload"
 
 
 const Page =()=>{
-      const isNavbarOpen = useStore(state=>(state.isNavbarOpen))
+      const isNavbarOpen = useStore(state=>state.isNavbarOpen)
       const headingText = useStore(state => state.headingText);
     return(
     <section className="flex">

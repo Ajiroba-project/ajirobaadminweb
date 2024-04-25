@@ -1,4 +1,5 @@
 "use client"
+import {useEffect} from 'react'
 import { useRouter } from 'next/navigation'
 import {RegistrationHeader, HeaderTitle} from '../component/Header'
 import {SignInValidationSchema} from "@/helper/validation"
@@ -8,10 +9,14 @@ import { DefaultButton } from "../component/Button";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ToastContainer, toast } from "react-toastify";
+import {useMutationStore} from '@/store/nav-store';
+// import { useCookies } from 'react-cookie';
 import "react-toastify/dist/ReactToastify.css";
 
 const Page = () => {
-  const router = useRouter()
+    // const [cookies, setCookie] = useCookies(['Ajiroba-cookies'])
+    const setMutationData = useMutationStore((state) => state.setMutationData);
+    const router = useRouter()
 
     type dataProps = {
         email_or_phone: string;
@@ -25,11 +30,21 @@ const Page = () => {
         resolver: yupResolver(SignInValidationSchema),
     });
 
+    // console.log(cookies)
+
+    // useEffect (()=>{
+    //     if (cookies['Ajiroba-cookies'] !== '' && cookies['Ajiroba-cookies'])
+    //         router.push('/dashboard')
+
+    //     router.push('/signin')
+        
+    // }, [cookies])
 
     const handleSuccess = (data: any) => {
 
         if (data.status === 200) {
-
+            setMutationData(data?.data);
+            // setCookie(data?.data?.token);
             toast.success(`${data?.data?.message}`, {
                 position: "top-right",
                 autoClose: 5000,
@@ -93,6 +108,8 @@ const Page = () => {
         handleSuccess,
         handleError,
     );
+
+    
 
         const sumbitForm = async (data: dataProps) => {
         mutate({

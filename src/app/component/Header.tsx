@@ -7,7 +7,7 @@ import { FiMenu } from 'react-icons/fi'
 import { IoClose } from 'react-icons/io5'
 import { GoBell } from "react-icons/go";
 import { useState } from 'react';
-import useStore from '@/store/nav-store';
+import {useStore} from '@/store/nav-store';
 
 type headerTitleProps = { 
     title:string,

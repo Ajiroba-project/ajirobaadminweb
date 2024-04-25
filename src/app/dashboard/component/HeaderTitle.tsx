@@ -1,5 +1,5 @@
 'use client'
-import useStore from '@/store/nav-store';
+import {useStore} from '@/store/nav-store';
 
 export const HeaderTitle =()=>{
     const headingText = useStore(state => state.headingText);

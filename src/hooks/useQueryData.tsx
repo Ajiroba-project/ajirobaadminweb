@@ -9,6 +9,7 @@ const fetchData = async (url: string, criteria?: any): Promise<Data> => {
     return await response.json();
 }
 
+
 export const useQueryData = (url: string, title: string, isEnabled: boolean) => {
     return useQuery<Data>({
         queryKey: [title],

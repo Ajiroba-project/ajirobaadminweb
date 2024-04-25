@@ -6,7 +6,7 @@ import Link from "next/link"
 import {SideNavMenu} from "@/app/data"
 import { FiMenu } from 'react-icons/fi'
 import { IoClose } from 'react-icons/io5'
-import useStore from '@/store/nav-store';
+import {useStore, useMutationStore } from '@/store/nav-store';
 
 type MenuState =  number | null
 type handleProp = {
@@ -15,15 +15,17 @@ type handleProp = {
 }
 
 export const SideNav =()=>{
-      const  toggleNavbar  = useStore(state => state.toggleNavbar );
-  const isNavbarOpen = useStore(state=> state.isNavbarOpen)
-        const setHeadingText  = useStore(state => state.setHeadingText);
-        const [active, setActive]= useState<MenuState>(0)
+    const  toggleNavbar  = useStore(state => state.toggleNavbar );
+    const  mutationData  = useStore(state => state.mutationData );
+    const isNavbarOpen = useStore(state=> state.isNavbarOpen)
+    const setHeadingText  = useStore(state => state.setHeadingText);
+    const [active, setActive]= useState<MenuState>(0)
         
         const handleClick =({val, index}:handleProp & {val: {name: string}})=>{
             setActive(active === index ? null : index)
             setHeadingText(val.name)
         }
+        console.log(mutationData)
 
     return (
         <>
@@ -40,7 +42,6 @@ export const SideNav =()=>{
         
       </div>
                     </div>
-
                     {/* menu */}
                     <div className="">
                         <ul>
