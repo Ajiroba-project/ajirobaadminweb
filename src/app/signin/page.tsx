@@ -2,6 +2,7 @@
 import { useRouter } from 'next/navigation'
 import {RegistrationHeader, HeaderTitle} from '../component/Header'
 import {SignInValidationSchema} from "@/helper/validation"
+import { useMutateData } from "@/hooks/useMutateData";
 import {InputField} from "../component/FormField";
 import { DefaultButton } from "../component/Button";
 import { useForm } from "react-hook-form";
@@ -13,7 +14,7 @@ const Page = () => {
   const router = useRouter()
 
     type dataProps = {
-        email: string;
+        email_or_phone: string;
         password: string;
 
     };
@@ -24,9 +25,78 @@ const Page = () => {
         resolver: yupResolver(SignInValidationSchema),
     });
 
+
+    const handleSuccess = (data: any) => {
+
+        if (data.status === 200) {
+
+            toast.success(`${data?.data?.message}`, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                onClose: () => router.push('/dashboard')
+
+            })
+            reset();
+
+        } else if (data.status === 403 || data.status === 404) {
+            toast.error(`${data?.data?.message}`, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+
+            });
+            reset();
+        } else {
+            toast.error(`${'An Error Occured'}`, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+
+            });
+            reset();
+        }
+    };
+     const handleError = (error: any) => {
+        toast.error(`${'An Error Occured'}`, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+
+        });
+        reset();
+
+    };
+
+    const { data, error, isError, isSuccess, mutate, status } = useMutateData(
+        "signup",
+        handleSuccess,
+        handleError,
+    );
+
         const sumbitForm = async (data: dataProps) => {
         mutate({
-            url: "/api/signin",
+            url: "api/signin/",
             payload: data
         });
     };
@@ -34,13 +104,14 @@ const Page = () => {
 
   return (
     <section>
+      <ToastContainer closeOnClick />
       <RegistrationHeader/>
       <HeaderTitle title="Welcome Back" subtitle="Kindly Enter your Login Details" />
 
       <div className="flex justify-center mb-20  my-4">
         <form onSubmit={handleSubmit(sumbitForm)}>
-          <div className="grid xl:grid-cols-1 lg:grid-cols-1 md:grid-cols-1 2xl:grid-cols-1 grid-cols-1 gap-8 px-3 mt-12">
-            <InputField name="email" label="Email Address/Phone Number" placeholder="Enter Email Address or Phone Number" type="text" register={register} errors={errors}/>
+          <div className="grid xl:grid-cols-1 lg:grid-cols-1 md:grid-cols-1 2xl:grid-cols-1 grid-cols-1 gap-6 px-3 mt-10">
+            <InputField name="email_or_phone" label="Email Address/Phone Number" placeholder="Enter Email Address or Phone Number" type="text" register={register} errors={errors}/>
             <InputField name="password" label="Password" placeholder="*****" type="password" register={register} errors={errors} showPassword={true}/>
           </div>
           

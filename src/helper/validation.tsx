@@ -16,7 +16,7 @@ export const SignUpValidationSchema = Yup.object().shape({
 });
 
 export const SignInValidationSchema = Yup.object().shape({
-        email: Yup.string().matches(
+        email_or_phone: Yup.string().matches(
                 /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,3}))$/,
                 "Valid email is required",
             )
@@ -43,3 +43,20 @@ export const PasswordResetschema = Yup.object().shape({
             .required("Password is required"),
 
     });
+
+export const UploadSchema = Yup.object().shape({
+  product_name: Yup.string().required("Product name is required"),
+  product_category: Yup.string().required("Product category is required"),
+  sub_category: Yup.string().required("Sub category is required"),
+  description: Yup.string().required("Product Description is required"),
+  selling_price: Yup.string().required("selling Price is required"),
+  // scehma for image and video
+  upload_image: Yup.mixed()
+    .required("Please select at least one file")
+    .test("fileSize", "File size is too large", (value: any) => {
+      if (value) {
+        return value.size <= 5 * 1024 * 1024; // 5MB
+      }
+      return true;
+    }),
+});

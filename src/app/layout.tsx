@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import RQProviders from "@/utils/provider";
-import { Inter } from "next/font/google";
+import { Poppins, Inter } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
+const poppins = Poppins({ subsets: ["latin"], weight: ["400", "900"], });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -18,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <RQProviders>
-      <body className={inter.className}>{children}</body>
+      <body className={poppins.className}>{children}</body>
       </RQProviders>
     </html>
   );

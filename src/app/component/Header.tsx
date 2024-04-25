@@ -1,15 +1,55 @@
+"use client"
 import Image from "next/image";
 import Brand from "../asset/logo.svg";
 import Link from "next/link"
+import {HeaderNavMenu} from "@/app/data"
+import { FiMenu } from 'react-icons/fi'
+import { IoClose } from 'react-icons/io5'
+import { GoBell } from "react-icons/go";
+import { useState } from 'react';
+import useStore from '@/store/nav-store';
 
 type headerTitleProps = { 
     title:string,
-    subtitle:string
+    subtitle?:string,
+    classname?:string
 }
-
+type activeProps = number | null;
 
 export const Header = () => {
-  return <div>header</div>;
+  const  toggleNavbar  = useStore(state => state.toggleNavbar );
+  const isNavbarOpen = useStore(state=> state.isNavbarOpen)
+  const [active, setActive] = useState <activeProps>()
+
+
+  return <div className="bg-[#F6F6F6] shadow-lg py-6 z-30 w-full">
+    <nav className="flex justify-between items-center">
+      <div className="mx-4">
+          {/* if NavbarOpen is true then show close button else show menu button */}
+            {isNavbarOpen ? (<FiMenu className="text-2xl cursor-pointer" onClick={toggleNavbar}/>):(<FiMenu className="text-2xl cursor-pointer" onClick={toggleNavbar}/>)}
+        
+      </div>
+      <ul className="flex gap-6 justify-evenly">
+        {HeaderNavMenu.map((val, index)=>(
+          <li key={index} onClick={() => setActive(index)}>
+            <Link href={val.path} className={`lg:text-md text-sm`}>
+              {val.name}
+            </Link>
+          </li>
+        ))}
+
+      </ul>
+
+        {/* icon */}
+      <div className="relative mx-6">
+        <GoBell className="text-xl"/>
+        <span className="absolute"></span>
+
+      </div>
+      
+    </nav>
+
+  </div>
 };
 
 export const RegistrationHeader = () => {
@@ -25,11 +65,11 @@ export const RegistrationHeader = () => {
 };
 
 
-export const HeaderTitle =({title, subtitle}:headerTitleProps )=>{
+export const HeaderTitle =({title, subtitle, classname}:headerTitleProps )=>{
     return (
         <>
-        <section className='flex justify-center items-center flex-col'>
-            <h1 className='xl:text-2xl 2xl:text-2xl md:text-2xl text-base font-bold leading-tight tracking-tight text-left'>{title}</h1>
+        <section className='flex justify-center items-center flex-col '>
+            <h1 className={`xl:text-2xl 2xl:text-2xl md:text-2xl text-base font-bold leading-tight tracking-tight text-left `}>{title}</h1>
             <p className=' mt-4 text-sm font-normal leading-6 text-center xl:w-1/3 w-auto  text-[#353131]' >{subtitle}</p>
         </section>
         </>

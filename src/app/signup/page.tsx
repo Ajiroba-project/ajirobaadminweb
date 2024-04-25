@@ -29,54 +29,68 @@ const Page = () => {
         mode: "all",
         resolver: yupResolver(SignUpValidationSchema),
     });
-
     
     const handleSuccess = (data: any) => {
 
-        if (false) {
-
-            toast.success(`${data?.data?.message}`, {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-                onClose: () => router.push('/otpverification')
-
-            })
-            reset();
-
+        if (data.status === 201) {
+          toast.success(`${data?.data?.message}`, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+            onClose: () => router.push("/otpverification"),
+          });
+          reset();
         } else if (data.status === 400 || data.status === 409) {
-            toast.error(`${data?.data?.message}`, {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-
-            });
-            reset();
+          toast.error(`${data?.data?.message}`, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+          });
+          reset();
         } else {
-            toast.error(`${'An Error Occured'}`, {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-
-            });
-            reset();
+          toast.error(`${"An Error Occured"}`, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+          });
+          reset();
         }
     };
+     const handleError = (error: any) => {
+        toast.error(`${'An Error Occured'}`, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+
+        });
+        reset();
+
+    };
+      const { data, error, isError, isSuccess, mutate, status } = useMutateData(
+        "signup",
+        handleSuccess,
+        handleError,
+    );
 
 
 const sumbitForm = (data: dataProps) => {

@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 
+
 export async function POST(request) {
     try {
         const body = await request.json();
         const cacheBuster = `cache=${Date.now()}`;
 
-        const res = await fetch(`${process.env.BASE_URL}/auth/signup/?${cacheBuster}`, {
+        const res = await fetch(`${process.env.BASE_URL}/auth/signup_admin/?${cacheBuster}`, {
             method: 'POST',
             maxBodyLength: Infinity,
             headers: {

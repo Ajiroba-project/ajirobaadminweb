@@ -1,9 +1,23 @@
-import Image from "next/image";
+
+import {SideNav} from "./component/SideNav"
+import {Header} from "./component/Header"
+// import useStore from '@/store/nav-store';
 
 export default function Home() {
+
+
+  
   return (
-    <main>
-      <h1>Ajiroba Admin App</h1>
+    <main className="flex">
+
+      <SideNav/>
+      <div className="flex-auto">
+        <h1>
+          {/* <Header/> */}
+     
+        </h1>
+      </div>
+      
     </main>
   );
 }
