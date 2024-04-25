@@ -19,11 +19,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <CookiesProvider>
-        {/* <RQProviders> */}
+        <RQProviders>
           <body className={poppins.className}>{children}</body>
-        {/* </RQProviders> */}
-      </CookiesProvider>
+        </RQProviders>
     </html>
   );
 }

@@ -32,7 +32,7 @@ const options=["Foodstuff", "Fashion"]
         <h1 className={`xl:text-2xl 2xl:text-2xl md:text-2xl text-base font-normal pb-4 leading-tight tracking-tight underline `}>Product Details</h1>
         <hr />
 
-        <form className="flex  gap-8 my-4 lg:flex-row flex-col-reverse">
+        <form className="flex  gap-8 my-4 lg:flex-row  flex-col-reverse ">
             <div className=" ">
                 <div className="flex flex-col">
                     <FileUpload name="upload" register={register} errors={errors}  />
@@ -48,7 +48,7 @@ const options=["Foodstuff", "Fashion"]
             </div>
 
             <div>
-                <div className="flex-col flex gap-3 ">
+                <div className="flex-col flex gap-3">
                     <InputField name="product_name" label="Product Name" type="text" placeholder="Rice" register={register} errors={errors} />
                     <SelectField name="product_category" label="Product Category" register={register} errors={errors} options={options}/>
                     <SelectField name="sub_category" label="Sub Category" register={register} errors={errors} options={options}/>

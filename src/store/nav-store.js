@@ -7,12 +7,12 @@ export const useStore = create((set) => ({
   toggleNavbar: () => set((state) => ({ isNavbarOpen: !state.isNavbarOpen })),
 }));
 
-// interface MutationStore {
-//   mutationData: any;
-//   setMutationData: (data: any) => void;
-// }
 
-export const useMutationStore = create((set) => ({
-  mutationData: null,
-  setMutationData: (data) => set({ mutationData: data }),
+
+export const useAuthStore =create((set)=>({
+  isLoggedIn: false,
+  setLoggedIn: (loggedIn)=>set({isLoggedIn: !isLoggedIn}),
+  user: null,
+  setUser:(user)=>set({user}),
+  
 }));

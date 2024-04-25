@@ -4,7 +4,7 @@ import Brand from "../asset/logo.svg";
 import Link from "next/link"
 import {HeaderNavMenu} from "@/app/data"
 import { FiMenu } from 'react-icons/fi'
-import { IoClose } from 'react-icons/io5'
+// import { IoClose } from 'react-icons/io5'
 import { GoBell } from "react-icons/go";
 import { useState } from 'react';
 import {useStore} from '@/store/nav-store';
@@ -19,7 +19,7 @@ type activeProps = number | null;
 export const Header = () => {
   const  toggleNavbar  = useStore(state => state.toggleNavbar );
   const isNavbarOpen = useStore(state=> state.isNavbarOpen)
-  const [active, setActive] = useState <activeProps>()
+  const [active, setActive] = useState <activeProps>(null)
 
 
   return <div className="bg-[#F6F6F6] shadow-lg py-6 z-30 w-full">
@@ -32,7 +32,7 @@ export const Header = () => {
       <ul className="flex gap-6 justify-evenly">
         {HeaderNavMenu.map((val, index)=>(
           <li key={index} onClick={() => setActive(index)}>
-            <Link href={val.path} className={`lg:text-md text-sm`}>
+            <Link href={val.path} className={`lg:text-md text-sm ${active === index? "text-[#F25E26]":null}`}>
               {val.name}
             </Link>
           </li>

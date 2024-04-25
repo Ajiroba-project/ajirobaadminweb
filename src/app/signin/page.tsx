@@ -9,14 +9,17 @@ import { DefaultButton } from "../component/Button";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ToastContainer, toast } from "react-toastify";
-import {useMutationStore} from '@/store/nav-store';
+import {useAuthStore} from '@/store/nav-store';
 // import { useCookies } from 'react-cookie';
 import "react-toastify/dist/ReactToastify.css";
 
 const Page = () => {
-    // const [cookies, setCookie] = useCookies(['Ajiroba-cookies'])
-    const setMutationData = useMutationStore((state) => state.setMutationData);
+    // const [cookies, setCookie] = useCookies(['auth'])
+    const setLoggedIn = useAuthStore(state => state.setLoggedIn);
+    const user = useAuthStore(state => state.user);
+
     const router = useRouter()
+    
 
     type dataProps = {
         email_or_phone: string;
@@ -30,21 +33,11 @@ const Page = () => {
         resolver: yupResolver(SignInValidationSchema),
     });
 
-    // console.log(cookies)
-
-    // useEffect (()=>{
-    //     if (cookies['Ajiroba-cookies'] !== '' && cookies['Ajiroba-cookies'])
-    //         router.push('/dashboard')
-
-    //     router.push('/signin')
-        
-    // }, [cookies])
-
     const handleSuccess = (data: any) => {
 
         if (data.status === 200) {
-            setMutationData(data?.data);
-            // setCookie(data?.data?.token);
+                setLoggedIn
+                user(data?.data);
             toast.success(`${data?.data?.message}`, {
                 position: "top-right",
                 autoClose: 5000,
@@ -124,7 +117,6 @@ const Page = () => {
       <ToastContainer closeOnClick />
       <RegistrationHeader/>
       <HeaderTitle title="Welcome Back" subtitle="Kindly Enter your Login Details" />
-
       <div className="flex justify-center mb-20  my-4">
         <form onSubmit={handleSubmit(sumbitForm)}>
           <div className="grid xl:grid-cols-1 lg:grid-cols-1 md:grid-cols-1 2xl:grid-cols-1 grid-cols-1 gap-6 px-3 mt-10">
@@ -157,12 +149,12 @@ const Page = () => {
              handleClick={() => null}/>
           </div>
 
-                        <div className="flex justify-center items-center mt-4">
-                            <small className="text-base">
-                                Don`t have an account?
-                                <span onClick={() => router.push('/signup')} className="text-[#F25E26] text-sm  cursor-pointer "> Sign up</span>
-                            </small>
-                        </div>
+            <div className="flex justify-center items-center mt-4">
+                <small className="text-base">
+                    Don`t have an account?
+                    <span onClick={() => router.push('/signup')} className="text-[#F25E26] text-sm  cursor-pointer "> Sign up</span>
+                </small>
+            </div>
         </form>
       </div>
     </section>

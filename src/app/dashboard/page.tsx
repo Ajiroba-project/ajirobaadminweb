@@ -1,4 +1,7 @@
 'use client'
+import {useAuthStore} from '@/store/nav-store';
+import { useRouter } from 'next/navigation'
+import {useEffect} from "react"
 import {HeaderTitle} from "./component/HeaderTitle"
 import {SideNav} from "@/app/component/SideNav"
 import {Header} from "@/app/component/Header"
@@ -8,8 +11,20 @@ import {Upload} from "./component/Upload"
 
 
 const Page =()=>{
-      const isNavbarOpen = useStore(state=>state.isNavbarOpen)
-      const headingText = useStore(state => state.headingText);
+    const router = useRouter()
+    const isLoggedIn = useAuthStore(state => state.isLoggedIn)
+    const isNavbarOpen = useStore(state=>state.isNavbarOpen)
+    const headingText = useStore(state => state.headingText);
+
+    useEffect(()=>{
+        if (!isLoggedIn){
+        router.replace('/signin')
+        }
+        else{
+        router.replace('/dashboard')
+        }
+  }, [isLoggedIn, router])
+
     return(
     <section className="flex">
 

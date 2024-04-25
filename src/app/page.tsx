@@ -1,23 +1,27 @@
 
-import {SideNav} from "./component/SideNav"
-import {Header} from "./component/Header"
-// import useStore from '@/store/nav-store';
+'use client'
+import {useAuthStore} from '@/store/nav-store';
+import { useRouter } from 'next/navigation'
+import {useEffect} from "react"
 
 export default function Home() {
+  const router = useRouter()
+  const isLoggedIn = useAuthStore(state => state.isLoggedIn)
+
+
+  useEffect(()=>{
+    if (!isLoggedIn){
+      router.replace('/signin')
+    }
+    else{
+      router.replace('/dashboard')
+    }
+  }, [isLoggedIn, router])
 
 
   
   return (
-    <main className="flex">
-
-      <SideNav/>
-      <div className="flex-auto">
-        <h1>
-          {/* <Header/> */}
-     
-        </h1>
-      </div>
-      
+    <main className="flex">  
     </main>
   );
 }
