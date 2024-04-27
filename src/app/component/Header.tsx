@@ -12,7 +12,7 @@ import {useStore} from '@/store/nav-store';
 type headerTitleProps = { 
     title:string,
     subtitle?:string,
-    className:any,
+    className?:any,
 
 }
 type activeProps = number | null;

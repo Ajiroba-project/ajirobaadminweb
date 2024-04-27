@@ -10,14 +10,14 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { ToastContainer, toast } from "react-toastify";
 import {useAuthStore} from '@/store/nav-store';
 import "react-toastify/dist/ReactToastify.css";
+import Cookies from "js-cookie";
 
 
 const Page = () => {
-    const setLoggedIn = useAuthStore(state => state.setLoggedIn);
+    const setAuthCookie = useAuthStore(state => state.setAuthCookie);
     const setUser = useAuthStore(state => state.setUser);
     const router = useRouter()
     
-
     type dataProps = {
         email_or_phone: string;
         password: string;
@@ -46,8 +46,8 @@ const Page = () => {
                 onClose: () => router.push('/dashboard')
 
             })
+            setAuthCookie(data?.data?.token, 1)
             setUser(data?.data);
-            setLoggedIn(true)
             reset();
 
 

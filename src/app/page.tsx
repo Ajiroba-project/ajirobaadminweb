@@ -7,8 +7,7 @@ import useAuthMiddleware from "@/hooks/useAuthMiddleware"
 
 export default function Home() {
   const router = useRouter()
-  const isLoggedIn = useAuthStore(state => state.isLoggedIn)
-  useAuthMiddleware(isLoggedIn, router)
+  useAuthMiddleware(router)
 
   return (
     <main className="flex">  

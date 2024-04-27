@@ -9,18 +9,24 @@ export const useStore = create((set) => ({
   toggleNavbar: () => set((state) => ({ isNavbarOpen: !state.isNavbarOpen })),
 }));
 
-export const useAuthStore =create((set)=>({
-  isLoggedIn: false,
-  setLoggedIn: (LoggedIn)=>set({isLoggedIn: LoggedIn}),
+export const useAuthStore = create((set, get) => ({
+  isLoggedIn: !!Cookies.get('token'), // Check if auth_token cookie exists on initialization
+  setLoggedIn: (isLoggedIn) => set({ isLoggedIn }),
+
   user: null,
-  setUser: (user)=>set({user}),
-  setAuthCookie: (token, expirationDate)=>{
-    Cookies.set('auth_token', token, {expires: expirationDate})
-  },
-  clearAuthCookies:()=>{
-    Cookies.remove('auth_token');
-  }
+  setUser: (user) => set({ user }),
   
+  setAuthCookie: (token, expirationDate) => {
+    Cookies.set('token', token, {
+      expires: expirationDate,
+      sameSite: 'strict', // Additional security measure
+    });
+    set({ isLoggedIn: true }); // Update isLoggedIn state
+  },
+  clearAuthCookies: () => {
+    Cookies.remove('token');
+    set({ isLoggedIn: false, user: null }); // Update isLoggedIn and user state
+  },
 }));
 
 export const useNewProductStore = create((set)=>({

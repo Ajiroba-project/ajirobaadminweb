@@ -10,8 +10,6 @@ import {UploadSchema} from "@/helper/validation"
 import { yupResolver } from "@hookform/resolvers/yup";
 // import { ToastContainer, toast } from "react-toastify";
 import {useStore, useNewProductStore } from '@/store/nav-store';
-import { useMutateData } from "@/hooks/useMutateData";
-import { StaticImport } from "next/dist/shared/lib/get-img-props";
 // import "react-toastify/dist/ReactToastify.css";
 
 export const Regular = () => {

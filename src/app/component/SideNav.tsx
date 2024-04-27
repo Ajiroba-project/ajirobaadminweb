@@ -21,30 +21,32 @@ type handleProp = {
 
 export const SideNav =()=>{
     const  toggleNavbar  = useStore(state => state.toggleNavbar );
-    const isLoggedIn = useAuthStore(state => state.isLoggedIn)
+    const clearAuthCookies = useAuthStore(state => state.clearAuthCookies)
     const  user  = useAuthStore(state => state.user );
-    const setLoggedIn = useAuthStore(state => state.setLoggedIn);
+    const isLoggedIn = useAuthStore(state => state.isLoggedIn);
     const isNavbarOpen = useStore(state=> state.isNavbarOpen)
     const setHeadingText  = useStore(state => state.setHeadingText);
     const [active, setActive]= useState<MenuState>(0)
     const [signout, setSignout]=useState<boolean>(false)
     const router = useRouter()
         
-        const handleClick =({val, index}:handleProp & {val: {name: string}})=>{
-            setActive(active === index ? null : index)
-            setHeadingText(val.name)
-        }
+    const handleClick =({val, index}:handleProp & {val: {name: string}})=>{
+        setActive(active === index ? null : index)
+        setHeadingText(val.name)
+    }
 
-        const openModal =()=>{
-            setSignout(!signout)
+    const openModal =()=>{
+        setSignout(!signout)
+    }
+    const handleSignout=(x:boolean)=>{
+        if (x){
+          clearAuthCookies()
+          router.replace('/signin')
         }
-        const handleSignout=(x:string)=>{
-            if (x =="no"){
-                openModal()   
-            }
-            setLoggedIn(true)
-            router.replace('/signin')
-        }
+        openModal()   
+        
+        console.log(x)
+    }
 
     return (
       <Fragment>
@@ -130,8 +132,8 @@ export const SideNav =()=>{
                 button2class="p-4 rounded-lg border-2 border-[#F25E26] px-14"
                 buttontype="submit"
                 button2type="submit"
-                handleEvent={() => handleSignout("yes")}
-                handleEvent2={() => handleSignout("no")}
+                handleEvent={() => handleSignout(true)}
+                handleEvent2={() => handleSignout(false)}
                 icon={signoutImage}
               />
             </div>

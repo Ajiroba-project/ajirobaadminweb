@@ -1,5 +1,4 @@
 'use client'
-import {useAuthStore} from '@/store/nav-store';
 import { useRouter } from 'next/navigation'
 import {useEffect} from "react"
 import {HeaderTitle} from "./component/HeaderTitle"
@@ -12,11 +11,9 @@ import useAuthMiddleware from "@/hooks/useAuthMiddleware"
 
 const Page =()=>{
     const router = useRouter()
-    const isLoggedIn = useAuthStore(state => state.isLoggedIn)
     const isNavbarOpen = useStore(state=>state.isNavbarOpen)
     const headingText = useStore(state => state.headingText);
-
-    useAuthMiddleware(isLoggedIn, router)
+    useAuthMiddleware(router)
 
     return(
     <section className="flex">

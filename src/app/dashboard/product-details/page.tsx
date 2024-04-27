@@ -16,7 +16,7 @@ const Page =()=>{
         <section className="flex flex-col">
             <div className="w-full bg-gray-100">
                 <RegistrationHeader/>
-                <p className="lg:px-14 px-7  text-[#F25E26] underline cursor-pointer" onClick={router.back()}>Back</p>
+                <p className="lg:px-14 px-7  text-[#F25E26] underline cursor-pointer" >Back</p>
             </div>
             <span className="w-full bg-gray-100">
                 <h1 className="text-2xl text-center py-2">Regular Product Upload</h1>
