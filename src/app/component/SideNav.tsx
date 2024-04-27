@@ -9,6 +9,7 @@ import { FiMenu } from 'react-icons/fi'
 import { IoClose } from 'react-icons/io5'
 import {CiLogout} from 'react-icons/ci'
 import {useStore, useAuthStore } from '@/store/nav-store';
+import { useMutateData } from "@/hooks/useMutateData";
 import {Modal} from "@/app/dashboard/component/Modal"
 import signoutImage from "@/app/asset/signout.svg"
 import user_img from "@/app/asset/user.png"
@@ -39,14 +40,31 @@ export const SideNav =()=>{
         setSignout(!signout)
     }
     const handleSignout=(x:boolean)=>{
-        if (x){
-          clearAuthCookies()
-          router.replace('/signin')
-        }
-        openModal()   
-        
-        console.log(x)
+      x ? sumbitForm() :openModal()
     }
+
+    const handleSuccess=()=>{
+        clearAuthCookies();
+        router.replace("/signin");
+    }
+    const handleError =()=>{
+      console.log("Somthing went wrong...")
+    }
+    
+    const { mutate } = useMutateData(
+        "signup",
+        handleSuccess,
+        handleError,
+    );
+
+    const sumbitForm = async () => {
+      mutate({
+        url: "api/signout/",
+        payload: {} // Add an empty payload object
+      });
+    };
+
+
 
     return (
       <Fragment>

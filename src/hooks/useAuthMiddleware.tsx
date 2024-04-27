@@ -2,7 +2,8 @@
 import { useEffect } from 'react';
 import { useAuthStore } from '@/store/nav-store';
 
-const useAuthMiddleware = (router) => {
+
+const useAuthMiddleware = (router:any) => {
     const  isLoggedIn  = useAuthStore(state => state.isLoggedIn);
 
   useEffect(() => {
@@ -16,7 +17,7 @@ const useAuthMiddleware = (router) => {
       router.push('/dashboard');
       
     }
-  }, [router]);
+  }, [isLoggedIn, router]);
 
   return;
 };

@@ -154,9 +154,7 @@ export const Regular = () => {
                 </div>
               </span>
               <input
-                onChange={handleFileChange}
                 id="upload-files"
-                name="regular_media"
                 type="file"
                 accept="image/*, video/*"
                 max="5"

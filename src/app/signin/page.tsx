@@ -10,8 +10,6 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { ToastContainer, toast } from "react-toastify";
 import {useAuthStore} from '@/store/nav-store';
 import "react-toastify/dist/ReactToastify.css";
-import Cookies from "js-cookie";
-
 
 const Page = () => {
     const setAuthCookie = useAuthStore(state => state.setAuthCookie);
@@ -46,7 +44,7 @@ const Page = () => {
                 onClose: () => router.push('/dashboard')
 
             })
-            setAuthCookie(data?.data?.token, 1)
+            setAuthCookie(data?.data?.token, 0)
             setUser(data?.data);
             reset();
 

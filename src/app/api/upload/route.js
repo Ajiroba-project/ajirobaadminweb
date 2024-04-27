@@ -12,7 +12,7 @@ export async function POST(request) {
             maxBodyLength: Infinity,
             headers: {
                 "Content-Type": "application/json",
-                'Authorization': `Bearer ${Cookies.get('auth_token')}`,
+                'Authorization': `Bearer ${Cookies.get('token')}`,
             },
             body: JSON.stringify(body),
         });

@@ -10,7 +10,7 @@ export const useStore = create((set) => ({
 }));
 
 export const useAuthStore = create((set, get) => ({
-  isLoggedIn: !!Cookies.get('token'), // Check if auth_token cookie exists on initialization
+  isLoggedIn: !!Cookies.get('token'), // Check if token cookie exists on initialization
   setLoggedIn: (isLoggedIn) => set({ isLoggedIn }),
 
   user: null,
