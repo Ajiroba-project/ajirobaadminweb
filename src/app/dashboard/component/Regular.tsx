@@ -1,7 +1,7 @@
 import {InputField, SelectField, TextAreaField} from "@/app/component/FormField"
 import  { useState } from 'react';
 import {DefaultButton} from "@/app/component/Button"
-import {Categories} from "@/app/data"
+import { categories, subcategories } from "@/app/data";
 import Image from "next/image"
 import { useRouter } from "next/navigation";
 import { FiUpload } from "react-icons/fi";
@@ -25,7 +25,6 @@ export const Regular = () => {
         mode: "all",
         resolver: yupResolver(UploadSchema),
     });
-const options=["Foodstuff", "Fashion"]
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = event.target.files
@@ -139,14 +138,14 @@ const options=["Foodstuff", "Fashion"]
               label="Product Category"
               register={register}
               errors={errors}
-              options={options}
+              options={categories}
             />
             <SelectField
               name="sub_category"
               label="Sub Category"
               register={register}
               errors={errors}
-              options={options}
+              options={subcategories}
             />
             <TextAreaField
               name="description"

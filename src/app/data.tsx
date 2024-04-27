@@ -122,75 +122,81 @@ export const users =[{
 },
 ]
 
-export const Categories =[{
-    name:"FoodStuff",
-    subcategories: [
-      {
-        name: 'Fruits',
-        
-      },
-      {
-        name: 'Vegetable',
- 
-      },
-      {
-        name: 'Tubers',
-  
-      },
-      {
-        name: 'Cereal',
-       
-      },
-      {
-        name: 'Legumes',
-       
-      },
-      {
-        name: 'Diary',
-       
-      },
-      {
-        name: 'Meat',
-       
-      }]
-}, {
-    name: 'Fashion and Beauty',    
-    categories: [
-      {
-        name: `Men's Fashion`,
-        subcategory: [
-          { name: 'Snickers'},
-          { name: 'Clothing'},
-          { name: 'Underwear'},
-          { name: 'T-shirt'},
-          { name: 'Polo'},
-          { name: 'knicker'},
-          { name: 'Jewelry'},
-          { name: 'Belt'}
-        ]
-      },
-      {
-        name: `Women's Fashion`,
-        subcategory: [
-          { name: 'Shoe' },
-          { name: 'Clothing' },
-          { name: 'Accessories' },
-          { name: 'Hand Bag' },
-          { name: 'Sleep Wear' },
-          { name: 'Matanity' },
-          { name: 'Dresses' },
-          { name: 'Traditional' }
-        ]
-      },
-      {
-        name: `Accessories`,
-        subcategory: [
-          { name: 'Men Sunglasses', },
-          { name: 'Men Watches', },
-          { name: 'Women Sunglasses', },
-          { name: 'Women Watches', }
-        ]
-      }
-    ]
-  },
-]
+export const categories =[
+  "Accessories",
+    "FoodStuff",
+    "Men's Fashion",
+    "Women's Fashion",
+    "Fashion",
+    "Electronics",
+    "Phones",
+    'Computing',
+    'Mother and Child',
+    'Royalty',]
+
+
+export const subcategories = [
+  "Fruits",
+  "Vegetable",
+  "Tubers",
+  "Legumes",
+  "Diary",
+  "Meat",
+  "Cereal",
+  "Snickers",
+  "Clothing",
+  "Underwear",
+  "T-shirt",
+  "Polo",
+  "knicker",
+  "Jewelry",
+  "Belt",
+  "Shoe",
+  "Clothing",
+  "Accessories",
+  "Hand Bag",
+  "Sleep Wear",
+  "Matanity",
+  "Dresses",
+  "Traditional",
+  "Men Sunglasses",
+  "Men Watches",
+  "Women Sunglasses",
+  "Women Watches",
+  "Television",
+  "Smart Tv`s",
+  "Sound Bars ",
+  "Video ",
+  "Projectors",
+  "Digital Camera",
+  "Camcoder",
+  "Generators ",
+  "Inverters ",
+  "Smart Phones",
+  "Basic Phones",
+  "Refubished",
+  "Ipad",
+  "Andriod Tablets",
+  "Educational Tablets",
+  "Tablets Accessory",
+  "Earphones",
+  "Chargers",
+  "Toys",
+  "Bibs",
+  "Diapers",
+  "Bathing Tub",
+  "Bathing Safety",
+  "Towels",
+  "Walkers",
+  "Swings",
+  "Jumpers",
+  "Bead",
+  "Walking Stick",
+  "Staff",
+  "Capes",
+  "Crown",
+  "Hair Pin",
+  "Fan",
+  "Anklet",
+  "Bracelet",
+];
