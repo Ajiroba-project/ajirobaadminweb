@@ -16,7 +16,7 @@ const Page =()=>{
     const isNavbarOpen = useStore(state=>state.isNavbarOpen)
     const headingText = useStore(state => state.headingText);
 
-    // useAuthMiddleware(isLoggedIn, router)
+    useAuthMiddleware(isLoggedIn, router)
 
     return(
     <section className="flex">
