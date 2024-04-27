@@ -1,17 +1,18 @@
 import {useState} from 'react'
 import { FaRegEyeSlash } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa6";
-import { FiUpload } from "react-icons/fi";
 
 type inputProps ={
     label:string,
     type:string,
-    placeholder:string,
+    placeholder?:string,
     name:string,
-    register: any,
-    errors:any,
+    register?: any,
+    errors?:any,
     showPassword?:boolean,
-    classname?:any
+    classname?:any, 
+    value?:string
+    isdisabled?:boolean
 }
 type selectProps ={
     name:inputProps["name"],
@@ -20,6 +21,7 @@ type selectProps ={
     errors:inputProps["errors"],
     options?:any
     multiple?:boolean
+    isdisabled?:boolean
 
 }
 type textareaProps ={
@@ -28,6 +30,7 @@ type textareaProps ={
     register:inputProps["register"],
     errors:inputProps["errors"],
     placeholder:inputProps["placeholder"],
+    isdisabled?:boolean
 
 }
 type fileUpoadProps ={
@@ -38,7 +41,7 @@ type fileUpoadProps ={
 
 }
 
-export const InputField =({label, type, placeholder, name, register, errors, showPassword, classname}:inputProps)=>{
+export const InputField =({label, type, placeholder, name, register, errors, showPassword, classname, value}:inputProps)=>{
     const [toggle, setToggle] = useState(showPassword)
 
     const handleTogglePasswordVisibility=()=>{
@@ -100,25 +103,7 @@ export const TextAreaField =({label, name, register, errors, placeholder}:textar
     )
 }
 
-export const FileUpload =({ name, register, errors}:fileUpoadProps)=>{
-    return (
-        <>
-            <label htmlFor="upload-files"><p className="py-2">Product Upload:</p>
-                        <span className="bg-gray-50 relative rounded-md shadow hover:bg-gray-100 h-[20rem] w-auto flex justify-center items-center cursor-pointer flex-col">
-                            <FiUpload className="text-4xl"/>
-                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <p className="mb-2 text-xl text-gray-500 ">SelectFile to upload</p>
-                                    <p classHame="mb-2 text-xs text-gray-500 ">you may upload up to 4 images & video</p>
-                                </div>
-                        </span>
-                            <input id="upload-files" name={name} type="file" accept="image/*, video/*" max="4" className="pt-6 hidden " multiple {...register(name, { required: true })}/>
-                     </label>
-                      <div className="text-xs text-rose-500 pt-1">
-                {errors?.[name]?.message}
-            </div>
-        </>
-    )
-}
+
 
 export const RadioButton =()=>{
     return (

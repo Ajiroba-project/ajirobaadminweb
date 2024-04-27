@@ -14,15 +14,3 @@ export const DefaultButton = ({ text, type, handleClick, className }: ButtonProp
         </>
     )
 }
-
-export const PrimaryButton =()=>{
-    return (
-        <></>
-    )
-}
-
-export const SecondaryButton =()=>{
-    return (
-        <></>
-    )
-}

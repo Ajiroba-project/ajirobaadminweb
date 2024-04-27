@@ -39,13 +39,13 @@ export const UserSearch: React.FC<UserSearchProps> = () => {
 
 
     return (
-        <section className="flex flex-col lg:flex-row gap-4 my-6 h-full lg:justify-start justify-center">
-            <div className="bg-[#FCDFD433] lg:w-[22rem] rounded-lg">
-                <p className="text-xl p-2 ">User</p>
+        <section className="flex flex-col lg:flex-row gap-4 my-8 h-full ">
+            <div className="bg-[#FCDFD433]  rounded-lg ">
+                <p className="text-xl p-4 ">User</p>
                 <div className="relative p-4">
-                <span className="absolute mr-6 mt-3">
-                    <CiSearch className="text-xl mx-2"/>
-                </span>
+                    <span className="absolute mr-6 mt-3">
+                        <CiSearch className="text-xl mx-2"/>
+                    </span>
                     <input
                         type="text"
                         name="search"
@@ -58,7 +58,7 @@ export const UserSearch: React.FC<UserSearchProps> = () => {
                     />
                 </div>
 
-                <div className="relative">
+                <div className="relative ">
                     <ul>
                         <li className="text-break h-[15em] overflow-y-auto pt-2">
                             {filteredUsers?.map((val:any, index:number)=>(
@@ -73,7 +73,7 @@ export const UserSearch: React.FC<UserSearchProps> = () => {
                 </div>
             </div>
 
-            <div className="bg-[#FCDFD433] w-full flex-auto  rounded-lg">
+            <div className="bg-[#FCDFD433] w-full rounded-lg span-2">
                 <div></div>
                 {userInfo && (<div className="p-6 flex flex-col gap-5">
                     <Image src={userInfo?.photo} alt={userInfo?.first_name}/>

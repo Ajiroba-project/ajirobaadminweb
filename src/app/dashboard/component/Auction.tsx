@@ -13,7 +13,7 @@ export const Auction = () => {
         </div>
 
    <hr />
-        Action
+        Auction
     </section>
   )
 }

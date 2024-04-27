@@ -8,7 +8,7 @@ import {Header} from "@/app/component/Header"
 import {useStore} from '@/store/nav-store';
 import {UserDetails} from "./component/UserDetails"
 import {Upload} from "./component/Upload"
-
+import useAuthMiddleware from "@/hooks/useAuthMiddleware"
 
 const Page =()=>{
     const router = useRouter()
@@ -16,18 +16,10 @@ const Page =()=>{
     const isNavbarOpen = useStore(state=>state.isNavbarOpen)
     const headingText = useStore(state => state.headingText);
 
-    useEffect(()=>{
-        if (!isLoggedIn){
-        router.replace('/signin')
-        }
-        else{
-        router.replace('/dashboard')
-        }
-  }, [isLoggedIn, router])
+    // useAuthMiddleware(isLoggedIn, router)
 
     return(
     <section className="flex">
-
         <div className={`${isNavbarOpen? "hidden":""}`}>
             <SideNav/>
         </div>
@@ -45,7 +37,6 @@ const Page =()=>{
 
             </div>
         </div>
-
     </section>
     )
 }

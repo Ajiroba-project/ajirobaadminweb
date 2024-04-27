@@ -50,13 +50,11 @@ export const UploadSchema = Yup.object().shape({
   sub_category: Yup.string().required("Sub category is required"),
   description: Yup.string().required("Product Description is required"),
   selling_price: Yup.string().required("selling Price is required"),
+  discount: Yup.string().required("discount Price is required"),
   // scehma for image and video
-  upload_image: Yup.mixed()
-    .required("Please select at least one file")
-    .test("fileSize", "File size is too large", (value: any) => {
-      if (value) {
-        return value.size <= 5 * 1024 * 1024; // 5MB
-      }
-      return true;
-    }),
+  regular_media: Yup.mixed().required("Please select at least one file").test(
+      'regular_media',
+      'Please select at least one file',
+      (value) => value && value.length > 0
+    )
 });

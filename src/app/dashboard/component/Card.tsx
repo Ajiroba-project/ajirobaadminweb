@@ -19,7 +19,7 @@ export const Card =({title, object}:cardProps)=>{
                     object?.map((val, index)=>(
                     <div className={`${index === 0 ?  "bg-[#FCDFD44D]": index=== 1 ? "bg-[#D1DEF64D]": index=== 2 ? "bg-[#D7F8EE4D]": "bg-[#F9F2CC99]"} p-6 h-[10em] w-auto rounded-lg hover:shadow-md cursor-pointer flex flex-col gap-3 items-center justify-center text-center`} key={index}>
 
-                        <div className="">
+                        <div className="flex items-center justify-center">
                             <Image src={val.icon} alt={val.name}/>
                         </div>
                         <div className="">{val.name}</div>

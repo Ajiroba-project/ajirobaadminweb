@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 function Page() {
     const router = useRouter();
     const handleVerify = () => {
-        router.push("/signin");
+        router.replace("/signin");
     };
 
     return (
