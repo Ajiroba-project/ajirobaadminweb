@@ -1,16 +1,17 @@
 import {InputField, SelectField, TextAreaField} from "@/app/component/FormField"
 import  { useState } from 'react';
+import { useMutateData } from "@/hooks/useMutateData";
 import {DefaultButton} from "@/app/component/Button"
 import { categories, subcategories } from "@/app/data";
-import Image from "next/image"
 import { useRouter } from "next/navigation";
 import { FiUpload } from "react-icons/fi";
 import { useForm } from "react-hook-form";
 import {UploadSchema} from "@/helper/validation"
 import { yupResolver } from "@hookform/resolvers/yup";
-// import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import {useStore, useNewProductStore } from '@/store/nav-store';
-// import "react-toastify/dist/ReactToastify.css";
+import "react-toastify/dist/ReactToastify.css";
+import Image from "next/image"
 
 export const Regular = () => {
   const router = useRouter();
@@ -43,10 +44,77 @@ export const Regular = () => {
     URL.revokeObjectURL(val);
   };
 
-  const sumbitForm =(data:any)=>{
-    localStorage.setItem('product-details', JSON.stringify(data));
-    router.push("/dashboard/product-details")
-  }
+  const handleSuccess = (data: any) => {
+        if (data.status === 201 || 200) {
+          toast.success(`${data?.data?.message}`, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+            onClose: () => router.push("/dashboard"),
+          });
+          reset();
+        } else if (data.status === 400 || data.status === 409) {
+          toast.error(`${data?.data?.message}`, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+          });
+          reset();
+        } else {
+          toast.error(`${"An Error Occured"}`, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+          });
+          reset();
+        }
+    };
+     const handleError = (error: any) => {
+        toast.error(`${'An Error Occured'}`, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+
+        });
+        reset();
+
+    };
+
+  const { data, error, isError, isSuccess, mutate, status } = useMutateData(
+        "upload",
+        handleSuccess,
+        handleError,
+    );
+
+  const sumbitForm = (data: any) => {
+        mutate({
+            url: "/api/upload",
+            payload: data
+        });
+
+        localStorage.setItem('product-details', JSON.stringify(data));
+        router.push("/dashboard/product-details")
+    };
     
 
   return (
@@ -55,7 +123,7 @@ export const Regular = () => {
         isNavbarOpen ? "justify-center items-center flex-col flex" : ""
       }`}
     >
-      {/* <ToastContainer closeOnClick /> */}
+      <ToastContainer closeOnClick />
       <h1
         className={`xl:text-2xl 2xl:text-2xl md:text-2xl text-base font-normal pb-4 leading-tight tracking-tight underline p-3`}
       >
