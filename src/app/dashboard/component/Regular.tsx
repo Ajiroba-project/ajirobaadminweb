@@ -113,7 +113,7 @@ export const Regular = () => {
         });
 
         localStorage.setItem('product-details', JSON.stringify(data));
-        router.push("/dashboard/product-details")
+        // router.push("/dashboard/product-details")
     };
     
 
