@@ -1,9 +1,16 @@
-import Image from "next/image";
+
+'use client'
+import {useAuthStore} from '@/store/nav-store';
+import { useRouter } from 'next/navigation'
+import {useEffect} from "react";
+import useAuthMiddleware from "@/hooks/useAuthMiddleware"
 
 export default function Home() {
+  const router = useRouter()
+  useAuthMiddleware(router)
+
   return (
-    <main>
-      <h1>Ajiroba Admin App</h1>
+    <main className="flex">  
     </main>
   );
 }
