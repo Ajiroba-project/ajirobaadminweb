@@ -23,7 +23,7 @@ export const Header = () => {
   const [active, setActive] = useState <activeProps>(null)
 
 
-  return <div className="bg-[#F6F6F6] shadow-lg py-6 z-30 w-full">
+  return <div className="bg-[#F6F6F6] shadow-lg py-6 z-30 w-full fixed">
     <nav className="flex justify-between items-center">
       <div className="mx-4">
           {/* if NavbarOpen is true then show close button else show menu button */}

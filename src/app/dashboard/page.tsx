@@ -17,15 +17,15 @@ const Page =()=>{
 
     return(
     <section className="flex">
-        <div className={`${isNavbarOpen? "hidden":""}`}>
+        <div className={`${isNavbarOpen? "hidden":""} `}>
             <SideNav/>
         </div>
         
-        <div className="flex-auto">
-            <Header/>
-            <HeaderTitle/>
-
-            <div className="my-4 ">
+        <div className="flex-auto relative ">
+                <Header/>
+                <HeaderTitle/>
+           {/*  */}
+            <div className={`mt-18 ${isNavbarOpen? "":"ml-18"}  `}>
                 { headingText === "User Details"?
                 <UserDetails/>
                 :headingText === "Upload"?<Upload/>:

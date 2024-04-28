@@ -68,7 +68,7 @@ export const SideNav =()=>{
 
     return (
       <Fragment>
-        <section className="shadow bg-[#F6F6F6]  w-[15em] lg:h-full lg:sticky fixed h-screen z-20">
+        <section className="shadow bg-[#F6F6F6]  w-[15em] lg:h-full fixed h-screen z-40">
           <nav className="flex flex-col  py-10 gap-20 container">
             <div className="mx-6 flex items-center">
               {/* brand icon */}

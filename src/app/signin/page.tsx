@@ -1,4 +1,5 @@
 "use client"
+import {useState} from 'react'
 import { useRouter } from 'next/navigation'
 import {RegistrationHeader, HeaderTitle} from '../component/Header'
 import {SignInValidationSchema} from "@/helper/validation"
@@ -14,6 +15,7 @@ import "react-toastify/dist/ReactToastify.css";
 const Page = () => {
     const setAuthCookie = useAuthStore(state => state.setAuthCookie);
     const setUser = useAuthStore(state => state.setUser);
+    const [rememberMe, setRememberMe] =useState(false);
     const router = useRouter()
     
     type dataProps = {
@@ -116,7 +118,7 @@ const Page = () => {
         <form onSubmit={handleSubmit(sumbitForm)}>
           <div className="grid xl:grid-cols-1 lg:grid-cols-1 md:grid-cols-1 2xl:grid-cols-1 grid-cols-1 gap-6 px-3 mt-10">
             <InputField name="email_or_phone" label="Email Address/Phone Number" placeholder="Enter Email Address or Phone Number" type="text" register={register} errors={errors}/>
-            <InputField name="password" label="Password" placeholder="*****" type="password" register={register} errors={errors} showPassword={false}/>
+            <InputField name="password" label="Password" placeholder="*****" type="password" register={register} errors={errors} showPassword={true}/>
           </div>
           
             <div className="flex flex-wrap gap-2 justify-between items-center mt-4 mx-3">

@@ -45,7 +45,7 @@ export const Regular = () => {
   };
 
   const handleSuccess = (data: any) => {
-        if (data.status === 201 || 200) {
+        if (data.status === 201) {
           toast.success(`${data?.data?.message}`, {
             position: "top-right",
             autoClose: 5000,
@@ -119,7 +119,7 @@ export const Regular = () => {
 
   return (
     <section
-      className={`my-10 container ${
+      className={`my-24 ${
         isNavbarOpen ? "justify-center items-center flex-col flex" : ""
       }`}
     >
@@ -189,7 +189,7 @@ export const Regular = () => {
           </div>
         </div>
 
-        <div className="flex items-center">
+        <div className="flex items-center w-full">
           <div className="flex-col flex gap-3">
             <InputField
               name="product_name"
