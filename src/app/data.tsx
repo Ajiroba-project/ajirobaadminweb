@@ -7,6 +7,8 @@ import ag from "@/app/asset/ag.svg"
 import tmg from "@/app/asset/tmg.svg"
 import tns from "@/app/asset/tns.svg"
 import ps from "@/app/asset/ps.svg"
+import bid from "@/app/asset/bid.svg"
+import ticket from "@/app/asset/ticket.svg"
 import user_img from "@/app/asset/user.png"
 
 export const SideNavMenu =[
@@ -82,17 +84,17 @@ export const auctionDetails =[
         count: 0
     },
      {
-        icon:tns,
+        icon:ticket,
         name:"TOTAL TICKET PURCHASED",
         count:0
     },
     {
-        icon:ag,
+        icon:bid,
         name:"TOTAL BID MADE",
         count:0
     },
     {
-        icon:ps,
+        icon:ag,
         name:"TOTAL AMOUNT GENERATED",
         count:0
     },

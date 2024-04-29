@@ -35,12 +35,14 @@ export const Modal = ({
     <section className="z-50 fixed w-screen h-screen bg-[#000000d1] flex justify-center items-center ">
       <div className="text-center p-8 flex flex-col bg-white rounded-md gap-6 justify-center items-center w-[20em] xs:w-[15em] lg:w-[30em] md:w-[25em] h-auto">
         <div className="py-2">
-          <Image src={icon} width={60} height={60}  alt="icon" />
+          <Image src={icon} width={60} height={60} alt="icon" />
         </div>
 
         <div className="flex-col gap-2">
-            <h1 className="text-2xl">{title}</h1>
-            <p className=" mt-4 text-sm font-normal leading-6 text-center w-auto  text-[#353131]">{subtitle}</p>
+          <h1 className="text-2xl">{title}</h1>
+          <p className=" mt-4 text-sm font-normal leading-6 text-center w-auto  text-[#353131]">
+            {subtitle}
+          </p>
         </div>
 
         <div className="flex items-center gap-4">
@@ -48,7 +50,7 @@ export const Modal = ({
             <DefaultButton
               text={`${buttontext}`}
               type={buttontype || "button"}
-              className={`${buttonclass}`}
+              className={`${buttonclass} rounded-md w-full `}
               handleClick={handleEvent}
             />
           ) : (
@@ -56,13 +58,13 @@ export const Modal = ({
               <DefaultButton
                 text={`${buttontext}`}
                 type={buttontype || "button"}
-                className={`${buttonclass}`}
+                className={`${buttonclass} rounded-md w-full`}
                 handleClick={handleEvent}
               />
               <DefaultButton
                 text={`${button2text}`}
                 type={button2type || "button"}
-                className={`${button2class}`}
+                className={`${button2class} rounded-md w-full`}
                 handleClick={handleEvent2}
               />
             </div>

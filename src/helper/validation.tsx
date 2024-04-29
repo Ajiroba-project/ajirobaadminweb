@@ -44,13 +44,32 @@ export const PasswordResetschema = Yup.object().shape({
 
     });
 
-export const UploadSchema = Yup.object().shape({
+export const ProductUploadSchema = Yup.object().shape({
   product_name: Yup.string().required("Product name is required"),
   product_category: Yup.string().required("Product category is required"),
-  sub_category: Yup.string().required("Sub category is required"),
+  sub_category: Yup.string().required("Subcategory is required"),
   description: Yup.string().required("Product Description is required"),
   selling_price: Yup.string().required("selling Price is required"),
   discount: Yup.string().required("discount Price is required"),
+  // scehma for image and video
+  regular_media: Yup.mixed().required("Please select at least one file").test(
+      'regular_media',
+      'Please select at least one file',
+      (value) => value && value.length > 0
+    )
+});
+
+export const ActionUploadSchema = Yup.object().shape({
+  auction_name: Yup.string().required("Product name is required"),
+  auction_category: Yup.string().required("Product category is required"),
+  sub_category: Yup.string().required("Subcategory is required"),
+  description: Yup.string().required("Description is required"),
+  auction_price: Yup.string().required("Price is required"),
+  ticket_price: Yup.string().required("Ticket Price is required"),
+  auction_start: Yup.string().required("Start Date is required"),
+  auction_endtime: Yup.string().required("End date is required"),
+  auction_date: Yup.string().required("Date is required"),
+  duration: Yup.string().required("Duration is required"),
   // scehma for image and video
   regular_media: Yup.mixed().required("Please select at least one file").test(
       'regular_media',

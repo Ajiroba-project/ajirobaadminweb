@@ -49,6 +49,8 @@ export const SideNav =()=>{
     }
     const handleError =()=>{
       console.log("Somthing went wrong...")
+      clearAuthCookies();
+      router.replace("/signin");
     }
     
     const { mutate } = useMutateData(
@@ -68,7 +70,7 @@ export const SideNav =()=>{
 
     return (
       <Fragment>
-        <section className="shadow bg-[#F6F6F6]  w-[15em] lg:h-full fixed h-screen z-40">
+        <section className="shadow bg-[#F6F6F6]  w-[15em] lg:h-full fixed h-screen z-30">
           <nav className="flex flex-col  py-10 gap-20 container">
             <div className="mx-6 flex items-center">
               {/* brand icon */}

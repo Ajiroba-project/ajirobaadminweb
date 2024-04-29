@@ -1,6 +1,5 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import {useEffect} from "react"
 import {HeaderTitle} from "./component/HeaderTitle"
 import {SideNav} from "@/app/component/SideNav"
 import {Header} from "@/app/component/Header"
@@ -28,8 +27,9 @@ const Page =()=>{
             <div className={`mt-18 ${isNavbarOpen? "":"ml-18"}  `}>
                 { headingText === "User Details"?
                 <UserDetails/>
-                :headingText === "Upload"?<Upload/>:
-                "..."
+                :headingText === "Upload"?
+                <Upload/>:
+                `${headingText}`
                 }
 
             </div>

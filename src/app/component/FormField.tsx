@@ -1,6 +1,7 @@
 import {useState} from 'react'
 import { FaRegEyeSlash } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa6";
+import { FiUpload } from "react-icons/fi";
 
 type inputProps ={
     label:string,
@@ -35,6 +36,7 @@ type textareaProps ={
 }
 type fileUpoadProps ={
     // hangleChange : ()=> void,
+    label:string;
     name:inputProps["name"],
     register:inputProps["register"],
     errors:inputProps["errors"],
@@ -103,7 +105,38 @@ export const TextAreaField =({label, name, register, errors, placeholder}:textar
     )
 }
 
-
+export const MutipleUpload =({name,errors, label, register, }:fileUpoadProps)=>{
+    return (
+        <div className="flex flex-col">
+            <label htmlFor="upload-files">
+              <p className="py-2">{label}:</p>
+              <span className="bg-gray-50 relative rounded-md shadow hover:bg-gray-100 h-[20rem] w-auto flex justify-center items-center cursor-pointer flex-col">
+                <FiUpload className="text-4xl" />
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <p className="mb-2 text-xl text-gray-500 ">
+                    SelectFile to upload
+                  </p>
+                  <p className="mb-2 text-xs text-gray-500 ">
+                    you may upload up to 4 images & video
+                  </p>
+                </div>
+              </span>
+              <input
+                id="upload-files"
+                type="file"
+                accept="image/*, video/*"
+                max="5"
+                className="pt-6 hidden "
+                multiple
+                {...register(name, { required: true })}
+              />
+            </label>
+            <div className="text-xs text-rose-500 pt-1">
+              {errors?.[name]?.message}
+            </div>
+        </div>
+    )
+}
 
 export const RadioButton =()=>{
     return (
