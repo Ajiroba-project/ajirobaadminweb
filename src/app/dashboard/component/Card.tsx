@@ -6,7 +6,7 @@ const poppins = Poppins({ subsets: ["latin"], weight: ["400", "900"], });
 
 type cardProps={
     title:string,
-    object?:{}|[]
+    object?: Array<any>
 
 }
 
@@ -16,16 +16,14 @@ export const Card =({title, object}:cardProps)=>{
         <h1 className="text-xl pb-2">{title}</h1>
             <div className="grid md:grid-cols-2 lg:grid-cols-2 grid-cols-1 justify-center items-center gap-4 ">
                 {
-                    object?.map((val, index)=>(
-                    <div className={`${index === 0 ?  "bg-[#FCDFD44D]": index=== 1 ? "bg-[#D1DEF64D]": index=== 2 ? "bg-[#D7F8EE4D]": "bg-[#F9F2CC99]"} p-6 h-[10em] w-auto rounded-lg hover:shadow-md cursor-pointer flex flex-col gap-3 items-center justify-center text-center`} key={index}>
-
-                        <div className="flex items-center justify-center">
-                            <Image src={val.icon} alt={val.name}/>
+                    object?.map((val, index) => (
+                        <div className={`${index === 0 ? "bg-[#FCDFD44D]" : index === 1 ? "bg-[#D1DEF64D]" : index === 2 ? "bg-[#D7F8EE4D]" : "bg-[#F9F2CC99]"} p-6 h-[10em] w-auto rounded-lg hover:shadow-md cursor-pointer flex flex-col gap-3 items-center justify-center text-center`} key={index}>
+                            <div className="flex items-center justify-center">
+                                <Image src={val.icon} alt={val.name} />
+                            </div>
+                            <div className="">{val.name}</div>
+                            <h2 className="leading-2 font-bold">{val.count}</h2>
                         </div>
-                        <div className="">{val.name}</div>
-                        <h2 className="leading-2 font-bold">{val.count}</h2>
-
-                    </div>
                     ))
                 }
 
@@ -33,3 +31,17 @@ export const Card =({title, object}:cardProps)=>{
         </section>
     )
 }
+
+export const ProductListCard = ({title, object}: cardProps) => {
+    return (
+      <section className="p-4 ">
+        <div>
+          <div className="flex items-center justify-between">
+            <p>Tshirt</p>
+          </div>
+          <div></div>
+          <div></div>
+        </div>
+      </section>
+    );
+};
