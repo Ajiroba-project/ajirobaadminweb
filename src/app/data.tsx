@@ -202,3 +202,60 @@ export const subcategories = [
   "Anklet",
   "Bracelet",
 ];
+
+export const ProductLists =[
+    {
+        name:"Apple",
+        description:"Fresh apples",
+        price:100,
+        discount:3,
+        category:"FoodStuff",
+        subcategory:"Fruit",
+        image:[{
+
+        }]
+    },
+    {
+        name:"Iphone",
+        description:" Iphone 6 SmartPhone",
+        price:100,
+        discount:3,
+        category:"SmartPhone",
+        subcategory:"Phones",
+        image:[{
+
+        }]
+    },
+
+
+]
+export const AuctionLists = [
+  {
+    name: "Apple",
+    description: "Fresh apples",
+    price: 100,
+    discount: 3,
+    category: "FoodStuff",
+    subcategory: "Fruit",
+    image: [{}],
+    TNB: "100",
+    NTS: "10000",
+    ticket_amount: "4000 each",
+    total_amount: "₦20000",
+    duration: "3 hrs",
+  },
+  {
+    name: "Iphone",
+    description: " Iphone 6 SmartPhone",
+    price: 100,
+    discount: 3,
+    category: "SmartPhone",
+    subcategory: "Phones",
+    image: [{}],
+    TNB: "120",
+    NTS: "500",
+    ticket_amount: "200 each",
+    total_amount: "₦10000",
+    duration: "1 day",
+  },
+];

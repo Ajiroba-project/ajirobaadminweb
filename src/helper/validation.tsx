@@ -71,7 +71,7 @@ export const ActionUploadSchema = Yup.object().shape({
   auction_date: Yup.string().required("Date is required"),
   duration: Yup.string().required("Duration is required"),
   // scehma for image and video
-  regular_media: Yup.mixed().required("Please select at least one file").test(
+  auction_media: Yup.mixed().required("Please select at least one file").test(
       'regular_media',
       'Please select at least one file',
       (value) => value && value.length > 0

@@ -10,13 +10,13 @@ export const Product = () => {
 
   return (
     <section
-      className={`${
-        !isNavbarOpen
-          ? "lg:mt-[15%] xl:mt-[15%] md:mt-[15%] lg:ml-[20%] xl:ml-[20%] mr-[3%] md:ml-[20] m"
-          : " mx-[10%]"
-      }`}
+       className={` ${
+          !isNavbarOpen
+            ? "lg:mt-[15%] xl:mt-[15%] md:mt-[15%] lg:ml-[20%] xl:ml-[20%] mr-[3%] md:ml-[20] mt-[38%]"
+            : "mt-[30%] md:mt-[25%] mx-[5%] lg:mt-[10%] justify-center"
+        }`}
     >
-      <div className="flex  items-center">
+      <div className="flex items-center">
         <div
           className={`${
             active == 0 ? "bg-[#FCDFD4]" : ""

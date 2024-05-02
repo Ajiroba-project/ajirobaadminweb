@@ -12,8 +12,8 @@ interface UserSearchProps {
 
 export const UserSearch: React.FC<UserSearchProps> = () => {
     const [searchval, setSearchVal] = useState<string | undefined>();
-    const [filteredUsers, setFilteredUsers] = useState<any[]>(users);
-    const [userInfo, setUserInfo] = useState<any[]>(null);
+    const [filteredUsers, setFilteredUsers] = useState<any|null>(users);
+    const [userInfo, setUserInfo] = useState <any|null>();
     const [active, setActive]=useState<number>()
 
     
@@ -91,7 +91,7 @@ export const UserSearch: React.FC<UserSearchProps> = () => {
 
         <div className="bg-[#FCDFD433] w-full rounded-lg span-2">
           <div></div>
-          {userInfo && (
+          {(userInfo) && (
             <div className="p-6 flex flex-col gap-5">
               <Image src={userInfo?.photo} alt={userInfo?.first_name} />
               <div className="grid lg:grid-cols-2 md:grid-cols-2 grid-cols-1  gap-2 items-center mt-3">

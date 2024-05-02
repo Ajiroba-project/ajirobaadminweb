@@ -1,34 +1,46 @@
-import {InputField, SelectField, TextAreaField} from "@/app/component/FormField"
-import  { useState } from 'react';
+import {
+  InputField,
+  SelectField,
+  TextAreaField,
+} from "@/app/components/FormField";
+import { useState } from "react";
 import { useMutateData } from "@/hooks/useMutateData";
-import {DefaultButton} from "@/app/component/Button"
+import { DefaultButton } from "@/app/components/Button";
 import { categories, subcategories } from "@/app/data";
 import { useRouter } from "next/navigation";
 import { FiUpload } from "react-icons/fi";
 import { useForm } from "react-hook-form";
-import {ActionUploadSchema} from "@/helper/validation"
+import { ActionUploadSchema } from "@/helper/validation";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ToastContainer, toast } from "react-toastify";
-import {useStore, useNewProductStore } from '@/store/nav-store';
-import {Modal}  from "./Modal"
+import { useStore, useNewProductStore } from "@/store/nav-store";
+import { Modal } from "./Modal";
 import successIcon from "@/app/asset/signout.svg";
 import "react-toastify/dist/ReactToastify.css";
-import Image from "next/image"
+import Image from "next/image";
 
 export const Auction = () => {
   const router = useRouter();
-  const isNavbarOpen = useStore(state=> state.isNavbarOpen)
-  const [selectedImg, setSelectedImg]= useState<any>([])
-  const [selectedImgName, setSelectedImgName]= useState<any>([])
+  const isNavbarOpen = useStore((state) => state.isNavbarOpen);
+  const [selectedImg, setSelectedImg] = useState<any>([]);
+  const [selectedImgName, setSelectedImgName] = useState<any>([]);
   const [showModal, setShowModal] = useState(false);
 
-    const setproduct = useNewProductStore(state => state.setproduct)
-        
-     const { reset, register, control, handleSubmit, formState: { errors }, trigger, watch, setValue,
-    } = useForm({
-        mode: "all",
-        resolver: yupResolver(ActionUploadSchema),
-    });
+  const setproduct = useNewProductStore((state) => state.setproduct);
+
+  const {
+    reset,
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+    trigger,
+    watch,
+    setValue,
+  } = useForm({
+    mode: "all",
+    resolver: yupResolver(ActionUploadSchema),
+  });
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = event.target.files
@@ -38,7 +50,7 @@ export const Auction = () => {
       return URL.createObjectURL(file);
     });
 
-    console.log(ImgArray)
+    console.log(ImgArray);
     setSelectedImg((prevImg: string[]) => prevImg.concat(ImgArray));
   };
 
@@ -48,77 +60,74 @@ export const Auction = () => {
   };
 
   const handleSuccess = (data: any) => {
-        if (data.status === 201) {
-          router.push("/dashboard");
-          setShowModal(true);
-          reset();
-        } else if (data.status === 400 || data.status === 409) {
-          toast.error(`${data?.data?.message}`, {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-          });
-          reset();
-        } else {
-          toast.error(`${"An Error Occured"}`, {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-          });
-          reset();
-        }
-    };
-     const handleError = (error: any) => {
-        toast.error(`${'An Error Occured'}`, {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-
-        });
-        reset();
-
-    };
+    if (data.status === 201) {
+      router.push("/dashboard");
+      setShowModal(true);
+      reset();
+    } else if (data.status === 400 || data.status === 409) {
+      toast.error(`${data?.data?.message}`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      reset();
+    } else {
+      toast.error(`${"An Error Occured"}`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      reset();
+    }
+  };
+  const handleError = (error: any) => {
+    toast.error(`${"An Error Occured"}`, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+    reset();
+  };
 
   const { data, error, mutate, status } = useMutateData(
-        "upload",
-        handleSuccess,
-        handleError,
-    );
+    "upload",
+    handleSuccess,
+    handleError
+  );
 
   const sumbitForm = (data: any) => {
-        mutate({
-            url: "/api/upload",
-            payload: data
-        });
+    mutate({
+      url: "/api/upload",
+      payload: data,
+    });
 
-        localStorage.setItem('product-details', JSON.stringify(data));
-        // router.push("/dashboard/product-details")
-    };
-    
+    localStorage.setItem("product-details", JSON.stringify(data));
+    // router.push("/dashboard/product-details")
+  };
 
   return (
     <>
+      <ToastContainer closeOnClick />
       <section
         className={`my-10 container ${
           isNavbarOpen ? "justify-center items-center flex-col flex" : ""
         }`}
       >
-        <ToastContainer closeOnClick />
         <h1
           className={`xl:text-2xl 2xl:text-2xl md:text-2xl text-base font-normal pb-4 leading-tight tracking-tight underline p-3`}
         >
@@ -274,5 +283,4 @@ export const Auction = () => {
       )}
     </>
   );
-}
-
+};

@@ -1,124 +1,147 @@
-import {InputField, SelectField, TextAreaField} from "@/app/component/FormField"
-import  { useState } from 'react';
+import {
+  InputField,
+  SelectField,
+  TextAreaField,
+} from "@/app/components/FormField";
+import { useState } from "react";
 import { useMutateData } from "@/hooks/useMutateData";
-import {DefaultButton} from "@/app/component/Button"
+import { DefaultButton } from "@/app/components/Button";
 import { categories, subcategories } from "@/app/data";
 import { useRouter } from "next/navigation";
 import { FiUpload } from "react-icons/fi";
 import { useForm } from "react-hook-form";
-import {ProductUploadSchema} from "@/helper/validation"
+import { ProductUploadSchema } from "@/helper/validation";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ToastContainer, toast } from "react-toastify";
-import {useStore, useNewProductStore } from '@/store/nav-store';
+import { useStore, useNewProductStore } from "@/store/nav-store";
 import "react-toastify/dist/ReactToastify.css";
-import {Modal}  from "./Modal"
+import { Modal } from "./Modal";
 import successIcon from "@/app/asset/signout.svg";
-import Image from "next/image"
+import { setLocalStoreData } from "@/hooks/useLocalStorage";
 
 export const Regular = () => {
   const router = useRouter();
-  const isNavbarOpen = useStore(state=> state.isNavbarOpen)
-  const [selectedImg, setSelectedImg]= useState<any>([])
-  const [selectedImgName, setSelectedImgName]= useState<any>([])
+  const isNavbarOpen = useStore((state) => state.isNavbarOpen);
+  const [selectedImg, setSelectedImg] = useState<any>([]);
+  const [selectedImgName, setSelectedImgName] = useState<any>([]);
   const [showModal, setShowModal] = useState(false);
 
-    const setproduct = useNewProductStore(state => state.setproduct)
-        
-     const { reset, register, control, handleSubmit, formState: { errors }, trigger, watch, setValue,
-    } = useForm({
-        mode: "all",
-        resolver: yupResolver(ProductUploadSchema),
-    });
+  const setproduct = useNewProductStore((state) => state.setproduct);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = event.target.files
-      ? Array.from(event.target.files)
-      : [];
-    const ImgArray = selectedFiles.map((file) => {
-      return URL.createObjectURL(file);
-    });
+  const {
+    reset,
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+    trigger,
+    watch,
+    setValue,
+  } = useForm({
+    mode: "all",
+    resolver: yupResolver(ProductUploadSchema),
+  });
 
-    console.log(ImgArray)
-    setSelectedImg((prevImg: string[]) => prevImg.concat(ImgArray));
-  };
+  // const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const selectedFiles = event.target.files
+  //     ? Array.from(event.target.files)
+  //     : [];
+  //   const ImgArray = selectedFiles.map((file) => {
+  //     return URL.createObjectURL(file);
+  //   });
 
-  const RemoveImg = (val: string) => {
-    setSelectedImg(selectedImg.filter((e: string) => e !== val));
-    URL.revokeObjectURL(val);
-  };
+  //   console.log(ImgArray);
+  //   setSelectedImg((prevImg: string[]) => prevImg.concat(ImgArray));
+  // };
+
+  // const RemoveImg = (val: string) => {
+  //   setSelectedImg(selectedImg.filter((e: string) => e !== val));
+  //   URL.revokeObjectURL(val);
+  // };
 
   const handleSuccess = (data: any) => {
-        if (data.status === 201) {
-          router.push("/dashboard")
-          setShowModal(true);
-          reset();
-          ;
-          
-        } else if (data.status === 400 || data.status === 409) {
-          toast.error(`${data?.data?.message}`, {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-          });
-          reset();
-        } else {
-          toast.error(`${"An Error Occured"}`, {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-          });
-          reset();
-        }
-    };
-     const handleError = (error: any) => {
-        toast.error(`${'An Error Occured'}`, {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
+    if (data.status === 201) {
+      router.push("/dashboard");
+      setShowModal(true);
+      setLocalStoreData(data);
+      reset();
+    } else if (data.status === 400 || data.status === 409) {
+      toast.error(`${data?.data?.message}`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      reset();
+    } else {
+      toast.error(`${"An Error Occured"}`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      reset();
+    }
+  };
+  const handleError = (error: any) => {
+    toast.error(`${"An Error Occured"}`, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+    reset();
+  };
 
-        });
-        reset();
-
-    };
-
-  const { data, error,  mutate, status } = useMutateData(
-        "upload",
-        handleSuccess,
-        handleError,
-    );
+  const { data, error, mutate, status } = useMutateData(
+    "upload",
+    handleSuccess,
+    handleError
+  );
 
   const sumbitForm = (data: any) => {
-        mutate({
-            url: "/api/upload",
-            payload: data
-        });
-        router.push("/dashboard/product")
-    };
-    
+    const formData = new FormData();
+    const regularMedia = watch("regular_media") as FileList | null;
+    const selectedFiles = regularMedia ? Array.from(regularMedia) : [];
+
+    const fileMetadata = selectedFiles.map((file) => ({
+      name: file.name,
+      type: file.type,
+      size: file.size
+    }));
+    console.log(data);
+    // mutate({
+    //   url: "/api/upload",
+    //   payload: data,
+    // });
+    // setShowModal(true);
+
+    setLocalStoreData({
+      name: "regularProduct",
+      obj: { ...data, fileMetadata },
+    });
+  };
 
   return (
     <>
+      <ToastContainer closeOnClick />
       <section
         className={`my-10 ${
-          isNavbarOpen ? "justify-center items-center flex-col flex" : ""
-        }`}
+          isNavbarOpen ? "justify-center items-center " : ""
+        } flex-col flex`}
       >
-        <ToastContainer closeOnClick />
         <h1
           className={`xl:text-2xl 2xl:text-2xl md:text-2xl text-base font-normal pb-4 leading-tight tracking-tight underline p-3`}
         >
@@ -126,7 +149,10 @@ export const Regular = () => {
         </h1>
         <hr className="w-full h-1 border-[#D2D2D2] rounded"></hr>
 
-        <form onSubmit={handleSubmit(sumbitForm)}>
+        <form
+          onSubmit={handleSubmit(sumbitForm)}
+          encType={"multipart/form-data"}
+        >
           <div
             className={`flex gap-8 my-4 lg:flex-row  flex-col-reverse items-center `}
           >
@@ -243,5 +269,4 @@ export const Regular = () => {
       )}
     </>
   );
-}
-
+};

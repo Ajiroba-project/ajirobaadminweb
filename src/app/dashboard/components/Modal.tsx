@@ -1,5 +1,5 @@
-import { HeaderTitle } from "@/app/component/Header";
-import { DefaultButton } from "@/app/component/Button";
+import { HeaderTitle } from "@/app/components/Header";
+import { DefaultButton } from "@/app/components/Button";
 import Image from "next/image";
 
 type signOutModalProps = {
