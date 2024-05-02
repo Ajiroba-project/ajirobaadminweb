@@ -77,3 +77,9 @@ export const ActionUploadSchema = Yup.object().shape({
       (value) => value && value.length > 0
     )
 });
+
+export const CategoriesSchema = Yup.object().shape({
+  subcategory: Yup.string().required("Product name is required"),
+  category: Yup.string().required("Product category is required"),
+ 
+});

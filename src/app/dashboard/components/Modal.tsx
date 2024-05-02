@@ -4,7 +4,7 @@ import Image from "next/image";
 
 type signOutModalProps = {
   title: string;
-  subtitle: string;
+  subtitle?: string;
   buttontext?: string;
   buttontype?: "button" | "submit" | "reset" | undefined;
   buttoncount?: 1 | 2;
@@ -34,9 +34,9 @@ export const Modal = ({
   return (
     <section className="z-50 fixed w-screen h-screen bg-[#000000d1] flex justify-center items-center ">
       <div className="text-center p-8 flex flex-col bg-white rounded-md gap-6 justify-center items-center w-[20em] xs:w-[15em] lg:w-[30em] md:w-[25em] h-auto">
-        <div className="py-2">
+       {icon && <div className="py-2">
           <Image src={icon} width={60} height={60} alt="icon" />
-        </div>
+        </div>}
 
         <div className="flex-col gap-2">
           <h1 className="text-2xl">{title}</h1>

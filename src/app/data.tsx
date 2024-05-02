@@ -126,15 +126,16 @@ export const users =[{
 
 export const categories =[
   "Accessories",
-    "FoodStuff",
+  'Computing',
+  "Electronics",
+  "FoodStuff",
+  "Fashion",
     "Men's Fashion",
-    "Women's Fashion",
-    "Fashion",
-    "Electronics",
-    "Phones",
-    'Computing',
     'Mother and Child',
-    'Royalty',]
+    "Phones",
+    'Royalty',
+    "Women's Fashion",
+]
 
 
 export const subcategories = [

@@ -49,7 +49,7 @@ export const Card = ({ title, object }: cardProps) => {
 export const ProductListCard = ({ object }: cardProps) => {
 
   return (
-    <section className="py-4 grid grid-cols-3 gap-4 w-full">
+    <section className="py-4 grid lg:grid-cols-3 gap-4 w-full">
       {object?.map((val, index) => (
         <Fragment key={index}>
           <div className="border rounded-lg p-4">
@@ -95,7 +95,7 @@ export const ProductListCard = ({ object }: cardProps) => {
 
 export const AuctionListCard = ({ object }: cardProps) => {
   return (
-    <section className="py-4 grid grid-cols-3 gap-4 w-full">
+    <section className="py-4 grid lg:grid-cols-3 gap-4 w-full">
       {object?.map((val, index) => (
         <Fragment key={index}>
           <div className="border rounded-lg p-4">
@@ -133,9 +133,9 @@ export const AuctionListCard = ({ object }: cardProps) => {
               <div className="pt-4 ">
                 <Link
                   href={`dashboard/product-details/auction-edit/${val.name}`}
-                  className="bg-[#FCDFD4] flex gap-2 rounded-lg  p-2 items-center "
+                  className="bg-[#FCDFD4] flex gap-2 rounded-lg  p-2 items-center  md:text-sm sm:text-sm"
                 >
-                  <MdOutlineEdit className="text-lg" />
+                  <MdOutlineEdit className="text-lg md:text-md" />
                   Edit product
                 </Link>
               </div>
