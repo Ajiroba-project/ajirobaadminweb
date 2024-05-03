@@ -1,7 +1,6 @@
 
 import Image from "next/image";
 import { Poppins } from "next/font/google";
-
 import { Fragment } from "react";
 import Link from "next/link"
 import { MdOutlineEdit } from "react-icons/md";
@@ -43,8 +42,6 @@ export const Card = ({ title, object }: cardProps) => {
     </section>
   );
 };
-
-
 
 export const ProductListCard = ({ object }: cardProps) => {
 

@@ -214,7 +214,8 @@ export const ProductLists =[
         subcategory:"Fruit",
         image:[{
 
-        }]
+        }],
+        date:""
     },
     {
         name:"Iphone",
@@ -225,7 +226,8 @@ export const ProductLists =[
         subcategory:"Phones",
         image:[{
 
-        }]
+        }],
+        date:""
     },
 
 

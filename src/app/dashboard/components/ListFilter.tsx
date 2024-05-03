@@ -2,22 +2,26 @@ import React from "react";
 import { useState } from "react";
 import { CiSearch } from "react-icons/ci";
 
-export const ListFilter = ({onSearch}:any) => {
-  const [searchval, setSearchVal] = useState<string>("");
-  const [date, setDate] =useState<string>("")
+interface ListFilterProps {
+  onSearch: (searchVal: string, dateVal: string) => void;
+}
+
+export const ListFilter: React.FC<ListFilterProps> = ({ onSearch }) => {
+  const [searchVal, setsearchVal] = useState<string>("");
+  const [dateVal, setDate] = useState<string>("");
 
   const handleSearchInputChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const { value } = event.target;
-    setSearchVal(value);
-    onSearch(value)
+    setsearchVal(value);
+    onSearch(value, searchVal);
   };
 
   const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const {value} = event.target;
+    const { value } = event.target;
     setDate(value);
-    // onSearch(value);
+    onSearch(value, dateVal);
   };
 
   return (
@@ -32,12 +36,12 @@ export const ListFilter = ({onSearch}:any) => {
           id="search"
           placeholder="Search"
           className=" pl-8 py-2 focus:text-black focus:outline-[#FCDFD4] border rounded-lg w-auto xl:w-[300px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px]"
-          value={searchval}
+          value={searchVal}
           onChange={handleSearchInputChange}
           autoComplete="off"
         />
       </div>
-     
+
       {/* date */}
       <div>
         <input

@@ -14,7 +14,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { InputField, SelectField } from "@/app/components/FormField";
 import "react-toastify/dist/ReactToastify.css";
 
-export const CategoryEdit = () => {
+export const CategoryEdit = ({func}:any) => {
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
   const router = useRouter();
   const {
@@ -47,6 +47,9 @@ export const CategoryEdit = () => {
     handleSuccess,
     handleError
   );
+  const handleEdit = () => {
+    func();
+  };
 
   return (
     <section className="flex flex-col ">
@@ -71,7 +74,7 @@ export const CategoryEdit = () => {
           <DefaultButton
             text="Create"
             type="submit"
-            handleClick={() => null}
+            handleClick={handleEdit}
             className=" bg-[#FCDFD4] p-4 text-sm w-[25em] hover:bg-[#F25E26] hover:text-white rounded-lg"
           />
         </div>

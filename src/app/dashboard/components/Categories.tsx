@@ -20,7 +20,9 @@ export const Categories = () => {
 
   const modalEvent =()=>{
     setModal(!modal);
-    setCategorySwitch("create");
+  }
+  const handleEditCategory =()=>{
+    setModal(!modal);
   }
 
   return (
@@ -121,7 +123,7 @@ export const Categories = () => {
               Back
             </p>
 
-            <CategoryEdit />
+            <CategoryEdit func={handleEditCategory} />
           </>
         )}
       </section>
@@ -137,16 +139,22 @@ export const Categories = () => {
             subtitle=""
             buttoncount={categoryswitch === "create" ? 1 : 2}
             buttontext={
-              categoryswitch === "create" || "edit" ? "continue" : "No"
+              categoryswitch === "create" || categoryswitch === "edit"
+                ? "continue"
+                : "yes"
             }
             button2text="No"
             buttonclass="bg-[#FCDFD4] p-5 rounded-lg text-sm hover:shadow w-full px-14"
             button2class="p-4 rounded-lg border-2 border-[#F25E26] px-14"
             buttontype="button"
             button2type="button"
-            handleEvent={() => modalEvent}
+            handleEvent={modalEvent}
             handleEvent2={() => setModal(false)}
-            icon={categoryswitch === "create" || "edit" ? successIcon: null}
+            icon={
+              categoryswitch === "create" || categoryswitch === "edit"
+                ? successIcon
+                : null
+            }
           />
         </div>
       )}
