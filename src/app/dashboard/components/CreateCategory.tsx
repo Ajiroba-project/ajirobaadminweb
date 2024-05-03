@@ -14,7 +14,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { InputField, SelectField } from "@/app/components/FormField";
 import "react-toastify/dist/ReactToastify.css";
 
-export const CreateCategory = () => {
+export const CreateCategory = ({func}:any) => {
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
   const router = useRouter();
   const {
@@ -48,8 +48,13 @@ export const CreateCategory = () => {
     handleError
   );
 
+  const handleCreate=()=>{
+    func()
+  }
+
   return (
     <section className="flex flex-col ">
+      <h2 className="text-center font-bold ">Create Sub-categories</h2>
       <form className="flex flex-col mt-[1em] items-center ">
         <SelectField
           label="Category"
@@ -69,8 +74,8 @@ export const CreateCategory = () => {
         <div className="py-5">
           <DefaultButton
             text="Create"
-            type="submit"
-            handleClick={() => null}
+            type="button"
+            handleClick={handleCreate}
             className=" bg-[#FCDFD4] p-4 text-sm w-[25em] hover:bg-[#F25E26] hover:text-white rounded-lg"
           />
         </div>

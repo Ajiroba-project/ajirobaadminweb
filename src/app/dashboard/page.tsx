@@ -15,7 +15,7 @@ const Page = () => {
   const router = useRouter();
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
   const headingText = useStore((state) => state.headingText);
-  //   useAuthMiddleware(router);
+    useAuthMiddleware(router);
 
   return (
     <section className="flex">

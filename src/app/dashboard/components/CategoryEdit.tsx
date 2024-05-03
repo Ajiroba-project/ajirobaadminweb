@@ -50,6 +50,7 @@ export const CategoryEdit = () => {
 
   return (
     <section className="flex flex-col ">
+      <h2 className="text-center font-bold ">Edit Sub-categories</h2>
       <form className="flex flex-col mt-[1em] items-center ">
         <SelectField
           label="Category"
