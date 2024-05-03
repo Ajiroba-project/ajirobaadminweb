@@ -1,29 +1,28 @@
-
-import React, {useState} from 'react'
+import React, { useState } from "react";
 import { useStore } from "@/store/nav-store";
-import {categories} from "@/app/data"
-import {Modal} from "./Modal"
-import {useRouter} from 'next/navigation'
-import {CreateCategory} from "./CreateCategory"
-import {CategoryEdit} from "./CategoryEdit"
+import { categories } from "@/app/data";
+import { Modal } from "./Modal";
+import { useRouter } from "next/navigation";
+import { CreateCategory } from "./CreateCategory";
+import { CategoryEdit } from "./CategoryEdit";
 import successIcon from "@/app/asset/verify.svg";
 
 export const Categories = () => {
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
-  const [modal, setModal] = useState<boolean>(false)
-  const [categoryswitch, setCategorySwitch] =useState('list')
-  const router = useRouter()
+  const [modal, setModal] = useState<boolean>(false);
+  const [categoryswitch, setCategorySwitch] = useState("list");
+  const router = useRouter();
 
-  const handleCreateCategory=()=>{
-      setModal(!modal);
-  }
+  const handleCreateCategory = () => {
+    setModal(!modal);
+  };
 
-  const modalEvent =()=>{
+  const modalEvent = () => {
     setModal(!modal);
-  }
-  const handleEditCategory =()=>{
+  };
+  const handleEditCategory = () => {
     setModal(!modal);
-  }
+  };
 
   return (
     <>
@@ -134,10 +133,14 @@ export const Categories = () => {
             title={
               categoryswitch === "create"
                 ? "Data created Successfully"
+                : categoryswitch === "edit"
+                ? "Data Updated Successfully"
                 : "Are you sure you want to delete Category"
             }
             subtitle=""
-            buttoncount={categoryswitch === "create" ? 1 : 2}
+            buttoncount={
+              categoryswitch === "create" || categoryswitch === "edit" ? 1 : 2
+            }
             buttontext={
               categoryswitch === "create" || categoryswitch === "edit"
                 ? "continue"
@@ -160,4 +163,4 @@ export const Categories = () => {
       )}
     </>
   );
-}
+};
