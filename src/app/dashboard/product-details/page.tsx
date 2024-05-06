@@ -1,54 +1,64 @@
-'use client'
-import {useState} from "react"
-import {RegistrationHeader} from '@/app/component/Header';
-import {DefaultButton} from "@/app/component/Button";
-import {InputField, SelectField, TextAreaField} from "@/app/component/FormField";
-import Image from "next/image"
-import { useRouter } from 'next/navigation'
+"use client";
+import { useState } from "react";
+import { RegistrationHeader } from "@/app/components/Header";
+import { DefaultButton } from "@/app/components/Button";
+import {
+  InputField,
+  SelectField,
+  TextAreaField,
+} from "@/app/components/FormField";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
+const Page = () => {
+  const [selectedImg, setSelectedImg] = useState<any>([]);
 
-const Page =()=>{
-    const [selectedImg, setSelectedImg]= useState<any>([])
-    
-    const router = useRouter()
-    
-    return (
-        <section className="flex flex-col">
-            <div className="w-full bg-gray-100">
-                <RegistrationHeader/>
-                <p className="lg:px-14 px-7  text-[#F25E26] underline cursor-pointer" >Back</p>
-            </div>
-            <span className="w-full bg-gray-100">
-                <h1 className="text-2xl text-center py-2">Regular Product Upload</h1>
-            </span>
+  const router = useRouter();
 
-            <form className="sm:flex-col md:flex-row flex-col lg:flex-row flex mx-8 gap-4 py-8 justify-center items-center container ">
+  return (
+    <section className="flex flex-col">
+      <div className="w-full bg-gray-100">
+        <RegistrationHeader />
+        <p className="lg:px-14 px-7  text-[#F25E26] underline cursor-pointer">
+          Back
+        </p>
+      </div>
+      <span className="w-full bg-gray-100">
+        <h1 className="text-2xl text-center py-2">Regular Product Upload</h1>
+      </span>
 
-                <div className="">
-            <div className="grid grid-rows-3 grid-flow-col gap-4 relative">
+      <form className="sm:flex-col md:flex-row flex-col lg:flex-row flex mx-8 gap-4 py-8 justify-center items-center container ">
+        <div className="">
+          <div className="grid grid-rows-3 grid-flow-col gap-4 relative">
             {/* One column on smaller screens, three on medium+ */}
-                {selectedImg &&
-                selectedImg.map((val: string, key: number) => (
-                    <div
-                    key={key}
-                    className={`col-span-1 ${
-                        key === selectedImg.length - 1 && "row-span-3 col-span-3"
-                    }`}
-                    >
-                    {/* Always col-span-1, md:col-span-2 for last image */}
-                    <Image src={val} alt="preview" width={80} height={80} className="" />
-                    {/* <span
+            {selectedImg &&
+              selectedImg.map((val: string, key: number) => (
+                <div
+                  key={key}
+                  className={`col-span-1 ${
+                    key === selectedImg.length - 1 && "row-span-3 col-span-3"
+                  }`}
+                >
+                  {/* Always col-span-1, md:col-span-2 for last image */}
+                  <Image
+                    src={val}
+                    alt="preview"
+                    width={80}
+                    height={80}
+                    className=""
+                  />
+                  {/* <span
                         className="absolute top-0 right-0 bg-rose-400 text-white rounded-full text-xs p-2 cursor-pointer"
                         onClick={() => RemoveImg(val)}
                     >
                         X
                     </span> */}
-                    </div>
-                ))}
-          </div>
                 </div>
+              ))}
+          </div>
+        </div>
 
-                {/* <div className="flex gap-2">
+        {/* <div className="flex gap-2">
                     <InputField label="Product name" type="text" name="product name" />
                     <SelectField label="Sub categories" name="sub categories" />
                     <TextAreaField label="description" name="textarea" />
@@ -73,13 +83,16 @@ const Page =()=>{
                         />
                     </div>
                 </div> */}
-                
-            </form>
+      </form>
 
-            <DefaultButton text={"Upload"} type={"submit"} handleClick={() => null} className="bg-[#FCDFD4] p-4 text-sm w-[20em]"/>
-           
-        </section>
-    )
-}
+      <DefaultButton
+        text={"Upload"}
+        type={"submit"}
+        handleClick={() => null}
+        className="bg-[#FCDFD4] p-4 text-sm w-[20em]"
+      />
+    </section>
+  );
+};
 
-export default Page
+export default Page;

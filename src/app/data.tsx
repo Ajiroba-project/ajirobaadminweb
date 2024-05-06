@@ -7,6 +7,8 @@ import ag from "@/app/asset/ag.svg"
 import tmg from "@/app/asset/tmg.svg"
 import tns from "@/app/asset/tns.svg"
 import ps from "@/app/asset/ps.svg"
+import bid from "@/app/asset/bid.svg"
+import ticket from "@/app/asset/ticket.svg"
 import user_img from "@/app/asset/user.png"
 
 export const SideNavMenu =[
@@ -82,17 +84,17 @@ export const auctionDetails =[
         count: 0
     },
      {
-        icon:tns,
+        icon:ticket,
         name:"TOTAL TICKET PURCHASED",
         count:0
     },
     {
-        icon:ag,
+        icon:bid,
         name:"TOTAL BID MADE",
         count:0
     },
     {
-        icon:ps,
+        icon:ag,
         name:"TOTAL AMOUNT GENERATED",
         count:0
     },
@@ -124,15 +126,16 @@ export const users =[{
 
 export const categories =[
   "Accessories",
-    "FoodStuff",
+  'Computing',
+  "Electronics",
+  "FoodStuff",
+  "Fashion",
     "Men's Fashion",
-    "Women's Fashion",
-    "Fashion",
-    "Electronics",
-    "Phones",
-    'Computing',
     'Mother and Child',
-    'Royalty',]
+    "Phones",
+    'Royalty',
+    "Women's Fashion",
+]
 
 
 export const subcategories = [
@@ -199,4 +202,63 @@ export const subcategories = [
   "Fan",
   "Anklet",
   "Bracelet",
+];
+
+export const ProductLists =[
+    {
+        name:"Apple",
+        description:"Fresh apples",
+        price:100,
+        discount:3,
+        category:"FoodStuff",
+        subcategory:"Fruit",
+        image:[{
+
+        }],
+        date:""
+    },
+    {
+        name:"Iphone",
+        description:" Iphone 6 SmartPhone",
+        price:100,
+        discount:3,
+        category:"SmartPhone",
+        subcategory:"Phones",
+        image:[{
+
+        }],
+        date:""
+    },
+
+
+]
+export const AuctionLists = [
+  {
+    name: "Apple",
+    description: "Fresh apples",
+    price: 100,
+    discount: 3,
+    category: "FoodStuff",
+    subcategory: "Fruit",
+    image: [{}],
+    TNB: "100",
+    NTS: "10000",
+    ticket_amount: "4000 each",
+    total_amount: "₦20000",
+    duration: "3 hrs",
+  },
+  {
+    name: "Iphone",
+    description: " Iphone 6 SmartPhone",
+    price: 100,
+    discount: 3,
+    category: "SmartPhone",
+    subcategory: "Phones",
+    image: [{}],
+    TNB: "120",
+    NTS: "500",
+    ticket_amount: "200 each",
+    total_amount: "₦10000",
+    duration: "1 day",
+  },
 ];

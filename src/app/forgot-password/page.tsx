@@ -1,6 +1,6 @@
 "use client";
-import { RegistrationHeader, HeaderTitle } from "../component/Header";
-import { DefaultButton } from "../component/Button";
+import { RegistrationHeader, HeaderTitle } from "../components/Header";
+import { DefaultButton } from "../components/Button";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { HiArrowLongLeft } from "react-icons/hi2";
@@ -9,15 +9,14 @@ import { EmailSchema } from "@/helper/validation";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { InputField } from "../component/FormField";
+import { InputField } from "../components/FormField";
 import passwordlock from "../asset/passwordlock.svg";
 import Image from "next/image";
 
 const Page = () => {
-      type dataProps = {
-        password: string
-
-    };
+  type dataProps = {
+    password: string;
+  };
   const router = useRouter();
   const {
     reset,
