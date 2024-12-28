@@ -1,10 +1,11 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
 import Cookies from 'js-cookie';
 
 export const useStore = create((set) => ({
   headingText: 'User Details',
   isNavbarOpen: false,
-  
+  setNavbarOpen: (value) => set({ isNavbarOpen: value }),
+
   setHeadingText: (text) => set({ headingText: text }),
   toggleNavbar: () => set((state) => ({ isNavbarOpen: !state.isNavbarOpen })),
 }));
@@ -15,7 +16,7 @@ export const useAuthStore = create((set, get) => ({
 
   user: null,
   setUser: (user) => set({ user }),
-  
+
   setAuthCookie: (token, expirationDate) => {
     Cookies.set('token', token, {
       expires: expirationDate,
@@ -29,8 +30,8 @@ export const useAuthStore = create((set, get) => ({
   },
 }));
 
-export const useNewProductStore = create((set)=>({
-product: null,
-setproduct: (product)=>set({product})
+export const useNewProductStore = create((set) => ({
+  product: null,
+  setproduct: (product) => set({ product })
 
 }));

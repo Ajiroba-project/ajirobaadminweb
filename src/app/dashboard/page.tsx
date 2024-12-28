@@ -10,6 +10,7 @@ import { Product } from "./components/Product";
 import { Categories } from "./components/Categories";
 import { Transaction } from "./components/Transaction";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
+import { useEffect } from "react";
 
 const Page = () => {
   const router = useRouter();
@@ -17,11 +18,34 @@ const Page = () => {
   const headingText = useStore((state) => state.headingText);
     useAuthMiddleware(router);
 
+    const setNavbarOpen = useStore((state) => state.setNavbarOpen);
+
+
+    useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setNavbarOpen(false); // Automatically close navbar on larger screens
+      }
+    };
+
+    // Set up resize listener
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup listener on unmount
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [setNavbarOpen]);
+
   return (
     <section className="flex">
-      <div className={`${isNavbarOpen ? "hidden" : ""} `}>
+       <div className={`${isNavbarOpen ? "hidden" : "block"} `}>
         <SideNav />
       </div>
+
+
+
+
 
       <div className="flex-auto relative ">
         <Header />

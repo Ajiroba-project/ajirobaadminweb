@@ -79,17 +79,20 @@ export const SideNav = () => {
     });
   };
 
+
+  const setNavbarOpen = useStore((state) => state.setNavbarOpen);
+
   return (
     <Fragment>
       <section className="shadow bg-[#F6F6F6]  w-[15em] lg:h-full fixed h-screen z-30">
-        <nav className="flex flex-col  py-10 gap-20 container">
+     {/*    <nav className="flex flex-col  py-10 gap-20 container">
           <div className="mx-6 flex items-center">
-            {/* brand icon */}
+
             <Link href="/">
               <Image src={Brand} alt="brand logo" />
             </Link>
             <div className="mx-4">
-              {/* if NavbarOpen is true then show close button else show menu button */}
+
               {isNavbarOpen ? (
                 <FiMenu
                   className="text-2xl cursor-pointer lg:block xl:hidden 2xl:hidden"
@@ -103,7 +106,7 @@ export const SideNav = () => {
               )}
             </div>
           </div>
-          {/* menu */}
+
           <div className="">
             <ul>
               {SideNavMenu.map((val, index) => (
@@ -124,7 +127,6 @@ export const SideNav = () => {
             </ul>
           </div>
 
-          {/* profile */}
           <div className=" flex flex-col gap-3 items-center justify-center">
             <div className="flex gap-3 pb-4 items-center">
               <div className="rounded-full h-8 w-8 bg-[#FCDFD4] ring-[#F25E26]">
@@ -148,7 +150,64 @@ export const SideNav = () => {
               <p className="">Sign Out</p>
             </div>
           </div>
-        </nav>
+        </nav> */}
+
+        <nav className={`flex flex-col py-10 gap-20 container ${isNavbarOpen ? "hidden lg:block" : "block"}`}>
+  <div className="mx-6 flex items-center">
+    <Link href="/">
+      <Image src={Brand} alt="brand logo" />
+    </Link>
+    <div className="mx-4">
+      {isNavbarOpen ? (
+        <FiMenu
+          className="text-2xl cursor-pointer lg:hidden"
+          onClick={toggleNavbar}
+        />
+      ) : (
+        <IoClose
+          className="text-2xl cursor-pointer lg:hidden"
+          onClick={toggleNavbar}
+        />
+      )}
+    </div>
+  </div>
+  <div>
+    <ul>
+      {SideNavMenu.map((val, index) => (
+        <li
+          key={index}
+          onClick={() => handleClick({ val, index })}
+          className={`${
+            active == index ? "bg-[#FCDFD4] ring-[#E84526]" : ""
+          } py-4 hover:ring-[#E84526] hover:ring-2 hover:bg-[#FCDFD4] px-6`}
+        >
+          <Link href={val.path} className="flex gap-3 items-center">
+            <Image src={val.icon} alt={val.name} /> <p>{val.name}</p>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  </div>
+  <div className="flex flex-col gap-3 items-center justify-center">
+    <div className="flex gap-3 pb-4 items-center">
+      <div className="rounded-full h-8 w-8 bg-[#FCDFD4] ring-[#F25E26]">
+        <Image src={user_img} alt="dp" />
+      </div>
+      <div>
+        <h2 className="text-[#2A2A2A]">{`${userInfo?.data?.first_name}`}</h2>
+        <p className="text-sm">{`${userInfo?.data?.email}`}</p>
+      </div>
+    </div>
+    <div
+      className="cursor-pointer flex gap-2 items-center text-[#F25E26]"
+      onClick={openModal}
+    >
+      <CiLogout className="text-2xl text-[#F25E26]" />
+      <p className="">Sign Out</p>
+    </div>
+  </div>
+</nav>
+
 
         {signout && (
           <div className="flex absolute top-0">
