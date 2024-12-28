@@ -13,6 +13,9 @@ import { useMutateData } from "@/hooks/useMutateData";
 import { Modal } from "@/app/dashboard/components/Modal";
 import signoutImage from "@/app/asset/signout.svg";
 import user_img from "@/app/asset/user.png";
+import { userProfile } from "@/store/store";
+import Cookies from 'js-cookie';
+import { useGetDatanew } from "@/hooks/useGetData";
 
 type MenuState = number | null;
 type handleProp = {
@@ -30,6 +33,13 @@ export const SideNav = () => {
   const [active, setActive] = useState<MenuState>(0);
   const [signout, setSignout] = useState<boolean>(false);
   const router = useRouter();
+
+   const [userToken, setUserToken] = useState(Cookies.get('token'))
+
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/user/view_profile/`;
+
+  const { data: userInfo, isLoading: userLoading } = useGetDatanew(url, 'get_user_details', userToken || " ");
+
 
   const handleClick = ({
     val,
@@ -82,12 +92,12 @@ export const SideNav = () => {
               {/* if NavbarOpen is true then show close button else show menu button */}
               {isNavbarOpen ? (
                 <FiMenu
-                  className="text-2xl cursor-pointer lg:hidden"
+                  className="text-2xl cursor-pointer lg:block xl:hidden 2xl:hidden"
                   onClick={toggleNavbar}
                 />
               ) : (
                 <IoClose
-                  className="text-2xl cursor-pointer lg:hidden"
+                  className="text-2xl cursor-pointer lg:block xl:hidden 2xl:hidden"
                   onClick={toggleNavbar}
                 />
               )}
@@ -122,10 +132,11 @@ export const SideNav = () => {
               </div>
               <div>
                 <h2 className="text-[#2A2A2A]">
-                  {isLoggedIn ? `${user?.data.first_name}` : "Admin"}
+
+               { `${userInfo?.data?.first_name}` }
                 </h2>
                 <p className="text-sm">
-                  {isLoggedIn ? `${user?.data.email}` : "admin@ajiroba.com"}
+                  { `${userInfo?.data?.email}` }
                 </p>
               </div>
             </div>

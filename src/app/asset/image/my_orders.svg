@@ -1,0 +1,11 @@
+<svg width="30" height="32" viewBox="0 0 30 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5 25V1H29V25C29 27.9453 26.612 30.3333 23.6667 30.3333" stroke="#888888" stroke-width="2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M18.3333 25H1C1 27.9453 3.388 30.3333 6.33333 30.3333H23.6667C20.7213 30.3333 18.3333 27.9453 18.3333 25Z" stroke="#888888" stroke-width="2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M15.668 13H23.668" stroke="#888888" stroke-width="2" stroke-miterlimit="10" stroke-linejoin="round"/>
+<path d="M10.332 13H12.9987" stroke="#888888" stroke-width="2" stroke-miterlimit="10" stroke-linejoin="round"/>
+<path d="M15.668 18.3359H23.668" stroke="#888888" stroke-width="2" stroke-miterlimit="10" stroke-linejoin="round"/>
+<path d="M10.332 18.3359H12.9987" stroke="#888888" stroke-width="2" stroke-miterlimit="10" stroke-linejoin="round"/>
+<path d="M15.668 7.66406H23.668" stroke="#888888" stroke-width="2" stroke-miterlimit="10" stroke-linejoin="round"/>
+<path d="M10.332 7.66406H12.9987" stroke="#888888" stroke-width="2" stroke-miterlimit="10" stroke-linejoin="round"/>
+<path d="M18.3333 25H1C1 27.9453 3.388 30.3333 6.33333 30.3333H23.6667C20.7213 30.3333 18.3333 27.9453 18.3333 25Z" fill="#888888"/>
+</svg>

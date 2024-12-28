@@ -1,0 +1,30 @@
+/* In your CSS file (e.g., styles.css) */
+.select-item-hover:hover {
+  background-color: #fcdfd4;
+  /* Change this to your desired hover color */
+}
+
+/* input { */
+/* display: none; */
+/* } */
+
+/* App.css */
+
+/* .no-hover-input:hover { */
+/* background-color: transparent !important; */
+/* box-shadow: none !important; */
+/* } */
+
+/* Define styles for the Input component */
+.no-hover-input {
+  border-color: transparent !important;
+}
+
+.no-hover-input:hover {
+  border-color: transparent !important;
+}
+
+.no-hover-input:focus {
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
