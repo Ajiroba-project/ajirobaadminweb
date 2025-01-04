@@ -1,9 +1,12 @@
 
+'use client';
 import Image from "next/image";
 import { Poppins } from "next/font/google";
-import { Fragment } from "react";
+import { Fragment, useMemo, useState } from "react";
 import Link from "next/link"
 import { MdOutlineEdit } from "react-icons/md";
+import { Pagination } from "@/app/components/Pagination";
+import { div } from "framer-motion/m";
 
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "900"] });
 type cardProps = {
@@ -44,38 +47,63 @@ export const Card = ({ title, object }: cardProps) => {
 
 export const ProductListCard = ({ object }: cardProps) => {
 
+    const [currentPage, setCurrentPage] = useState<number>(0);
+  const [filteredData, setFilteredData] = useState<any>([]);
+  const [itemsPerPage] = useState<number>(12);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+
+
+   useMemo(() => {
+    if (object) {
+      const filteredProducts = object.slice(
+        currentPage * itemsPerPage,
+        (currentPage + 1) * itemsPerPage
+      );
+      setFilteredData(filteredProducts);
+    }
+  }, [currentPage, itemsPerPage, object]);
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const pageCount = Math.ceil((object?.length || 0) / itemsPerPage);
+
   return (
-    <section className="py-4 grid lg:grid-cols-3 gap-4 w-full">
+
+    <div>
+
+ <section className="py-4 grid lg:grid-cols-3 gap-4 w-full">
       {object?.map((val, index) => (
         <Fragment key={index}>
           <div className="border rounded-lg p-4">
             <div className="flex items-center justify-between">
               <p className="font-bold text-lg">{val.name}</p>
               <Image
-                src={""}
+                src={"https://owayo-cdn.com/cdn-cgi/image/format=auto,fit=contain,width=490/newhp/img/productHome/productSeitenansicht/productservice/tshirts_classic_herren_basic_productservice/st2020_whi.png"}
                 alt="new"
-                height={30}
-                width={30}
+                height={50}
+                width={50}
                 className="rounded-full "
               />
             </div>
 
-            <div className="py-2 mt-5 grid-cols-2 grid gap-y-2">
-              <h4 className="text-[#A09F9F]">Category:</h4>
-              <p>{val.category}</p>
-              <h4 className="text-[#A09F9F]">Sub category:</h4>
-              <p>{val.subcategory}</p>
-              <h4 className="text-[#A09F9F]">Selling Price:</h4>
-              <p>{val.price}</p>
-              <h4 className="text-[#A09F9F]">Discount Price:</h4>
-              <p>{val.discount}</p>
-              <h4 className="text-[#A09F9F]">Product Description:</h4>
-              <p>{val.description}</p>
+            <div className="py-2 mt-5 grid-cols-2 grid gap-y-2 gap-x-3">
+              <h4 className="text-[#A09F9F] text-base font-Poppins">Category:</h4>
+              <p className="text-sm font-Poppins text-[#2A2A2A] " >{val.category}</p>
+              <h4 className="text-[#A09F9F] text-base font-Poppins">Sub category:</h4>
+              <p className="text-sm font-Poppins text-[#2A2A2A] ">{val.subcategory}</p>
+              <h4 className="text-[#A09F9F] text-base font-Poppins">Selling Price:</h4>
+              <p className="text-sm font-Poppins text-[#2A2A2A] ">{val.price}</p>
+              <h4 className="text-[#A09F9F] text-base font-Poppins">Discount Price:</h4>
+              <p className="text-sm font-Poppins text-[#2A2A2A] ">{val.discount}</p>
+              <h4 className="text-[#A09F9F] text-base font-Poppins">Product Description:</h4>
+              <p className="text-sm font-Poppins text-[#2A2A2A] ">{val.description}</p>
 
               <div className="pt-4 ">
                 <Link
                   href={`dashboard/product-details/edit/${val.name}`}
-                  className="bg-[#FCDFD4] flex gap-2 rounded-lg  p-2 items-center "
+                  className="bg-[#FCDFD4] flex gap-2 rounded-lg  p-2 font-Poppins text-sm items-center "
                 >
                   <MdOutlineEdit className="text-lg" />
                   Edit product
@@ -86,52 +114,83 @@ export const ProductListCard = ({ object }: cardProps) => {
         </Fragment>
       ))}
     </section>
+
+       <Pagination
+            pageCount={pageCount}
+            onPageChange={({ selected }) => handlePageChange(selected)}
+            className='my-6 flex items-center justify-center gap-4 '
+          />
+    </div>
+
+
   );
 };
 
 export const AuctionListCard = ({ object }: cardProps) => {
+  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [filteredData, setFilteredData] = useState<any>([]);
+  const [itemsPerPage] = useState<number>(12);
+
+  useMemo(() => {
+    if (object) {
+      const filteredProducts = object.slice(
+        currentPage * itemsPerPage,
+        (currentPage + 1) * itemsPerPage
+      );
+      setFilteredData(filteredProducts);
+    }
+  }, [currentPage, itemsPerPage, object]);
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const pageCount = Math.ceil((object?.length || 0) / itemsPerPage);
+
   return (
-    <section className="py-4 grid lg:grid-cols-3 gap-4 w-full">
-      {object?.map((val, index) => (
+
+    <div>
+ <section className="py-4 grid lg:grid-cols-3 gap-4 w-full">
+      {filteredData?.map((val: any, index: number) => (
         <Fragment key={index}>
           <div className="border rounded-lg p-4">
             <div className="flex items-center justify-between">
               <p className="font-bold text-lg">{val.name}</p>
-              <Image
-                src={""}
+               <Image
+                src={"https://owayo-cdn.com/cdn-cgi/image/format=auto,fit=contain,width=490/newhp/img/productHome/productSeitenansicht/productservice/tshirts_classic_herren_basic_productservice/st2020_whi.png"}
                 alt="new"
-                height={30}
-                width={30}
-                className="rounded-full"
+                height={50}
+                width={50}
+                className="rounded-full "
               />
             </div>
 
             <div className="py-2 mt-5 grid-cols-2 grid gap-y-2">
-              <h4 className="text-[#A09F9F]">Category:</h4>
+              <h4 className="text-[#A09F9F] text-base font-Poppins">Category:</h4>
               <p>{val.category}</p>
-              <h4 className="text-[#A09F9F]">Sub category:</h4>
+              <h4 className="text-[#A09F9F] text-base font-Poppins">Sub category:</h4>
               <p>{val.subcategory}</p>
-              <h4 className="text-[#A09F9F]">Date of auction:</h4>
+              <h4 className="text-[#A09F9F] text-base font-Poppins">Date of auction:</h4>
               <p>{val.price}</p>
-              <h4 className="text-[#A09F9F]">Time:</h4>
+              <h4 className="text-[#A09F9F] text-base font-Poppins">Time:</h4>
               <p>{val.discount}</p>
-              <h4 className="text-[#A09F9F]">Duration:</h4>
+              <h4 className="text-[#A09F9F] text-base font-Poppins">Duration:</h4>
               <p>{val.duration}</p>
-              <h4 className="text-[#A09F9F]">Total number of bidders:</h4>
+              <h4 className="text-[#A09F9F] text-base font-Poppins">Total number of bidders:</h4>
               <p>{val.TNB}</p>
-              <h4 className="text-[#A09F9F]">No of ticket sold:</h4>
+              <h4 className="text-[#A09F9F] text-base font-Poppins">No of ticket sold:</h4>
               <p>{val.NTS}</p>
-              <h4 className="text-[#A09F9F]">Ticket Amount:</h4>
+              <h4 className="text-[#A09F9F] text-base font-Poppins">Ticket Amount:</h4>
               <p>{val.ticket_amount}</p>
-              <h4 className="text-[#A09F9F] ">Total Amount:</h4>
+             <h4 className="text-[#A09F9F] text-base font-Poppins">Total Amount:</h4>
               <p className="text-rose-500 font-bold">{val.total_amount}</p>
 
-              <div className="pt-4 ">
+               <div className="pt-4 ">
                 <Link
-                  href={`dashboard/product-details/auction-edit/${val.name}`}
-                  className="bg-[#FCDFD4] flex gap-2 rounded-lg  p-2 items-center  md:text-sm sm:text-sm"
+                  href={`dashboard/product-details/edit/${val.name}`}
+                  className="bg-[#FCDFD4] flex gap-2 rounded-lg  p-2 font-Poppins text-sm items-center "
                 >
-                  <MdOutlineEdit className="text-lg md:text-md" />
+                  <MdOutlineEdit className="text-lg" />
                   Edit product
                 </Link>
               </div>
@@ -139,6 +198,17 @@ export const AuctionListCard = ({ object }: cardProps) => {
           </div>
         </Fragment>
       ))}
+
+
     </section>
+
+       <Pagination
+            pageCount={pageCount}
+            onPageChange={({ selected }) => handlePageChange(selected)}
+            className='my-6 flex items-center justify-center gap-4 '
+          />
+    </div>
+
+
   );
 };

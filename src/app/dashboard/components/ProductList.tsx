@@ -37,14 +37,14 @@ export const ProductList = () => {
     //     return product.date === dateVal;
     //   });
     // }
-    
+
     setFilteredData(filteredProducts);
   }, []);
 
   return (
     <section className="flex flex-col">
       <ListFilter onSearch={handleSearch} />
-      <div className="my-4">
+      <div className="">
         <ProductListCard object={filteredData} />
       </div>
     </section>

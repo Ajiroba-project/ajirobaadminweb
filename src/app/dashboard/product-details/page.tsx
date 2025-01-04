@@ -13,85 +13,222 @@ import { useRouter } from "next/navigation";
 const Page = () => {
   const [selectedImg, setSelectedImg] = useState<any>([]);
 
+  const [formData, setFormData] = useState({
+    productName: "",
+    subCategory: "",
+    description: "",
+    lastPrice: "",
+    ticketPrice: "",
+    startTime: "",
+    endTime: "",
+    date: "",
+    duration: "",
+  });
+
   const router = useRouter();
 
-  return (
-    <section className="flex flex-col">
-      <div className="w-full bg-gray-100">
-        <RegistrationHeader />
-        <p className="lg:px-14 px-7  text-[#F25E26] underline cursor-pointer">
-          Back
-        </p>
-      </div>
-      <span className="w-full bg-gray-100">
-        <h1 className="text-2xl text-center py-2">Regular Product Upload</h1>
-      </span>
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
-      <form className="sm:flex-col md:flex-row flex-col lg:flex-row flex mx-8 gap-4 py-8 justify-center items-center container ">
-        <div className="">
-          <div className="grid grid-rows-3 grid-flow-col gap-4 relative">
-            {/* One column on smaller screens, three on medium+ */}
-            {selectedImg &&
-              selectedImg.map((val: string, key: number) => (
-                <div
-                  key={key}
-                  className={`col-span-1 ${
-                    key === selectedImg.length - 1 && "row-span-3 col-span-3"
-                  }`}
-                >
-                  {/* Always col-span-1, md:col-span-2 for last image */}
-                  <Image
-                    src={val}
-                    alt="preview"
-                    width={80}
-                    height={80}
-                    className=""
-                  />
-                  {/* <span
-                        className="absolute top-0 right-0 bg-rose-400 text-white rounded-full text-xs p-2 cursor-pointer"
-                        onClick={() => RemoveImg(val)}
-                    >
-                        X
-                    </span> */}
-                </div>
-              ))}
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Form Data Submitted:", formData);
+
+    // Add logic to send data to the backend
+    alert("Product Updated Successfully!");
+  };
+
+
+  return (
+   <div className="min-h-screen bg-[#F6F6F6] p-4 lg:p-8">
+      <button
+        className="text-red-500 mb-4 text-sm hover:underline"
+        onClick={() => router.back()}
+      >
+        Back
+      </button>
+      <h1 className="text-2xl font-bold text-center mb-6">Auction Product Upload</h1>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Left Section - Image Gallery */}
+        <div>
+          <div className="mb-4">
+            <img
+              src="https://via.placeholder.com/400"
+              alt="Product"
+              className="w-full rounded-lg"
+            />
+          </div>
+          <div className="grid grid-cols-5 gap-2">
+            {[...Array(5)].map((_, index) => (
+              <img
+                key={index}
+                src="https://via.placeholder.com/100"
+                alt={`Thumbnail ${index}`}
+                className="w-full h-20 rounded-lg object-cover"
+              />
+            ))}
           </div>
         </div>
 
-        {/* <div className="flex gap-2">
-                    <InputField label="Product name" type="text" name="product name" />
-                    <SelectField label="Sub categories" name="sub categories" />
-                    <TextAreaField label="description" name="textarea" />
-                    <div className="flex gap-2 py-8 flex-col lg:flex-row md:flex-row ">
-                        <InputField
-                        name="selling_price"
-                        label="Selling Price"
-                        type="text"
-                        placeholder="₦1234"
-                        // register={register}
-                        // errors={errors}
-                        classname="px-5 h-12 focus:text-black border rounded "
-                        />
-                        <InputField
-                        name="discount"
-                        label="Discount"
-                        type="text"
-                        placeholder="₦100"
-                        // register={register}
-                        // errors={errors}
-                        classname="px-5 h-12 focus:text-black border rounded"
-                        />
-                    </div>
-                </div> */}
-      </form>
+        {/* Right Section - Form */}
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white p-6 rounded-lg shadow-md space-y-4"
+        >
+          <div>
+            <label htmlFor="productName" className="block text-sm font-semibold">
+              Product Name:
+            </label>
+            <input
+              type="text"
+              name="productName"
+              value={formData.productName}
+              onChange={handleInputChange}
+              className="w-full border rounded-lg p-2 mt-1"
+              placeholder="Enter product name"
+              required
+            />
+          </div>
 
-      <DefaultButton
-        text={"Upload"}
-        type={"submit"}
-        handleClick={() => null}
-        className="bg-[#FCDFD4] p-4 text-sm w-[20em]"
-      />
-    </section>
+          <div>
+            <label htmlFor="subCategory" className="block text-sm font-semibold">
+              Sub Category:
+            </label>
+            <select
+              name="subCategory"
+              value={formData.subCategory}
+              onChange={handleInputChange}
+              className="w-full border rounded-lg p-2 mt-1"
+              required
+            >
+              <option value="" disabled>
+                Select a sub-category
+              </option>
+              <option value="Ralph Lauren Men T-shirt">Ralph Lauren Men T-shirt</option>
+              {/* Add more options as needed */}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="description" className="block text-sm font-semibold">
+              Description:
+            </label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              className="w-full border rounded-lg p-2 mt-1"
+              rows={3}
+              placeholder="Enter product description"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="lastPrice" className="block text-sm font-semibold">
+                Last Price:
+              </label>
+              <input
+                type="text"
+                name="lastPrice"
+                value={formData.lastPrice}
+                onChange={handleInputChange}
+                className="w-full border rounded-lg p-2 mt-1"
+                placeholder="Enter last price"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="ticketPrice" className="block text-sm font-semibold">
+                Ticket Price:
+              </label>
+              <input
+                type="text"
+                name="ticketPrice"
+                value={formData.ticketPrice}
+                onChange={handleInputChange}
+                className="w-full border rounded-lg p-2 mt-1"
+                placeholder="Enter ticket price"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="startTime" className="block text-sm font-semibold">
+                Start Time:
+              </label>
+              <input
+                type="time"
+                name="startTime"
+                value={formData.startTime}
+                onChange={handleInputChange}
+                className="w-full border rounded-lg p-2 mt-1"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="endTime" className="block text-sm font-semibold">
+                End Time:
+              </label>
+              <input
+                type="time"
+                name="endTime"
+                value={formData.endTime}
+                onChange={handleInputChange}
+                className="w-full border rounded-lg p-2 mt-1"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="date" className="block text-sm font-semibold">
+                Date:
+              </label>
+              <input
+                type="date"
+                name="date"
+                value={formData.date}
+                onChange={handleInputChange}
+                className="w-full border rounded-lg p-2 mt-1"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="duration" className="block text-sm font-semibold">
+                Duration:
+              </label>
+              <input
+                type="text"
+                name="duration"
+                value={formData.duration}
+                onChange={handleInputChange}
+                className="w-full border rounded-lg p-2 mt-1"
+                placeholder="e.g., 2 hrs : 00 mins"
+                required
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-[#F6CDC7] text-white font-semibold py-2 rounded-lg hover:bg-[#E4BDB9]"
+          >
+            Update
+          </button>
+        </form>
+      </div>
+    </div>
   );
 };
 

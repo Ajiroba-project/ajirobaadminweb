@@ -48,11 +48,11 @@ export const HeaderNavMenu = [
 }, {
     name:"Profile",
     path:"#",
-    
+
 },  {
     name:"Live Chat",
     path:"#",
-    
+
 }]
 
 export const regularDetails =[
@@ -110,7 +110,7 @@ export const users =[{
     ticketPurchase:"5",
     totalAmount:"1000",
     photo:user_img
-}, 
+},
 {
     first_name:"John ",
     surname:"Deo",
@@ -232,6 +232,10 @@ export const ProductLists =[
 
 
 ]
+
+
+
+
 export const AuctionLists = [
   {
     name: "Apple",

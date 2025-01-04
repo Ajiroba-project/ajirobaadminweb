@@ -9,15 +9,13 @@ export const Product = () => {
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
 
   return (
-    <section
-       className={` ${
-          !isNavbarOpen
-            ? "lg:mt-[15%] xl:mt-[15%] md:mt-[15%] lg:ml-[20%] xl:ml-[20%] mr-[3%] md:ml-[20] mt-[38%]"
-            : "mt-[30%] md:mt-[25%] mx-[5%] lg:mt-[10%] justify-center"
-        }`}
-    >
+   <section
+        className={`my-10 px-20 ${
+          isNavbarOpen ? "justify-center items-center " : ""
+        } flex-col flex`}
+      >
       <div className="flex items-center">
-        <div
+       {/*  <div
           className={`${
             active == 0 ? "bg-[#FCDFD4]" : ""
           } border-2 border-gray-100 p-3 text-sm rounded-lg cursor-pointer w-[10em] `}
@@ -32,7 +30,29 @@ export const Product = () => {
           onClick={() => setActive(1)}
         >
           Auction
+        </div> */}
+
+         <div className={` flex  items-center mb-4  `}>
+          <div
+            className={`${
+              active == 0 ? "bg-[#FCDFD4]" : ""
+            } border-2 border-gray-100 p-4 text-sm rounded-lg cursor-pointer w-[14em] `}
+            onClick={() => setActive(0)}
+          >
+            Regular
+          </div>
+          <div
+            className={`${
+              active == 1 ? "bg-[#FCDFD4]" : ""
+            } border-2 border-[#D2D2D2]] p-4 text-sm rounded-lg cursor-pointer w-[14em] `}
+            onClick={() => setActive(1)}
+          >
+            Auction
+          </div>
+
+
         </div>
+
       </div>
 
       {active == 0 ? <ProductList /> : <AuctionList />}
