@@ -19,8 +19,6 @@ import { Modal } from "./Modal";
 import successIcon from "@/app/asset/signout.svg";
 import "react-toastify/dist/ReactToastify.css";
 import Image from "next/image";
-import { div } from "framer-motion/m";
-import { tr } from "framer-motion/client";
 
 export const Auction = () => {
   const router = useRouter();
@@ -347,94 +345,12 @@ export const Auction = () => {
       </label>
     </div>
 
-{
-  selectedOption === "Upload Now" ? (
-
-  <div>
-    <h1 className=" text-sm font-Poppins text-gray-400 mb-4" >Date & Time</h1>
-     <div className="flex gap-4  flex-col lg:flex-row md:flex-row border border-gray-300 rounded-lg px-4 py-4 ">
-      <InputField
-        name="start_date"
-        label="Date"
-        type="date"
-        placeholder="Start Date"
-        isdisabled={true}
-
-        register={register}
-        errors={errors}
-        classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-      />
-       <InputField
-        name="start_time"
-        label="Start Time"
-        type="time"
-      isdisabled={true}
-        placeholder="End Date"
-        register={register}
-        errors={errors}
-        classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-      />
-      <InputField
-        name="end_time"
-        label="End Time"
-        type="time"
-        placeholder="End Date"
-        register={register}
-        errors={errors}
-        classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-      />
-
-    </div>
-       <h1 className=" py-4 flex  justify-center items-center text-sm font-Poppins text-gray-400 mb-4" >Duration: 2hr: 00 mins</h1>
 
 
 
-  </div>
-
-
-  )  : (
-       <div>
-
-     <div className="flex gap-4  flex-col lg:flex-row md:flex-row border border-gray-300 rounded-lg px-4 py-4 ">
-      <InputField
-        name="start_date"
-        label="Date"
-        type="date"
-        placeholder="Start Date"
-
-        isdisabled={false}
-        register={register}
-        errors={errors}
-        classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-      />
-       <InputField
-        name="start_time"
-        label="Start Time"
-        type="time"
-      isdisabled={false}
-        placeholder="End Date"
-        register={register}
-        errors={errors}
-        classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-      />
-      <InputField
-        name="end_time"
-        label="End Time"
-        type="time"
-        placeholder="End Date"
-        register={register}
-        errors={errors}
-        classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-      />
-
-    </div>
-       <h1 className=" py-4 flex  justify-center items-center text-sm font-Poppins text-gray-400 mb-4" >Duration: 2hr: 00 mins</h1>
 
 
 
-  </div>  )
-
-}
 
 
           <div className={`py-4`}>

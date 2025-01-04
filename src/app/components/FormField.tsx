@@ -89,7 +89,7 @@ export const CheckboxField = ({
   );
 };
 
-export const InputField =({label, type, placeholder, name, register, errors, showPassword, classname, value}:inputProps)=>{
+export const InputField =({label, type, placeholder, name, register, errors, showPassword, classname, value, isdisabled}:inputProps)=>{
     const [toggle, setToggle] = useState(showPassword)
 
     const handleTogglePasswordVisibility=()=>{
@@ -100,8 +100,13 @@ export const InputField =({label, type, placeholder, name, register, errors, sho
         <>
         <div className="relative flex flex-col">
             <label className="py-2 font-Poppins text-sm text-[#353131]">{label}</label>
-            <input name={name} type={toggle ? "text" :type} placeholder={placeholder} className={`${classname ? classname :"px-5 h-12 focus:text-black border rounded w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px]"}`}
-             {...register(name, { required: true })}/>
+            <input name={name} type={toggle ? "text" :type}
+             placeholder={placeholder}
+              className={`${classname ? classname :"px-5 h-12 focus:text-black border rounded w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px]"}`}
+             {...register(name, { required: true })}
+
+              disabled={isdisabled}
+             />
              {showPassword && (
              <span onClick={handleTogglePasswordVisibility} className={`cursor-pointer absolute top-14 right-3 text-xl transition duration-200 ${toggle ? "text-blue-500" : "text-gray-400"
                 }`}>{toggle ? <FaRegEye /> : <FaRegEyeSlash />}
