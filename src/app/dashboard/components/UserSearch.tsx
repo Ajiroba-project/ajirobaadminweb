@@ -16,7 +16,7 @@ export const UserSearch: React.FC<UserSearchProps> = () => {
     const [userInfo, setUserInfo] = useState <any|null>();
     const [active, setActive]=useState<number>()
 
-    
+
     const searchQuery = (value: string | undefined) => {
         if (!value) {
             // If search value is empty, set filtered users to the entire user list
@@ -42,7 +42,7 @@ export const UserSearch: React.FC<UserSearchProps> = () => {
     return (
       <section className="flex flex-col lg:flex-row gap-4 my-8 h-full ">
         <div className="bg-[#FCDFD433]  rounded-lg ">
-          <p className="text-xl p-4 ">User</p>
+          <p className="text-xl p-4 ">Users</p>
           <div className="relative p-4">
             <span className="absolute mr-6 mt-3">
               <CiSearch className="text-xl mx-2" />

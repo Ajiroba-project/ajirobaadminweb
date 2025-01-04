@@ -1,4 +1,5 @@
 import {
+  CheckboxField,
   InputField,
   SelectField,
   TextAreaField,
@@ -138,7 +139,7 @@ export const Regular = () => {
     <>
       <ToastContainer closeOnClick />
       <section
-        className={`my-10 ${
+        className={`my-10 px-20 ${
           isNavbarOpen ? "justify-center items-center " : ""
         } flex-col flex`}
       >
@@ -185,6 +186,48 @@ export const Regular = () => {
                   {errors?.regular_media?.message}
                 </div>
               </div>
+
+
+  <div className="flex gap-12 mb-4 flex-col lg:flex-row md:flex-row ">
+              <CheckboxField
+        label=""
+        name="topdeals"
+        register={register}
+        errors={errors}
+        options={["Top Deals"]}
+        classname="mt-4"
+      />
+                 <CheckboxField
+        label=""
+        name="featured"
+        register={register}
+        errors={errors}
+        options={["Featured"]}
+        classname="mt-4"
+      />
+              </div>
+
+              <div className="flex gap-2  flex-col lg:flex-row md:flex-row ">
+                <InputField
+                  name="quantity"
+                  label="Quantity"
+                  type="number"
+               /*    placeholder="₦1234" */
+                  register={register}
+                  errors={errors}
+
+            classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                />
+                 <InputField
+                  name="weight"
+                  label="Weight"
+                  type="text"
+                  placeholder="50kg"
+                  register={register}
+                  errors={errors}
+                 classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                />
+              </div>
               <div className="flex gap-2 py-8 flex-col lg:flex-row md:flex-row ">
                 <InputField
                   name="selling_price"
@@ -193,7 +236,8 @@ export const Regular = () => {
                   placeholder="₦1234"
                   register={register}
                   errors={errors}
-                  classname="px-5 h-12 focus:text-black border rounded "
+
+            classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
                 <InputField
                   name="discount"
@@ -202,9 +246,12 @@ export const Regular = () => {
                   placeholder="₦100"
                   register={register}
                   errors={errors}
-                  classname="px-5 h-12 focus:text-black border rounded"
+                 classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
               </div>
+
+
+
             </div>
 
             <div className="flex items-center">
@@ -216,13 +263,16 @@ export const Regular = () => {
                   placeholder="Rice"
                   register={register}
                   errors={errors}
+                  classname={`text-sm w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
                 <SelectField
                   name="product_category"
-                  label="Product Category"
+                  label="Category"
                   register={register}
                   errors={errors}
                   options={categories}
+
+                 classname={`text-sm  xl:w-[298px] 2xl:w-[298px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
                 <SelectField
                   name="sub_category"
@@ -230,6 +280,9 @@ export const Regular = () => {
                   register={register}
                   errors={errors}
                   options={subcategories}
+                 classname={`text-sm  xl:w-[298px] 2xl:w-[298px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+
+
                 />
                 <TextAreaField
                   name="description"
@@ -237,6 +290,7 @@ export const Regular = () => {
                   register={register}
                   errors={errors}
                   placeholder={"Describe your product here..."}
+                     classname={`resize-none px-5 h-24 focus:text-black border rounded w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] p-4`}
                 />
               </div>
             </div>
@@ -248,7 +302,7 @@ export const Regular = () => {
               text={status === "pending" ? "loading..." : "Upload"}
               type="submit"
               handleClick={() => null}
-              className=" bg-[#FCDFD4] p-4 text-sm w-[20em] hover:bg-[#F25E26] hover:text-white rounded-lg"
+              className=" bg-[#FCDFD4] p-4 text-sm w-[10em] hover:bg-[#F25E26] hover:text-white rounded-lg"
             />
           </div>
         </form>

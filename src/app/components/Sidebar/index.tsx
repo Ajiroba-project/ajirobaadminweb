@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import {
-  FiShield,
-  FiMonitor,
-  FiUser,
-  FiSettings,
-  FiHome,
-} from "react-icons/fi";
+
 import { IoIosArrowRoundBack } from "react-icons/io";
 import "./style.css";
 import { CiHome, CiLogout } from "react-icons/ci";
@@ -129,83 +123,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
       <div className="py-8 flex items-center justify-center bg-[#F6F6F6]  shadowCard rounded-none border-none h-[4rem]">
         <div className=" flex items-center justify-center bg-[#F6F6F6]  shadowCard rounded-none border-none h-[4rem]">
-         {/*  <Link href="/" className="text-2xl font-bold text-gray-800">
-            <span className="text-gray-800 txtNormal">Data</span>
-            <span className="text-green-500">mellon</span>
-          </Link> */}
+
 
            <Link href="/">
               <Image src={Brand} alt="brand logo" />
             </Link>
         </div>
       </div>
-
-   {/*   <nav className="mt-4 flex flex-col space-y-2 px-4">
-        <Link href="/" className=" flex items-center mb-4 gap-2 px-4 ">
-          <div className="text-[#353A44] txtNormal mt-1 txtNormal">
-            <IoIosArrowRoundBack />
-          </div>
-          <div className="text-[#353A44] txtNormal text-sm cursor-pointer">
-            Back
-          </div>
-        </Link>
-
-        <Link
-          href="/fraud-detection"
-          className={` text-sm rounded-lg flex items-center px-4 py-2  ${
-            isActive("/fraud-detection") ? "bg-[#75B748] text-white" : ""
-          }`}
-        >
-          <div className="mr-3    ">
-            <CiHome className="text-base" />
-          </div>
-          Home
-        </Link>
-        <Link
-          href="/fraud-intelligence"
-          className={` text-sm rounded-lg flex items-center px-4 py-2 text-[#6C7688] txtNormal  ${
-            isActive("/fraud-intelligence") ? "bg-[#75B748] text-white" : ""
-          }`}
-        >
-          <FiShield className="mr-3  txtNormal" />
-          Fraud Intelligence
-        </Link>
-        <Link
-          href="/transaction-monitoring"
-          className={` text-sm rounded-lg flex items-center px-4 py-2 text-[#6C7688] txtNormal  ${
-            isActive("/transaction-monitoring") ? "bg-[#75B748] text-white" : ""
-          }`}
-        >
-          <FiMonitor className="mr-3" />
-          Transaction Monitoring
-        </Link>
-        <Link
-          href="/fraud-user-activity"
-          className={` text-sm rounded-lg flex items-center px-4 py-2 text-[#6C7688] txtNormal  ${
-            isActive("/fraud-user-activity") ? "bg-[#75B748] text-white" : ""
-          }`}
-        >
-          <FiUser className="mr-3" />
-          User Activity & Behaviour
-        </Link>
-        <Link
-          href="/service"
-          className={` text-sm rounded-lg 2xl:hidden md:hidden lg:hidden xl:hidden flex  items-center px-8 py-2 text-[#6C7688] txtNormal  ${
-            isActive("/transaction-monitoring") ? "bg-[#75B748] text-white" : ""
-          }`}
-        >
-          <FiSettings className="mr-3" />
-          Settings
-        </Link>
-
-        <div
-          onClick={() => console.log("logout")}
-          className={` text-sm rounded-lg 2xl:hidden md:hidden lg:hidden xl:hidden flex items-center px-8 py-2 text-[#6C7688] txtNormal`}
-        >
-          <CiLogout className="mr-3" />
-          Logout
-        </div>
-      </nav> */}
 
 
        <nav
@@ -253,6 +177,25 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         </nav>
 
 
+
+ {signout && (
+          <div className="flex absolute top-0">
+            <Modal
+              title="Are you sure you want to sign out"
+              subtitle="you will be logged out of the system"
+              buttoncount={2}
+              buttontext={status == "Pending" ? "Signing out..." : "Yes"}
+              button2text="No"
+              buttonclass="bg-[#FCDFD4] p-5 rounded-lg text-sm hover:shadow w-full px-14"
+              button2class="p-4 rounded-lg border-2 border-[#F25E26] px-14"
+              buttontype="submit"
+              button2type="submit"
+              handleEvent={() => handleSignout(true)}
+              handleEvent2={() => handleSignout(false)}
+              icon={signoutImage}
+            />
+          </div>
+        )}
     </aside>
   );
 };

@@ -9,18 +9,20 @@ export const Upload =()=>{
     const isNavbarOpen = useStore(state=> state.isNavbarOpen)
 
     return (
-      <section
-        className={` ${
-          !isNavbarOpen
-            ? "lg:mt-[15%] xl:mt-[15%] md:mt-[20%] lg:ml-[20%] xl:ml-[20%] mr-[3%] md:ml-[20] mt-[38%]"
-            : "mt-[38%] md:mt-[25%] mx-[5%] lg:mt-[10%] justify-center"
-        }`}
-      >
-        <div className={`${!isNavbarOpen ?"":"justify-center"} flex  items-center `}>
+
+
+ <div>
+
+  <div className="bg-[#F6F6F6] border border-b-[#e9dddd] h-32 flex justify-center items-center sticky top-0 z-20 ">
+      <h1 className="xl:text-2xl 2xl:text-2xl md:text-2xl text-base  leading-tight tracking-tight font-Poppins">Product Upload</h1>
+    </div>
+
+    <section className="mt-6 ">
+        <div className={` flex  items-center px-20 `}>
           <div
             className={`${
               active == 0 ? "bg-[#FCDFD4]" : ""
-            } border-2 border-gray-100 p-3 text-sm rounded-lg cursor-pointer w-[10em] `}
+            } border-2 border-gray-100 p-4 text-sm rounded-lg cursor-pointer w-[14em] `}
             onClick={() => setActive(0)}
           >
             Regular
@@ -28,15 +30,21 @@ export const Upload =()=>{
           <div
             className={`${
               active == 1 ? "bg-[#FCDFD4]" : ""
-            } border-2 border-gray-100 p-3 text-sm rounded-lg cursor-pointer w-[10em] `}
+            } border-2 border-[#D2D2D2]] p-4 text-sm rounded-lg cursor-pointer w-[14em] `}
             onClick={() => setActive(1)}
           >
             Auction
           </div>
+
+
         </div>
 
-        {active == 0 ? <Regular /> : <Auction />}
-      </section>
+
+
+             {active == 0 ? <Regular /> : <Auction />}
+    </section>
+</div>
+
     );
 }
 

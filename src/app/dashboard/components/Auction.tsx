@@ -1,4 +1,5 @@
 import {
+  CheckboxField,
   InputField,
   SelectField,
   TextAreaField,
@@ -124,9 +125,9 @@ export const Auction = () => {
     <>
       <ToastContainer closeOnClick />
       <section
-        className={`my-10 container ${
-          isNavbarOpen ? "justify-center items-center flex-col flex" : ""
-        }`}
+        className={`my-10 px-20 ${
+          isNavbarOpen ? "justify-center items-center " : ""
+        } flex-col flex`}
       >
         <h1
           className={`xl:text-2xl 2xl:text-2xl md:text-2xl text-base font-normal pb-4 leading-tight tracking-tight underline p-3`}
@@ -135,14 +136,18 @@ export const Auction = () => {
         </h1>
         <hr className="w-full h-1 border-[#D2D2D2] rounded"></hr>
 
-        <form onSubmit={handleSubmit(sumbitForm)}>
+
+        <form
+          onSubmit={handleSubmit(sumbitForm)}
+          encType={"multipart/form-data"}
+        >
           <div
             className={`flex gap-8 my-4 lg:flex-row  flex-col-reverse items-center `}
           >
             <div className="">
               <div className="flex flex-col">
                 <label htmlFor="upload-files">
-                  <p className="py-2">Auction Product Upload:</p>
+                  <p className="py-2">Product Upload:</p>
                   <span className="bg-gray-50 relative rounded-md shadow hover:bg-[#FCDFD4] h-[20rem] w-auto flex justify-center items-center cursor-pointer flex-col">
                     <FiUpload className="text-4xl" />
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -161,97 +166,110 @@ export const Auction = () => {
                     max="5"
                     className="pt-6 hidden "
                     multiple
-                    {...register("regular_media", { required: true })}
+                    {...register("auction_media", { required: true })}
                   />
                 </label>
                 <div className="text-xs text-rose-500 pt-1">
-                  {errors?.regular_media?.message}
+                  {errors?.auction_media?.message}
                 </div>
               </div>
-              <div className="flex gap-2 py-8 flex-col lg:flex-row md:flex-row ">
+
+
+  <div className="flex gap-12 mb-4 flex-col lg:flex-row md:flex-row ">
+              <CheckboxField
+        label=""
+        name="topdeals"
+        register={register}
+        errors={errors}
+        options={["Top Deals"]}
+        classname="mt-4"
+      />
+                 <CheckboxField
+        label=""
+        name="featured"
+        register={register}
+        errors={errors}
+        options={["Featured"]}
+        classname="mt-4"
+      />
+              </div>
+
+              <div className="flex gap-2  flex-col lg:flex-row md:flex-row ">
                 <InputField
-                  name="auction_price"
-                  label="Last Price"
+                  name="cost_price"
+                  label="Cost Price"
+                  type="text"
+                   placeholder="₦1234"
+                  register={register}
+                  errors={errors}
+
+            classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                />
+                 <InputField
+                  name="ticket_price"
+                  label="Ticket Price"
                   type="text"
                   placeholder="₦1234"
                   register={register}
                   errors={errors}
-                  classname="px-5 h-12 focus:text-black border rounded "
-                />
-                <InputField
-                  name="ticket_price"
-                  label="Ticket Price"
-                  type="text"
-                  placeholder="₦100"
-                  register={register}
-                  errors={errors}
-                  classname="px-5 h-12 focus:text-black border rounded"
+                 classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
               </div>
+              <div className="flex gap-2 py-2 flex-col lg:flex-row md:flex-row ">
+                <InputField
+                  name="weight"
+                  label="Weight"
+                  type="text"
+                  placeholder="50kg"
+                  register={register}
+                  errors={errors}
+                 classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                />
+
+              </div>
+
+
+
             </div>
 
-            <div className="flex flex-col items-center ">
-              <div className="flex gap-3 flex-col">
+            <div className="flex items-center">
+              <div className="flex-col flex gap-3">
                 <InputField
-                  name="auction_name"
+                  name="product_name"
                   label="Product Name"
                   type="text"
                   placeholder="Rice"
                   register={register}
                   errors={errors}
+                  classname={`text-sm w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
                 <SelectField
-                  name="auction_category"
-                  label="Product Category"
+                  name="product_category"
+                  label="Category"
                   register={register}
                   errors={errors}
                   options={categories}
+
+                 classname={`text-sm  xl:w-[298px] 2xl:w-[298px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                />
+                <SelectField
+                  name="sub_category"
+                  label="Sub Category"
+                  register={register}
+                  errors={errors}
+                  options={subcategories}
+                 classname={`text-sm  xl:w-[298px] 2xl:w-[298px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+
+
                 />
                 <TextAreaField
                   name="description"
-                  label="Auction Description"
+                  label="Product Description"
                   register={register}
                   errors={errors}
                   placeholder={"Describe your product here..."}
+                     classname={`resize-none px-5 h-24 focus:text-black border rounded w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] p-4`}
                 />
-                <div className="grid grid-cols-2 gap-3">
-                  <InputField
-                    name="auction_start"
-                    label="Start Time"
-                    type="time"
-                    placeholder="2:00pm"
-                    register={register}
-                    errors={errors}
-                    classname="px-2 h-12 focus:text-black border rounded"
-                  />
-                  <InputField
-                    name="auction_endtime"
-                    label="End Time"
-                    type="time"
-                    placeholder="6:00pm"
-                    register={register}
-                    errors={errors}
-                    classname="px-2 h-12 focus:text-black border rounded"
-                  />
-                  <InputField
-                    name="auction_date"
-                    label="Date"
-                    type="date"
-                    placeholder="2:00pm"
-                    register={register}
-                    errors={errors}
-                    classname="px-2 h-12 focus:text-black border rounded"
-                  />
-                  <InputField
-                    name="endtime"
-                    label="Duration"
-                    type="text"
-                    placeholder="30min"
-                    register={register}
-                    errors={errors}
-                    classname="px-2 h-12 focus:text-black border rounded"
-                  />
-                </div>
               </div>
             </div>
           </div>
@@ -262,7 +280,7 @@ export const Auction = () => {
               text={status === "pending" ? "loading..." : "Upload"}
               type="submit"
               handleClick={() => null}
-              className=" bg-[#FCDFD4] p-4 text-sm w-[20em] hover:bg-[#F25E26] rounded-lg"
+              className=" bg-[#FCDFD4] p-4 text-sm w-[10em] hover:bg-[#F25E26] hover:text-white rounded-lg"
             />
           </div>
         </form>

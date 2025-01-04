@@ -40,44 +40,11 @@ const Page = () => {
   }, [setNavbarOpen]);
 
   return (
- /*     <section className="flex">
-    <div className={` w-[278px] ${isNavbarOpen ? "hidden" : "block"} `}>
-        <SideNav />
-      </div>
 
-      <div className="flex-auto relative flex ">
-       <div className="">
-         <Header />
-        <HeaderTitle />
-       </div>
-
-        <div style={{
-
-        }} className={` ${isNavbarOpen ? "" : ""}  `}>
-          {headingText === "User Details" ? (
-            <UserDetails />
-          ) : headingText === "Upload" ? (
-            <Upload />
-          ) : headingText === "Product" ? (
-            <Product />
-          ) : headingText === "Category" ? (
-            <Categories />
-          ) : (
-            <Transaction />
-          )}
-        </div>
-      </div>
-    </section>
- */
 
 <section>
 
     <PageLayout>
-
-
-
-
-
 
        <div style={{
 
