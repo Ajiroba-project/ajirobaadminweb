@@ -1,0 +1,5 @@
+.icon-hover:hover {
+  color: yellow; /* Change to your desired hover color */
+  transform: scale(1.2); /* Optional: Adds a zoom effect */
+  transition: color 0.3s, transform 0.3s; /* Smooth transition */
+}

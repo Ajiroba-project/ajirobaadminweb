@@ -11,8 +11,6 @@ import { Categories } from "./components/Categories";
 import { Transaction } from "./components/Transaction";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 import { useEffect } from "react";
-import { section } from "framer-motion/client";
-import PageLayout from "../components/Layout/PageLayout";
 
 const Page = () => {
   const router = useRouter();
@@ -40,20 +38,18 @@ const Page = () => {
   }, [setNavbarOpen]);
 
   return (
- /*     <section className="flex">
-    <div className={` w-[278px] ${isNavbarOpen ? "hidden" : "block"} `}>
+     <section className="flex">
+       <div className={`${isNavbarOpen ? "hidden" : "block"} `}>
         <SideNav />
       </div>
 
-      <div className="flex-auto relative flex ">
+      <div className="flex-auto relative ">
        <div className="">
          <Header />
         <HeaderTitle />
        </div>
 
-        <div style={{
-
-        }} className={` ${isNavbarOpen ? "" : ""}  `}>
+        <div className={`mt-18 ${isNavbarOpen ? "" : "ml-18"}  `}>
           {headingText === "User Details" ? (
             <UserDetails />
           ) : headingText === "Upload" ? (
@@ -68,35 +64,6 @@ const Page = () => {
         </div>
       </div>
     </section>
- */
-
-<section>
-
-    <PageLayout>
-
-
-
-
-
-
-       <div style={{
-
-        }} className={` ${isNavbarOpen ? "" : ""}  `}>
-          {headingText === "User Details" ? (
-            <UserDetails />
-          ) : headingText === "Upload" ? (
-            <Upload />
-          ) : headingText === "Product" ? (
-            <Product />
-          ) : headingText === "Category" ? (
-            <Categories />
-          ) : (
-            <Transaction />
-          )}
-        </div>
-    </PageLayout>
-
-</section>
 
 
 

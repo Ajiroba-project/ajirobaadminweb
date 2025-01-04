@@ -9,7 +9,7 @@ import { GoBell } from "react-icons/go";
 import { useState } from 'react';
 import {useStore} from '@/store/nav-store';
 
-type headerTitleProps = { 
+type headerTitleProps = {
     title:string,
     subtitle?:string,
     className?:any,
@@ -28,11 +28,11 @@ export const Header = () => {
       <div className="mx-4">
           {/* if NavbarOpen is true then show close button else show menu button */}
             {isNavbarOpen ? (<FiMenu className="text-2xl cursor-pointer" onClick={toggleNavbar}/>):(<FiMenu className="text-2xl cursor-pointer" onClick={toggleNavbar}/>)}
-        
+
       </div>
       <ul className="flex gap-6 justify-evenly">
         {HeaderNavMenu.map((val, index)=>(
-          <li key={index} onClick={() => setActive(index)}>
+          <li className="text-[#A09F9F] font-Poppins " key={index} onClick={() => setActive(index)}>
             <Link href={val.path} className={`lg:text-md text-sm ${active === index? "text-[#F25E26]":null}`}>
               {val.name}
             </Link>
@@ -47,7 +47,7 @@ export const Header = () => {
         <span className="absolute"></span>
 
       </div>
-      
+
     </nav>
 
   </div>
@@ -74,6 +74,6 @@ export const HeaderTitle =({title, subtitle, className}:headerTitleProps )=>{
             <p className=' mt-4 text-sm font-normal leading-6 text-center w-auto  text-[#353131]' >{subtitle}</p>
         </section>
         </>
-   
+
     )
 }

@@ -14,7 +14,7 @@ import { Modal } from "@/app/dashboard/components/Modal";
 import signoutImage from "@/app/asset/signout.svg";
 import user_img from "@/app/asset/user.png";
 import { userProfile } from "@/store/store";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 import { useGetDatanew } from "@/hooks/useGetData";
 
 type MenuState = number | null;
@@ -34,12 +34,15 @@ export const SideNav = () => {
   const [signout, setSignout] = useState<boolean>(false);
   const router = useRouter();
 
-   const [userToken, setUserToken] = useState(Cookies.get('token'))
+  const [userToken, setUserToken] = useState(Cookies.get("token"));
 
   const url = `${process.env.NEXT_PUBLIC_BASE_URL}/user/view_profile/`;
 
-  const { data: userInfo, isLoading: userLoading } = useGetDatanew(url, 'get_user_details', userToken || " ");
-
+  const { data: userInfo, isLoading: userLoading } = useGetDatanew(
+    url,
+    "get_user_details",
+    userToken || " ",
+  );
 
   const handleClick = ({
     val,
@@ -69,7 +72,7 @@ export const SideNav = () => {
   const { mutate, status } = useMutateData(
     "signup",
     handleSuccess,
-    handleError
+    handleError,
   );
 
   const sumbitForm = async () => {
@@ -79,42 +82,39 @@ export const SideNav = () => {
     });
   };
 
-
   const setNavbarOpen = useStore((state) => state.setNavbarOpen);
 
   return (
     <Fragment>
-      <section className="shadow bg-[#F6F6F6]  w-[15em] lg:h-full fixed h-screen z-30">
-     {/*    <nav className="flex flex-col  py-10 gap-20 container">
+      {/* w-[15em] */}
+      <section className="shadow bg-[#F6F6F6]   lg:h-full fixed h-screen z-30">
+        <nav
+          className={`flex flex-col py-10 gap-20 container ${isNavbarOpen ? "hidden lg:block" : "block"}`}
+        >
           <div className="mx-6 flex items-center">
-
             <Link href="/">
               <Image src={Brand} alt="brand logo" />
             </Link>
             <div className="mx-4">
-
               {isNavbarOpen ? (
                 <FiMenu
-                  className="text-2xl cursor-pointer lg:block xl:hidden 2xl:hidden"
+                  className="text-2xl cursor-pointer lg:hidden"
                   onClick={toggleNavbar}
                 />
               ) : (
                 <IoClose
-                  className="text-2xl cursor-pointer lg:block xl:hidden 2xl:hidden"
+                  className="text-2xl cursor-pointer lg:hidden"
                   onClick={toggleNavbar}
                 />
               )}
             </div>
           </div>
-
-          <div className="">
+          <div>
             <ul>
               {SideNavMenu.map((val, index) => (
                 <li
                   key={index}
-                  onClick={() => {
-                    handleClick({ val, index });
-                  }}
+                  onClick={() => handleClick({ val, index })}
                   className={`${
                     active == index ? "bg-[#FCDFD4] ring-[#E84526]" : ""
                   } py-4 hover:ring-[#E84526] hover:ring-2 hover:bg-[#FCDFD4] px-6`}
@@ -126,20 +126,14 @@ export const SideNav = () => {
               ))}
             </ul>
           </div>
-
-          <div className=" flex flex-col gap-3 items-center justify-center">
+          <div className="flex flex-col gap-3 items-center justify-center">
             <div className="flex gap-3 pb-4 items-center">
               <div className="rounded-full h-8 w-8 bg-[#FCDFD4] ring-[#F25E26]">
                 <Image src={user_img} alt="dp" />
               </div>
               <div>
-                <h2 className="text-[#2A2A2A]">
-
-               { `${userInfo?.data?.first_name}` }
-                </h2>
-                <p className="text-sm">
-                  { `${userInfo?.data?.email}` }
-                </p>
+                <h2 className="text-[#2A2A2A]">{`${userInfo?.data?.first_name}`}</h2>
+                <p className="text-sm">{`${userInfo?.data?.email}`}</p>
               </div>
             </div>
             <div
@@ -150,64 +144,7 @@ export const SideNav = () => {
               <p className="">Sign Out</p>
             </div>
           </div>
-        </nav> */}
-
-        <nav className={`flex flex-col py-10 gap-20 container ${isNavbarOpen ? "hidden lg:block" : "block"}`}>
-  <div className="mx-6 flex items-center">
-    <Link href="/">
-      <Image src={Brand} alt="brand logo" />
-    </Link>
-    <div className="mx-4">
-      {isNavbarOpen ? (
-        <FiMenu
-          className="text-2xl cursor-pointer lg:hidden"
-          onClick={toggleNavbar}
-        />
-      ) : (
-        <IoClose
-          className="text-2xl cursor-pointer lg:hidden"
-          onClick={toggleNavbar}
-        />
-      )}
-    </div>
-  </div>
-  <div>
-    <ul>
-      {SideNavMenu.map((val, index) => (
-        <li
-          key={index}
-          onClick={() => handleClick({ val, index })}
-          className={`${
-            active == index ? "bg-[#FCDFD4] ring-[#E84526]" : ""
-          } py-4 hover:ring-[#E84526] hover:ring-2 hover:bg-[#FCDFD4] px-6`}
-        >
-          <Link href={val.path} className="flex gap-3 items-center">
-            <Image src={val.icon} alt={val.name} /> <p>{val.name}</p>
-          </Link>
-        </li>
-      ))}
-    </ul>
-  </div>
-  <div className="flex flex-col gap-3 items-center justify-center">
-    <div className="flex gap-3 pb-4 items-center">
-      <div className="rounded-full h-8 w-8 bg-[#FCDFD4] ring-[#F25E26]">
-        <Image src={user_img} alt="dp" />
-      </div>
-      <div>
-        <h2 className="text-[#2A2A2A]">{`${userInfo?.data?.first_name}`}</h2>
-        <p className="text-sm">{`${userInfo?.data?.email}`}</p>
-      </div>
-    </div>
-    <div
-      className="cursor-pointer flex gap-2 items-center text-[#F25E26]"
-      onClick={openModal}
-    >
-      <CiLogout className="text-2xl text-[#F25E26]" />
-      <p className="">Sign Out</p>
-    </div>
-  </div>
-</nav>
-
+        </nav>
 
         {signout && (
           <div className="flex absolute top-0">
