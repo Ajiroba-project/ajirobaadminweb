@@ -107,13 +107,15 @@ export default function Page() {
 
 
 
-        <div className=" flex flex-col mt-5 w-6/12 ">
+        <div className=" flex flex-col mt-5  ">
           <div className="flex gap-2 flex-col">
             <InputField
               label="Product name"
               type="text"
               name="product name"
               register={register}
+              classname={'w-full px-5 h-12 focus:text-black border rounded '}
+
             />
             <SelectField
               label="Sub categories"
@@ -121,6 +123,7 @@ export default function Page() {
               register={register}
               errors={errors}
               options={categories}
+                   classname={'w-full px-5 h-12 focus:text-black border rounded '}
             />
             <TextAreaField
               label="description"
@@ -128,7 +131,12 @@ export default function Page() {
               register={register}
               errors={errors}
               placeholder={""}
+                   classname={'w-full px-5 h-24 focus:text-black border rounded '}
             />
+
+
+
+
             <div className="flex gap-2 py-8 flex-col lg:flex-row md:flex-row ">
               <InputField
                 name="selling_price"

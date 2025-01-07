@@ -102,7 +102,8 @@ export const InputField =({label, type, placeholder, name, register, errors, sho
             <label className="py-2 font-Poppins text-sm text-[#353131]">{label}</label>
             <input name={name} type={toggle ? "text" :type}
              placeholder={placeholder}
-              className={`${classname ? classname :"px-5 h-12 focus:text-black border rounded w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px]"}`}
+              className={`${classname ? classname :"px-5 h-12 focus:text-black border rounded  w-full xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] "}`}
+            /*   */
              {...register(name, { required: true })}
 
               disabled={isdisabled}

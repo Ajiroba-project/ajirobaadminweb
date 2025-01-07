@@ -187,7 +187,7 @@ export const AuctionListCard = ({ object }: cardProps) => {
 
                <div className="pt-4 ">
                 <Link
-                  href={`dashboard/product-details/edit/${val.name}`}
+                  href={`dashboard/product-details-auction/edit/${val.name}`}
                   className="bg-[#FCDFD4] flex gap-2 rounded-lg  p-2 font-Poppins text-sm items-center "
                 >
                   <MdOutlineEdit className="text-lg" />

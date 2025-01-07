@@ -10,7 +10,8 @@ export default function Home() {
   useAuthMiddleware(router)
 
   return (
-    <main className="flex">  
+    <main className="flex">
+    <h1>Admin Page</h1>
     </main>
   );
 }
