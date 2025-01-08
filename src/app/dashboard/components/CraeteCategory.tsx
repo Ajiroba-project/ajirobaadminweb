@@ -16,10 +16,10 @@ import "react-toastify/dist/ReactToastify.css";
 import { FaCamera } from "react-icons/fa6";
 import Image from "next/image";
 
-export const CategoryEdit = ({func}:any) => {
+export const CraeteCategory = ({func}:any) => {
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
   const router = useRouter();
-
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const {
     reset,
     register,
@@ -51,11 +51,19 @@ export const CategoryEdit = ({func}:any) => {
     handleError
   );
   const handleEdit = () => {
-    func();
+    // func();
+    console.log(data, 'data')
   };
 
 
-
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <section className="flex flex-col ">
@@ -63,6 +71,34 @@ export const CategoryEdit = ({func}:any) => {
       <form className="flex flex-col mt-[1em] items-center ">
 
 
+  {/* Image Upload Section */}
+        <div className="relative flex items-center justify-center mt-6">
+          <div className="relative">
+           <div className="flex justify-center items-center gap-4" >
+          {/*   <div>
+                <h1>Upload Image</h1>
+            </div> */}
+             <div className="w-24 h-24 rounded-full border border-gray-300 flex items-center justify-center">
+              {imagePreview ? (
+                <Image src={imagePreview} alt="Preview" width={96} height={96} className="w-full h-full object-cover rounded-full" />
+              ) : (
+                <div className="text-gray-500">
+                  <FaCamera size={24} />
+                </div>
+              )}
+            </div>
+           </div>
+            <input
+              type="file"
+              accept="image/*"
+              className="absolute w-full h-full top-0 left-0 opacity-0 cursor-pointer"
+              onChange={handleImageChange}
+            />
+            <div onClick={()=> handleImageChange} className=" cursor-pointer absolute bottom-2 right-0 bg-[#F25E26] p-1 rounded-full text-white">
+              <FaCamera size={12} />
+            </div>
+          </div>
+        </div>
 
 
 
