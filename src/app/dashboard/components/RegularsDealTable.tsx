@@ -6,9 +6,11 @@ import chart from '../../asset/image/chart.svg'
 import { IoIosArrowRoundBack, IoIosArrowRoundForward } from 'react-icons/io';
 import { IoFilter } from 'react-icons/io5';
 import DatePicker from 'react-datepicker';
+import { useRouter } from "next/navigation";
 
 function RegularsDealTable() {
 
+    const router = useRouter();
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
@@ -195,15 +197,17 @@ const [search, setSearch] = useState("");
                     ...
                   </button>
                   {menuOpen === transaction.id && (
-                    <div className="absolute right-0 bg-white border border-gray-300 rounded shadow-md z-10">
+                    <div className="absolute right-0 bg-white border border-gray-300 rounded shadow-md z-10 px-4 py-4">
+                          <button
+                            className="whitespace-nowrap px-4 mb-4 py-2 w-full text-center bg-[#E84526] rounded-lg text-[#F6F6F6] hover:bg-[#E84526]"
+                           /*  onClick={() => alert(`Viewing transaction ${transaction.id}`)} */
+                           onClick={()=> router.push(`/dashboard/regulardeals/${transaction.id}`)}
+                            >
+                            View details
+                            </button>
+
                       <button
-                        className="block px-4 py-2 w-full text-left hover:bg-gray-100"
-                        onClick={() => alert(`Viewing transaction ${transaction.id}`)}
-                      >
-                        View
-                      </button>
-                      <button
-                        className="block px-4 py-2 w-full text-left hover:bg-gray-100 text-red-500"
+                            className="whitespace-nowrap px-4 mb-4 py-2 w-full text-center border border-[#D0D5DD] bg-[#FCFCFC] rounded-lg text-[#E84526]"
                         onClick={() =>
                           setTransactions((prev) =>
                             prev.filter((item) => item.id !== transaction.id)
