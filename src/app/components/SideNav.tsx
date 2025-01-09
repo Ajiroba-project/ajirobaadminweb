@@ -87,9 +87,9 @@ export const SideNav = () => {
   return (
     <Fragment>
       {/* w-[15em] */}
-      <section className="shadow bg-[#F6F6F6]   lg:h-full fixed h-screen z-30">
+      <section className="shadow bg-[#F6F6F6]   lg:h-full fixed h-screen z-30 ">
         <nav
-          className={`flex flex-col py-10 gap-20 container ${isNavbarOpen ? "hidden lg:block" : "block"}`}
+          className={`flex flex-col py-10 gap-20 container  ${isNavbarOpen ? "hidden lg:block" : "block "}`}
         >
           <div className="mx-6 flex items-center">
             <Link href="/">

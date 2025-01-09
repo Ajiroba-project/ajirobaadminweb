@@ -132,7 +132,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       </div>
 
 
-       <nav
+       <nav style={{
+
+          overflow: "scroll",
+        }}
           className={`flex flex-col py-10 gap-20 container ${isNavbarOpen ? "hidden lg:block" : "block"}`}
         >
           <div className="mx-6 flex items-center">

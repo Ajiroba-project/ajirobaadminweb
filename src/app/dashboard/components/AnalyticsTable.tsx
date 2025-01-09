@@ -11,6 +11,8 @@ import ModalComponent from '@/app/components/ModalComponent';
 import { UpdateSubCategory } from './UpdateSubCategory';
 import BarChart from './BarTable';
 import GeoGrapgh from './GeoData';
+import MapChart from './GeoData'
+import TopZonesList from './TopZonesList';
 
 function AnalyticsTable() {
 
@@ -55,7 +57,7 @@ const [search, setSearch] = useState("");
 
   const itemsPerPage = 5;
 
-
+ const [content, setContent] = useState<string>("");
 
 // Filtered Data Based on Search and Selected Option
   const filteredTransactions = transactions.filter((transaction) => {
@@ -217,10 +219,11 @@ const [search, setSearch] = useState("");
             <BarChart />
 
 
-            <GeoGrapgh/>
+
 
 
     </div>
+
 
 
  <ModalComponent

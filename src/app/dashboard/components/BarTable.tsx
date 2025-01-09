@@ -1,4 +1,5 @@
-import React from 'react';
+'use client'
+import React, { useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -9,8 +10,8 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-
-
+import GeoGrapghy from './GeoData'
+import { Tooltip as ReactTooltip } from "react-tooltip";
 
 
 // Register the necessary components
@@ -135,12 +136,18 @@ const CustomerByAge = () => {
   );
 };
 
-const BarChart = () => {
+const BarChart: React.FC = () => {
+  const [content, setContent] = useState<string>("");
+
   return (
     <div className="p-8 bg-[#F6F6F6]  flex flex-col items-center">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-5xl">
         <CustomerByGender />
         <CustomerByAge />
+      {/*   <MapChart setTooltipContent={setContent} /> */}
+        <GeoGrapghy setTooltipContent={setContent}  />
+     {/*    <div>{content}</div> */}
+         <ReactTooltip>{content}</ReactTooltip>
       </div>
     </div>
   );
