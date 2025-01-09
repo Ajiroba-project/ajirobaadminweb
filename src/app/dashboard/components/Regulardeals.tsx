@@ -40,10 +40,6 @@ const salesData = [
 
 
 
-
-
-
-
   return (
 
     <div>

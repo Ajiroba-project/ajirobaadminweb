@@ -10,6 +10,7 @@ import ps from "@/app/asset/ps.svg"
 import bid from "@/app/asset/bid.svg"
 import ticket from "@/app/asset/ticket.svg"
 import user_img from "@/app/asset/user.png"
+import analytics from "@/app/asset/analytics.svg"
 
 export const SideNavMenu =[
     {
@@ -37,6 +38,11 @@ export const SideNavMenu =[
         name:"Transaction",
         path:"#",
         icon:transaction
+    },
+    {
+        name:"Analytics",
+        path:"#",
+        icon:analytics
     },
 ]
 

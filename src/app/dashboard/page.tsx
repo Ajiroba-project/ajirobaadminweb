@@ -13,6 +13,7 @@ import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 import { useEffect } from "react";
 import { section } from "framer-motion/client";
 import PageLayout from "../components/Layout/PageLayout";
+import Analytics from "./components/Analytics";
 
 const Page = () => {
   const router = useRouter();
@@ -57,7 +58,13 @@ const Page = () => {
             <Product />
           ) : headingText === "Category" ? (
             <Categories />
-          ) : (
+          ) : headingText === "Analytics" ? (
+            <Analytics />
+          ) : headingText === "Transaction" ? (
+          <Transaction />
+          )
+
+          : (
             <Transaction />
           )}
         </div>
