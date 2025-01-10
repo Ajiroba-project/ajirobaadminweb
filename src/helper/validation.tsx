@@ -66,7 +66,7 @@ topdeals: Yup.boolean()
   regular_media: Yup.mixed().required("Please select at least one file").test(
       'regular_media',
       'Please select at least one file',
-      (value) => value && value.length > 0
+      (value) => Array.isArray(value) && value.length > 0
     )
 });
 
@@ -96,7 +96,7 @@ topdeals: Yup.boolean()
   regular_media: Yup.mixed().required("Please select at least one file").test(
       'regular_media',
       'Please select at least one file',
-      (value) => value && value.length > 0
+       (value) => Array.isArray(value) && value.length > 0
     )
 });
 
@@ -115,7 +115,7 @@ export const ActionUploadSchema = Yup.object().shape({
   auction_media: Yup.mixed().required("Please select at least one file").test(
       'regular_media',
       'Please select at least one file',
-      (value) => value && value.length > 0
+        (value) => Array.isArray(value) && value.length > 0
     ),
       cost_price: Yup.string().required("Cost Price is required"),
   discount: Yup.string().required("Discount is required"),
@@ -132,7 +132,7 @@ topdeals: Yup.boolean()
   regular_media: Yup.mixed().required("Please select at least one file").test(
       'regular_media',
       'Please select at least one file',
-      (value) => value && value.length > 0
+   (value) => Array.isArray(value) && value.length > 0
     )
 });
 
