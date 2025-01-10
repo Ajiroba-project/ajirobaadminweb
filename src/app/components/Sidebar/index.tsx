@@ -59,6 +59,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     userToken || " ",
   );
 
+  // console.log(userInfo, 'usss')
+
   const handleClick = ({
     val,
     index,
@@ -102,7 +104,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
   const pathname = usePathname();
 
-  console.log(pathname, 'current path')
+//
 
   //   const isActive = (path: string) => location.pathname === path;
   const isActive = (path: string) => {

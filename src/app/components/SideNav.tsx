@@ -37,7 +37,7 @@ export const SideNav = () => {
 
 
 
-  console.log(pathname, 'current path')
+  // console.log(pathname, 'current path')
 
   const [userToken, setUserToken] = useState(Cookies.get("token"));
 

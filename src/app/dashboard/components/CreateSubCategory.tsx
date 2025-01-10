@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { categories } from "@/app/data";
 import { Header } from "@/app/components/Header";
-import { CategoriesSchema } from "@/helper/validation";
+import { CategoriesSchema, SubCategoriesSchema } from "@/helper/validation";
 import { useMutateData } from "@/hooks/useMutateData";
 import { DefaultButton } from "@/app/components/Button";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -17,16 +17,18 @@ import { FaCamera } from "react-icons/fa6";
 import Image from "next/image";
 import Cookies from "js-cookie";
 
-export const CraeteCategory = ({func}:any) => {
+export const CraeteSubCategory = ({func}:any) => {
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
   const router = useRouter();
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
       const userToken = (Cookies.get("token") as string) || "";
 
-
-          const setCategoryOpen = useStore((state) => state.setCategoryOpen);
+ /*      const setCreateCategory = useCategoryButtonClickStore((state) => state.); */
+        const setCreateCategory = useCategoryButtonClickStore((state) => state.subcategoryopen);
+          const subcategoryOpen = useStore((state) => state.subcategoryOpen);
+              const setSubCategoryOpen = useStore((state) => state.setCratesubcategor);
 
   const {
     reset,
@@ -38,15 +40,19 @@ export const CraeteCategory = ({func}:any) => {
     formState: { errors },
   } = useForm({
     mode: "all",
-    resolver: yupResolver(CategoriesSchema),
+    resolver: yupResolver(SubCategoriesSchema),
     defaultValues: {
+    /*   category_image: "", */ // Default value for image field
       description: "",
-      category: "",
+      subcategory: "",
   },
   });
 
  const handleSuccess = (data?: any) => {
+  /*   setComment("");
+    setCommentImage(""); */
 
+    // console.log(data)
     if (data.status === 200 || data.status === 201) {
       toast.success(`${data?.data?.message || data?.data?.detail}`, {
         position: "top-right",
@@ -57,17 +63,18 @@ export const CraeteCategory = ({func}:any) => {
         draggable: true,
         progress: undefined,
         theme: "light",
-        onClose: () => router.push("/dashboard/category"),
+        onClose: () => router.push("/profile"),
       });
       // refetch();
-       setCategoryOpen(false);
+        setSubCategoryOpen(false);
     } else if (
       data.status === 403 ||
       data.status === 404 ||
       data.status === 401 ||
       data.status === 500 || data.status === 409
     ) {
-
+    /*   setComment("");
+      setCommentImage(""); */
       toast.error(`${data?.data?.message || data?.data?.detail}`, {
         position: "top-right",
         autoClose: 2000,
@@ -78,10 +85,11 @@ export const CraeteCategory = ({func}:any) => {
         progress: undefined,
         theme: "light",
       });
-
-      setCategoryOpen(false);
+      // refetch();
+    setSubCategoryOpen(false);
     } else {
-
+     /*  setComment("");
+      setCommentImage(""); */
       toast.error(`${data?.data?.detail}`, {
         position: "top-right",
         autoClose: 2000,
@@ -92,9 +100,12 @@ export const CraeteCategory = ({func}:any) => {
         progress: undefined,
         theme: "light",
       });
-      setCategoryOpen(false);
+      // refetch();
+       setSubCategoryOpen(false);
     }
   };
+
+
 
   const handleError = (error: any) => {
     toast.error(`${"An Error Occured"}`, {
@@ -108,7 +119,7 @@ export const CraeteCategory = ({func}:any) => {
       theme: "light",
     });
     reset();
-      setCategoryOpen(false);
+   setSubCategoryOpen(false);
   };
 
   const { data, error, isError, isSuccess, mutate, status } = useMutateData(
@@ -123,27 +134,48 @@ export const CraeteCategory = ({func}:any) => {
 
 
 
-
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64String = reader.result as string;
-        setImagePreviews([base64String]);
+     /*    setSelectedImage(base64String); */
+        setImagePreview(base64String);
+       /*  setValue("category_image", base64String, { shouldValidate: true }); */
         setImageFile(file);
+      /*   setValue("category_image", base64String, { shouldValidate: true }), base64String; */
       };
       reader.readAsDataURL(file);
     }
   };
 
    const handleFormSubmit = (data: any) => {
-    console.log("Form Data:", data, imageFile);
+    console.log("Form Data:", data, imageFile); // Log form data
+
+  /*   if (!imageFile) {
+      setError("category_image", { type: "manual", message: "Image is required" });
+      return;
+    }
+
+    if (imageFile.size > 2 * 1024 * 1024) {
+      setError("category_image", { type: "manual", message: "Image size exceeds 2MB" });
+      return;
+    }
+ */
+
 
     const payload = {
       ...data,
-      category_image: imagePreviews,
+      // category_image: imagePreview,
     } as any;
+
+    console.log("Form Data:", payload);
+      /*    clearErrors("category_image"); */
+   /*   mutate({
+      url: "/api/categories/create", // Adjust API endpoint if needed
+      payload: { ...data, image: imagePreview },
+    });  */
 
      mutate({
       url: "/api/createcategory",
@@ -153,16 +185,18 @@ export const CraeteCategory = ({func}:any) => {
 
   return (
     <section className="flex flex-col ">
-      <h2 className="text-center font-bold ">Create Categories</h2>
+      <h2 className="text-center font-bold ">Create SubCategories</h2>
       <form className="flex flex-col mt-[1em] items-center " onSubmit={handleSubmit(handleFormSubmit)}>
 
-        <div className="relative flex items-center justify-center mt-6">
+
+  {/* Image Upload Section */}
+       {/*  <div className="relative flex items-center justify-center mt-6">
           <div className="relative">
            <div className="flex justify-center items-center gap-4" >
 
              <div className="w-24 h-24 rounded-full border border-gray-300 flex items-center justify-center">
-              {imagePreviews ? (
-                <Image src={imagePreviews[0]} alt="Preview" width={96} height={96} className="w-full h-full object-cover rounded-full" />
+              {imagePreview ? (
+                <Image src={imagePreview} alt="Preview" width={96} height={96} className="w-full h-full object-cover rounded-full" />
               ) : (
                 <div className="text-gray-500">
                   <FaCamera size={24} />
@@ -184,24 +218,42 @@ export const CraeteCategory = ({func}:any) => {
 
 
         </div>
+ */}
 
-          <InputField
+
+        {/*   {errors.category_image && (
+            <p className="text-red-500 text-sm mt-2">{errors.category_image.message}</p>
+          )}
+ */}
+
+         <SelectField
+          label="Category"
+          name="category"
+          register={register}
+          errors={errors}
+          options={categories}
+        />
+         {/*  <InputField
          label="Category"
           name="category"
           register={register}
           errors={errors}
           type="text"
-        />
+        /> */}
         <InputField
-          label="Description"
-          name="description"
+          label="Sub Category"
+          name="subcategory"
           register={register}
           errors={errors}
           type="text"
         />
 
+
+
+
         <div className="py-5">
           <DefaultButton
+           /*  text="Create" */
              text={status === 'pending' ? 'loading...' : "Create"}
             type="submit"
             handleClick={handleEdit}

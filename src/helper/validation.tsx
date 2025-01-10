@@ -137,7 +137,29 @@ topdeals: Yup.boolean()
 });
 
 export const CategoriesSchema = Yup.object().shape({
-  subcategory: Yup.string().required("Product name is required"),
-  category: Yup.string().required("Product category is required"),
+  description: Yup.string().required("description is required"),
+  category: Yup.string().required("Category is required"),
+   /* category_image: Yup.mixed()
+    .required('Image is required') */
+    /*  .test('fileSize', 'The file is too large', (value) => {
+       return value && value[0] && value[0].size <= 2000000; // 2MB
+     })
+     .test('fileType', 'Unsupported File Format', (value) => {
+       return value && value[0] && ['image/jpeg', 'image/png', 'image/gif'].includes(value[0].type);
+     }), */
+});
 
+
+
+export const SubCategoriesSchema = Yup.object().shape({
+  description: Yup.string().required("description is required"),
+  subcategory: Yup.string().required("Category is required"),
+   /* category_image: Yup.mixed()
+    .required('Image is required') */
+    /*  .test('fileSize', 'The file is too large', (value) => {
+       return value && value[0] && value[0].size <= 2000000; // 2MB
+     })
+     .test('fileType', 'Unsupported File Format', (value) => {
+       return value && value[0] && ['image/jpeg', 'image/png', 'image/gif'].includes(value[0].type);
+     }), */
 });

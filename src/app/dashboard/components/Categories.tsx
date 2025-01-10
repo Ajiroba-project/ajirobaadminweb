@@ -9,15 +9,20 @@ import { CategoryEdit } from "./CategoryEdit";
 import ModalComponent from "@/app/components/ModalComponent";
 import { DefaultButton } from "@/app/component/Button";
 import { UpdateSubCategory } from "./UpdateSubCategory";
+import {useCategoryButtonClickStore} from "@/store/nav-store"
+import { CraeteSubCategory } from "./CreateSubCategory";
 
 export const Categories = () => {
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
+  const categoryopen = useCategoryButtonClickStore((state) => state.categoryopen);
+  // const subcategoryopen = useSubCategoryButtonClickStore((state) => state.subcategoryopen);
   const [modal, setModal] = useState<boolean>(false);
   const [editmodal, setEditModal] = useState<boolean>(false);
-  const [createcategory, setCreateCategory] = useState<boolean>(false);
   const [updateCategory, setUpdateCategory] = useState<boolean>(false);
   const [categoryswitch, setCategorySwitch] = useState("list");
   const router = useRouter();
+
+
 
   const handleCreateCategory = () => {
     setModal(!modal);
@@ -49,7 +54,18 @@ export const Categories = () => {
 
   const handlePageChange = (pageNumber: number): void => setCurrentPage(pageNumber);
 
+const setCreateCategory = useCategoryButtonClickStore((state) => state.setCategoryopen);
+// const setCreatesubcategory = useSubCategoryButtonClickStore((state) => state.setCreatesubcategory);
 
+// const {  subcategoryopen,setCreatesubcategory}  = useSubCategoryButtonClickStore((state) => state);
+
+//  const toggleSubcategory = useSubCategoryButtonClickStore((state) => state.subcategoryopen);
+   const issubcategoryopen = useStore(state=> state.subcategoryopen)
+     const toggleSubcategory = useStore((state) => state.toggleSubcategory);
+       const subcategoryOpen = useStore((state) => state.subcategoryOpen);
+
+     const togglecategory = useStore((state) => state.togglecategory);
+       const categoryOpen = useStore((state) => state.categoryOpen);
   return (
 
 
@@ -67,7 +83,8 @@ export const Categories = () => {
               <div>
                   <button
                 className="bg-[#FCDFD4] p-2 px-5 rounded"
-              onClick={() => setCreateCategory(!createcategory)}
+          /*     onClick={() => setCreateCategory(!categoryopen)} */
+            onClick={togglecategory}
               >
                 Create Category
               </button>
@@ -76,7 +93,11 @@ export const Categories = () => {
               <div>
                   <button
                 className="bg-[#ffffff] text-[#2A2A2A] font-Poppins border border-[#E84526] p-2 px-5 rounded"
-               onClick={()  => setUpdateCategory(!updateCategory)}
+
+              // onClick={() => setCreatesubcategory(!subcategoryopen)}
+            /*     onClick={() => setCreatesubcategory(!subcategoryopen)} */
+                   onClick={toggleSubcategory}
+
               >
                 Create Subcategories
               </button>
@@ -185,7 +206,66 @@ export const Categories = () => {
       </section>
 
 
-        <ModalComponent
+         <ModalComponent
+        content={
+          <div className="flex flex-col justify-center">
+            <div className="flex justify-center items-center flex-col">
+
+            </div>
+
+               <CraeteCategory func={handleEditCategory} />
+
+
+          </div>
+        }
+           isModalOpen={categoryOpen}
+         showModal={togglecategory}
+      handleOk={() => {}}
+      handleCancel={togglecategory}
+      />
+
+
+
+
+
+         <ModalComponent
+        content={
+          <div className="flex flex-col justify-center">
+            <div className="flex justify-center items-center flex-col">
+
+            </div>
+
+               <CraeteSubCategory func={handleEditCategory} />
+
+
+          </div>
+        }
+           isModalOpen={subcategoryOpen}
+      showModal={toggleSubcategory}
+      handleOk={() => {}}
+      handleCancel={toggleSubcategory}
+      />
+
+
+         <ModalComponent
+        content={
+          <div className="flex flex-col justify-center">
+            <div className="flex justify-center items-center flex-col">
+
+            </div>
+
+            <UpdateSubCategory func={handleUpdateSubCategory} />
+
+
+          </div>
+        }
+        isModalOpen={updateCategory}
+        showModal={handleUpdateSubCategory}
+        handleOk={() => {}}
+        handleCancel={() => setUpdateCategory(false)}
+      />
+
+          <ModalComponent
         content={
           <div className="flex flex-col justify-center">
             <div className="flex justify-center items-center flex-col">
@@ -223,9 +303,6 @@ export const Categories = () => {
         handleCancel={() => setModal(false)}
       />
 
-
-
-
         <ModalComponent
         content={
           <div className="flex flex-col justify-center">
@@ -242,45 +319,6 @@ export const Categories = () => {
         showModal={modalEdit}
         handleOk={() => {}}
         handleCancel={() => setEditModal(false)}
-      />
-
-
-
-         <ModalComponent
-        content={
-          <div className="flex flex-col justify-center">
-            <div className="flex justify-center items-center flex-col">
-
-            </div>
-
-               <CraeteCategory func={handleEditCategory} />
-
-
-          </div>
-        }
-        isModalOpen={createcategory}
-        showModal={handleCreateCategory}
-        handleOk={() => {}}
-        handleCancel={() => setCreateCategory(false)}
-      />
-
-
-         <ModalComponent
-        content={
-          <div className="flex flex-col justify-center">
-            <div className="flex justify-center items-center flex-col">
-
-            </div>
-
-            <UpdateSubCategory func={handleUpdateSubCategory} />
-
-
-          </div>
-        }
-        isModalOpen={updateCategory}
-        showModal={handleUpdateSubCategory}
-        handleOk={() => {}}
-        handleCancel={() => setUpdateCategory(false)}
       />
     </>
   );
