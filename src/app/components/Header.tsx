@@ -66,6 +66,19 @@ export const RegistrationHeader = () => {
 };
 
 
+export const ProfileHeader = () => {
+  return (
+    <>
+      <nav className="container p-4 lg:px-14 px-7 md:block   flex justify-center">
+       <Link href="/">
+        <Image src={Brand} alt="Ajiroba Logo" />
+       </Link>
+      </nav>
+    </>
+  );
+};
+
+
 export const HeaderTitle =({title, subtitle, className}:headerTitleProps )=>{
     return (
         <>

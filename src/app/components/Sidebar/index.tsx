@@ -62,9 +62,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const handleClick = ({
     val,
     index,
-  }: handleProp & { val: { name: string } }) => {
+  }: handleProp & { val: { name: string, url: string  } }) => {
     setActive(active === index ? null : index);
     setHeadingText(val.name);
+    router.push(`/dashboard/${val.url}`)
   };
 
   const openModal = () => {
@@ -100,6 +101,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const setNavbarOpen = useStore((state) => state.setNavbarOpen);
 
   const pathname = usePathname();
+
+  console.log(pathname, 'current path')
 
   //   const isActive = (path: string) => location.pathname === path;
   const isActive = (path: string) => {
@@ -149,7 +152,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                   key={index}
                   onClick={() => handleClick({ val, index })}
                   className={`${
-                    active == index ? "bg-[#FCDFD4] ring-[#E84526]" : ""
+                   pathname === val.path ? "bg-[#FCDFD4] ring-[#E84526]" : ""
                   } py-4 hover:ring-[#E84526] hover:ring-2 hover:bg-[#FCDFD4] px-6`}
                 >
                   <Link href={val.path} className="flex gap-3 items-center">

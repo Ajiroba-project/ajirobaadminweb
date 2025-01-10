@@ -15,6 +15,7 @@ type cardProps = {
 };
 
 export const Card = ({ title, object }: cardProps) => {
+
   return (
     <section
       className={`${poppins.className} border-2 border-gray-100 rounded-lg p-4 shadow `}

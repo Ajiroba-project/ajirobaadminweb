@@ -3,7 +3,7 @@ import { useState, Fragment } from "react";
 import Brand from "@/app/asset/logo.svg";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { SideNavMenu } from "@/app/data";
 import { FiMenu } from "react-icons/fi";
 import { IoClose } from "react-icons/io5";
@@ -33,6 +33,11 @@ export const SideNav = () => {
   const [active, setActive] = useState<MenuState>(0);
   const [signout, setSignout] = useState<boolean>(false);
   const router = useRouter();
+ const pathname = usePathname()
+
+
+
+  console.log(pathname, 'current path')
 
   const [userToken, setUserToken] = useState(Cookies.get("token"));
 
@@ -48,8 +53,8 @@ export const SideNav = () => {
     val,
     index,
   }: handleProp & { val: { name: string } }) => {
-    setActive(active === index ? null : index);
-    setHeadingText(val.name);
+    /* setActive(active === index ? null : index); */
+   /*  setHeadingText(val.name); */
   };
 
   const openModal = () => {
@@ -116,7 +121,7 @@ export const SideNav = () => {
                   key={index}
                   onClick={() => handleClick({ val, index })}
                   className={`${
-                    active == index ? "bg-[#FCDFD4] ring-[#E84526]" : ""
+                  pathname === val.path ? "bg-[#FCDFD4] ring-[#E84526]" : ""
                   } py-4 hover:ring-[#E84526] hover:ring-2 hover:bg-[#FCDFD4] px-6`}
                 >
                   <Link href={val.path} className="flex gap-3 items-center">

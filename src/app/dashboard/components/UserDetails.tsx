@@ -1,14 +1,117 @@
+'use client';
+
 import {Card} from "./Card"
 import {regularDetails, auctionDetails} from "@/app/data"
 import {UserSearch} from './UserSearch'
 import {useStore } from '@/store/nav-store';
 import { section } from "framer-motion/client";
 import { div } from "framer-motion/m";
+import { useState } from "react";
+import Cookies from "js-cookie";
+import { useGetDatanew } from "@/hooks/useGetData";
+import Loading from "@/app/components/Loading";
 
+import ag from "@/app/asset/ag.svg"
+import tmg from "@/app/asset/tmg.svg"
+import tns from "@/app/asset/tns.svg"
+import ps from "@/app/asset/ps.svg"
+import bid from "@/app/asset/bid.svg"
+import ticket from "@/app/asset/ticket.svg"
+import user_img from "@/app/asset/user.png"
 
 
 export const UserDetails =()=>{
     const isNavbarOpen = useStore(state=> state.isNavbarOpen)
+
+
+ const [userToken, setUserToken] = useState(Cookies.get("token"));
+
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/user/view_profile/`;
+
+  const { data: userInfo, isLoading: userLoading } = useGetDatanew(
+    `/api/userdetails/`,
+    "get_user_details",
+    userToken || " ",
+  );
+
+  // console.log(userInfo?.data?.data?.regular, 'user info')
+
+
+interface UserInfoType {
+  data: {
+    data: {
+      regular: {
+        users_count: number;
+        total_sales: number;
+        amount_generated: number;
+        pending_sales: number;
+      };
+    };
+  };
+}
+
+interface Detail {
+  icon: string;
+  name: string;
+  count: number;
+}
+
+const mapUserInfoToDetails = [
+    {
+      icon: tmg,
+      name: "TOTAL REGISTERED USER",
+      count: userInfo?.data?.data?.regular.users_count || 0,
+    },
+    {
+      icon: tns,
+      name: "TOTAL NUMBER OF SALES",
+      count: userInfo?.data?.data?.regular.total_sales || 0,
+    },
+    {
+      icon: ag,
+      name: "AMOUNT GENERATED",
+      count: userInfo?.data?.data?.regular.amount_generated || 0,
+    },
+    {
+      icon: ps,
+      name: "PENDING SALES",
+      count: userInfo?.data?.data?.regular.pending_sales || 0,
+    },
+];
+
+
+
+ const auctionDetails =[
+    {
+        icon:tmg,
+        name:"TOTAL REGISTERED USER",
+          count: userInfo?.data?.data?.auction?.users_count || 0,
+    },
+     {
+        icon:ticket,
+        name:"TOTAL TICKET PURCHASED",
+        count:0
+    },
+    {
+        icon:bid,
+        name:"TOTAL BID MADE",
+        count:0
+    },
+    {
+        icon:ag,
+        name:"TOTAL AMOUNT GENERATED",
+        count:0
+    },
+]
+
+
+
+
+
+  if (userLoading ) {
+    return <Loading />;
+  }
+
     return (
 
        <div>
@@ -19,7 +122,8 @@ export const UserDetails =()=>{
 
     <section className="mt-6 px-4">
       <div className="flex gap-4 lg:flex-row flex-col lg:justify-center lg:items-center">
-        <Card title="Regular" object={regularDetails} />
+  {/*       <Card title="Regular" object={userInfo?.data?.data?.regular} /> */}
+        <Card title="Regular" object={mapUserInfoToDetails} />
         <Card title="Auction" object={auctionDetails} />
       </div>
 

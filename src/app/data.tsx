@@ -15,34 +15,42 @@ import analytics from "@/app/asset/analytics.svg"
 export const SideNavMenu =[
     {
         name:"User Details",
-        path:"#",
-        icon:user
+        path:"/dashboard/userdetails",
+        icon:user,
+        url: 'userdetails'
+
     },
 
      {
         name:"Upload",
-        path:"#",
-        icon:upload
+         path:"/dashboard/upload",
+        icon:upload,
+        url: 'upload'
     },
      {
         name:"Product",
-        path:"#",
-        icon:product
+            path:"/dashboard/product",
+        icon:product,
+         url: 'product'
     },
     {
         name:"Category",
-        path:"#",
-        icon:category
+        path:"/dashboard/category",
+        icon:category,
+         url: 'category'
     },
      {
         name:"Transaction",
-        path:"#",
-        icon:transaction
+      path:"/dashboard/transaction",
+        icon:transaction,
+        url: 'transaction'
+
     },
     {
         name:"Analytics",
         path:"#",
-        icon:analytics
+        icon:analytics,
+        url: 'analytics'
     },
 ]
 
@@ -53,7 +61,7 @@ export const HeaderNavMenu = [
 
 }, {
     name:"Profile",
-    path:"#",
+    path:"/userprofile",
 
 },  {
     name:"Live Chat",
@@ -83,6 +91,7 @@ export const regularDetails =[
         count:0
     },
 ]
+
 export const auctionDetails =[
     {
         icon:tmg,

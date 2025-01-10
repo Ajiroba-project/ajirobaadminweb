@@ -46,15 +46,8 @@ export const ListFilter: React.FC<ListFilterProps> = ({ onSearch }) => {
         />
       </div>
 
-      {/* date */}
+
       <div>
-       {/*  <input
-          type="date"
-          placeholder="Select dates"
-          min="2025-01-01"
-          className="border rounded-lg py-2 focus:outline-[#FCDFD4] px-2"
-          onChange={handleDateChange}
-        /> */}
 
         <DatePicker
       selected={selectedDate}
