@@ -46,7 +46,7 @@ export const Profile = () => {
     setUserToken(userToken);
   }, [userToken]);
 
-  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/user/view_profile/`;
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_profile/`;
 
   const { data: userInfo, isLoading: userLoading } = useGetDatanew(
     url,

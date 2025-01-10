@@ -14,6 +14,7 @@ export const useStore = create((set) => ({
   toggleSubcategory: () => set((state) => ({ subcategoryOpen: !state.subcategoryOpen })),
   togglecategory: () => set((state) => ({ categoryOpen: !state.categoryOpen })),
   setCategoryOpen: (value) => set({ categoryOpen: value }),
+  setSubcategoryOpen: (value) => set({ subcategoryOpen: value }),
   setCratesubcategory: (value) => set({ createsubcategory: value }),
 }));
 

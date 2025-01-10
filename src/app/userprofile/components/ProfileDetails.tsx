@@ -41,7 +41,7 @@ export const ProfileDetails = () => {
   const [userData, setUserData] = useState<any>(null); // State to store user data
   const [isTokenReady, setIsTokenReady] = useState(false); // State to track if the token is available
 
-  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/user/view_profile/`;
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_profile/`;
 
 const tkn_: string = Cookies.get('token') as string;
 

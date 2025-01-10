@@ -26,7 +26,7 @@ export const CraeteCategory = ({func}:any) => {
       const userToken = (Cookies.get("token") as string) || "";
 
 
-          const setCategoryOpen = useStore((state) => state.setCategoryOpen);
+  const setCategoryOpen = useStore((state) => state.setCategoryOpen);
 
   const {
     reset,

@@ -28,7 +28,7 @@ export const UserSearch: React.FC = () => {
   const [userToken, setUserToken] = useState(Cookies.get('token'));
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
 
-  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/user/view_profile/`;
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_profile/`;
 
   const { data: userdetails, isLoading: userLoading } = useGetDatanew(
     `/api/userdetails/`,

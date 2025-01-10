@@ -16,6 +16,26 @@ import "react-toastify/dist/ReactToastify.css";
 import { FaCamera } from "react-icons/fa6";
 import Image from "next/image";
 import Cookies from "js-cookie";
+import { useQueryData } from "@/hooks/useQueryData";
+import { useGetDatanew } from "@/hooks/useGetData";
+
+
+interface Subcategory {
+  id: string;
+  subcategory: string;
+  name?: string;
+  category?: string;
+}
+
+interface Category {
+  [x: string]: any;
+  category: string;
+  subcategories: Subcategory[];
+}
+
+interface CategoryResponse {
+  data: Category[];
+}
 
 export const CraeteSubCategory = ({func}:any) => {
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
@@ -28,7 +48,9 @@ export const CraeteSubCategory = ({func}:any) => {
  /*      const setCreateCategory = useCategoryButtonClickStore((state) => state.); */
         const setCreateCategory = useCategoryButtonClickStore((state) => state.subcategoryopen);
           const subcategoryOpen = useStore((state) => state.subcategoryOpen);
-              const setSubCategoryOpen = useStore((state) => state.setCratesubcategor);
+        // const setSubCategoryOpen = useStore((state) => state.setCratesubcategory);
+
+          const setSubCategoryOpen = useStore((state) => state.subcategoryOpen);
 
   const {
     reset,
@@ -43,8 +65,9 @@ export const CraeteSubCategory = ({func}:any) => {
     resolver: yupResolver(SubCategoriesSchema),
     defaultValues: {
     /*   category_image: "", */ // Default value for image field
-      description: "",
       subcategory: "",
+      category: "",
+
   },
   });
 
@@ -63,10 +86,10 @@ export const CraeteSubCategory = ({func}:any) => {
         draggable: true,
         progress: undefined,
         theme: "light",
-        onClose: () => router.push("/profile"),
+        onClose: () => router.push("/dashboard/category"),
       });
       // refetch();
-        setSubCategoryOpen(false);
+        setSubCategoryOpen(false)
     } else if (
       data.status === 403 ||
       data.status === 404 ||
@@ -86,7 +109,7 @@ export const CraeteSubCategory = ({func}:any) => {
         theme: "light",
       });
       // refetch();
-    setSubCategoryOpen(false);
+      setSubCategoryOpen(false)
     } else {
      /*  setComment("");
       setCommentImage(""); */
@@ -101,7 +124,7 @@ export const CraeteSubCategory = ({func}:any) => {
         theme: "light",
       });
       // refetch();
-       setSubCategoryOpen(false);
+         setSubCategoryOpen(false)
     }
   };
 
@@ -119,11 +142,11 @@ export const CraeteSubCategory = ({func}:any) => {
       theme: "light",
     });
     reset();
-   setSubCategoryOpen(false);
+      setSubCategoryOpen(false)
   };
 
   const { data, error, isError, isSuccess, mutate, status } = useMutateData(
-    "create-category",
+    "create-subcategory",
     handleSuccess,
     handleError
   );
@@ -131,6 +154,22 @@ export const CraeteSubCategory = ({func}:any) => {
     // func();
     console.log(data, "data");
   };
+
+
+
+
+
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/categories/`;
+  // https://ajiroba.onrender.com/v1/admin/categories/
+
+  const { data: categoryInfo, isLoading: categoryLoading, error: categoryerror, isError: categoryError } = useGetDatanew(
+    url,
+    "get_category_details",
+    userToken || " ",
+  );
+
+
+  console.log(categoryInfo, 'categoryInfo', error, categoryerror, categoryError)
 
 
 
@@ -178,7 +217,7 @@ export const CraeteSubCategory = ({func}:any) => {
     });  */
 
      mutate({
-      url: "/api/createcategory",
+      url: "/api/createsubcategory",
       payload: { payload: payload, tkn: userToken },
     });
   };
@@ -189,43 +228,6 @@ export const CraeteSubCategory = ({func}:any) => {
       <form className="flex flex-col mt-[1em] items-center " onSubmit={handleSubmit(handleFormSubmit)}>
 
 
-  {/* Image Upload Section */}
-       {/*  <div className="relative flex items-center justify-center mt-6">
-          <div className="relative">
-           <div className="flex justify-center items-center gap-4" >
-
-             <div className="w-24 h-24 rounded-full border border-gray-300 flex items-center justify-center">
-              {imagePreview ? (
-                <Image src={imagePreview} alt="Preview" width={96} height={96} className="w-full h-full object-cover rounded-full" />
-              ) : (
-                <div className="text-gray-500">
-                  <FaCamera size={24} />
-                </div>
-              )}
-            </div>
-           </div>
-            <input
-              type="file"
-              accept="image/*"
-
-              className="absolute w-full h-full top-0 left-0 opacity-0 cursor-pointer"
-              onChange={handleImageChange}
-            />
-            <div onClick={()=> handleImageChange} className=" cursor-pointer absolute bottom-2 right-0 bg-[#F25E26] p-1 rounded-full text-white">
-              <FaCamera size={12} />
-            </div>
-          </div>
-
-
-        </div>
- */}
-
-
-        {/*   {errors.category_image && (
-            <p className="text-red-500 text-sm mt-2">{errors.category_image.message}</p>
-          )}
- */}
-
          <SelectField
           label="Category"
           name="category"
@@ -233,13 +235,7 @@ export const CraeteSubCategory = ({func}:any) => {
           errors={errors}
           options={categories}
         />
-         {/*  <InputField
-         label="Category"
-          name="category"
-          register={register}
-          errors={errors}
-          type="text"
-        /> */}
+
         <InputField
           label="Sub Category"
           name="subcategory"
@@ -247,7 +243,6 @@ export const CraeteSubCategory = ({func}:any) => {
           errors={errors}
           type="text"
         />
-
 
 
 

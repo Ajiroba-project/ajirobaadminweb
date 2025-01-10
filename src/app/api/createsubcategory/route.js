@@ -10,7 +10,7 @@ export async function POST(request) {
 
         /*  console.log(body.payload, 'bodyyyyyy') */
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/create_category/?${cacheBuster}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/create_subcategory/?${cacheBuster}`, {
             method: "POST",
             maxBodyLength: Infinity,
             headers: {

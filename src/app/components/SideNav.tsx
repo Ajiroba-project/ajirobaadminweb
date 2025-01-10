@@ -41,13 +41,16 @@ export const SideNav = () => {
 
   const [userToken, setUserToken] = useState(Cookies.get("token"));
 
-  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/user/view_profile/`;
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/user_details/`;
 
   const { data: userInfo, isLoading: userLoading } = useGetDatanew(
     url,
     "get_user_details",
     userToken || " ",
   );
+
+
+  console.log(userInfo, 'userInfo')
 
   const handleClick = ({
     val,

@@ -18,3 +18,6 @@ export const useQueryData = (url: string, title: string, isEnabled: boolean) => 
     });
 }
 
+
+
+

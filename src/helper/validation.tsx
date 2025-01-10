@@ -152,8 +152,8 @@ export const CategoriesSchema = Yup.object().shape({
 
 
 export const SubCategoriesSchema = Yup.object().shape({
-  description: Yup.string().required("description is required"),
-  subcategory: Yup.string().required("Category is required"),
+  subcategory: Yup.string().required("subcategory is required"),
+  category: Yup.string().required("Category is required"),
    /* category_image: Yup.mixed()
     .required('Image is required') */
     /*  .test('fileSize', 'The file is too large', (value) => {

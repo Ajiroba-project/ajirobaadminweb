@@ -1,43 +1,102 @@
+// import { NextResponse } from "next/server";
+
+// export const dynamic = 'force-dynamic';
+
+// export async function GET(request) {
+//     try {
+//         // Extract the token from the query parameters or headers
+
+//         const token_ = request.headers.get('authorization')?.replace('Token ', '');
+
+//         if (!token_) {
+//             return NextResponse.json({ error: 'Token is required' }, { status: 400 });
+//         }
+
+//         const cacheBuster = `cache=${Date.now()}`;
+//         const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/user_details/?${cacheBuster}`, {
+//             method: "GET",
+//             headers: {
+//                 "Content-Type": "application/json",
+//                 'Authorization': `Token ${token_}`
+//             }
+//         });
+
+//         // Check if the response is OK
+//         if (!res.ok) {
+//             const errorData = await res.json();
+//             return NextResponse.json({ error: errorData.message || 'An error occurred' }, { status: res.status });
+//         }
+
+//         // Parse response body as JSON
+//         const data = await res.json();
+//         const status = res.status;
+
+//         // console.log(data, 'data')
+
+//         // Return JSON response with data and status
+//         return NextResponse.json({ data, status });
+//     } catch (error) {
+//         // Handle any errors gracefully
+//         console.error('Error processing request:', error.message);
+//         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+//     }
+// }
+
+
+
 import { NextResponse } from "next/server";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
     try {
-        // Extract the token from the query parameters or headers
-
+        // Extract the token from the Authorization header
         const token_ = request.headers.get('authorization')?.replace('Token ', '');
 
         if (!token_) {
-            return NextResponse.json({ error: 'Token is required' }, { status: 400 });
+            return NextResponse.json(
+                { error: 'Token is required' },
+                { status: 400 }
+            );
         }
 
+        // Append a cache buster to avoid stale responses
         const cacheBuster = `cache=${Date.now()}`;
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/user_details/?${cacheBuster}`, {
+        const apiUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/user_details/?${cacheBuster}`;
+
+        const res = await fetch(apiUrl, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
-                'Authorization': `Token ${token_}`
-            }
+                "Authorization": `Token ${token_}`,
+            },
         });
 
         // Check if the response is OK
         if (!res.ok) {
             const errorData = await res.json();
-            return NextResponse.json({ error: errorData.message || 'An error occurred' }, { status: res.status });
+            const errorMessage = errorData?.message || 'An error occurred with the external API';
+            return NextResponse.json(
+                { error: errorMessage },
+                { status: res.status }
+            );
         }
 
         // Parse response body as JSON
         const data = await res.json();
-        const status = res.status;
 
-        // console.log(data, 'data')
+        // Return the successful response
+        return NextResponse.json({ data, status: res.status });
 
-        // Return JSON response with data and status
-        return NextResponse.json({ data, status });
     } catch (error) {
-        // Handle any errors gracefully
-        console.error('Error processing request:', error.message);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        // Handle unexpected errors
+        const errorMessage =
+            error instanceof Error ? error.message : 'Unknown error';
+        console.error('Error processing request:', errorMessage);
+
+        return NextResponse.json(
+            { error: 'Internal Server Error' },
+            { status: 500 }
+        );
     }
 }
