@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { CreateCategory } from "./CreateCategory";
 import {CraeteCategory} from "./CraeteCategory";
 import { CategoryEdit } from "./CategoryEdit";
-import successIcon from "@/app/asset/verify.svg";
 import ModalComponent from "@/app/components/ModalComponent";
 import { DefaultButton } from "@/app/component/Button";
 import { UpdateSubCategory } from "./UpdateSubCategory";
@@ -44,14 +43,11 @@ export const Categories = () => {
     const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-    // Calculate the indices for the current page
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = categories.slice(indexOfFirstItem, indexOfLastItem);
 
-  // Handle page change
   const handlePageChange = (pageNumber: number): void => setCurrentPage(pageNumber);
-
 
 
   return (
@@ -71,7 +67,6 @@ export const Categories = () => {
               <div>
                   <button
                 className="bg-[#FCDFD4] p-2 px-5 rounded"
-               /*  onClick={() => setCategorySwitch("create")} */
               onClick={() => setCreateCategory(!createcategory)}
               >
                 Create Category
@@ -81,7 +76,6 @@ export const Categories = () => {
               <div>
                   <button
                 className="bg-[#ffffff] text-[#2A2A2A] font-Poppins border border-[#E84526] p-2 px-5 rounded"
-               /*  onClick={() => setCategorySwitch("create")} */
                onClick={()  => setUpdateCategory(!updateCategory)}
               >
                 Create Subcategories
@@ -90,7 +84,6 @@ export const Categories = () => {
             </div>
             </div>
 
-            {/* table */}
             <div className="container mx-auto w-full mt-5">
               <table className="table-auto w-full text-center">
                 <thead className="bg-[#FCDFD4] py-5">
@@ -134,7 +127,6 @@ export const Categories = () => {
                           <p
                             className="text-[#F25E26] cursor-pointer"
                              onClick={() => setEditModal(!editmodal)}
-                            //  onClick={() => setCategorySwitch("edit")}
                           >
                             Edit
                           </p>
@@ -150,7 +142,7 @@ export const Categories = () => {
                   ))}
                 </tbody>
               </table>
-              {/* Pagination controls */}
+
               <div className="flex justify-center mt-4">
                 {Array.from(
                   { length: Math.ceil(categories.length / itemsPerPage) },
@@ -192,41 +184,6 @@ export const Categories = () => {
         )}
       </section>
 
-   {/*    {modal && (
-        <div className="flex absolute top-0">
-          <Modal
-            title={
-              categoryswitch === "create"
-                ? "Data created Successfully"
-                : categoryswitch === "edit"
-                ? "Data Updated Successfully"
-                : "Are you sure you want to delete Category"
-            }
-            subtitle=""
-            buttoncount={
-              categoryswitch === "create" || categoryswitch === "edit" ? 1 : 2
-            }
-            buttontext={
-              categoryswitch === "create" || categoryswitch === "edit"
-                ? "continue"
-                : "yes"
-            }
-            button2text="No"
-            buttonclass="bg-[#FCDFD4] p-5 rounded-lg text-sm hover:shadow w-full px-14"
-            button2class="p-4 rounded-lg border-2 border-[#F25E26] px-14"
-            buttontype="button"
-            button2type="button"
-            handleEvent={modalEvent}
-            handleEvent2={() => setModal(false)}
-            icon={
-              categoryswitch === "create" || categoryswitch === "edit"
-                ? successIcon
-                : null
-            }
-          />
-        </div>
-      )}
- */}
 
         <ModalComponent
         content={
@@ -236,9 +193,7 @@ export const Categories = () => {
                Are you sure you want to delete this category?
               </p>
 
-            {/*   <small className="text-[#504D4D] text-lg font-Poppins">
-                Kindly enter your wallet pin
-              </small> */}
+
             </div>
 
               <div className="flex flex-col items-center gap-8 py-4 mt-10">
@@ -275,13 +230,7 @@ export const Categories = () => {
         content={
           <div className="flex flex-col justify-center">
             <div className="flex justify-center items-center flex-col">
-             {/*  <p className="text-[#2A2A2A] font-bold text-xl font-Poppins">
-               Are you sure you want to delete this category?
-              </p> */}
 
-            {/*   <small className="text-[#504D4D] text-lg font-Poppins">
-                Kindly enter your wallet pin
-              </small> */}
             </div>
 
                <CategoryEdit func={handleEditCategory} />
@@ -323,7 +272,6 @@ export const Categories = () => {
 
             </div>
 
-            {/*    <CraeteCategory func={handleEditCategory} /> */}
             <UpdateSubCategory func={handleUpdateSubCategory} />
 
 
