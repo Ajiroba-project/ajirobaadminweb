@@ -54,13 +54,12 @@ export const ProductUploadSchema = Yup.object().shape({
   quantity: Yup.number().required("Quantity is required"),
   weight: Yup.string().required("Weight is required"),
 
-topdeals: Yup.boolean()
-  .oneOf([true], 'Top Deals must be checked')
-  .required('Top Deals is required'),
+// topdeals: Yup.boolean()
+//   .oneOf([true], 'Top Deals must be checked')
+//   .required('Top Deals is required'),
+topdeals: Yup.boolean().default(false),
 
-  featured: Yup.boolean()
-  .oneOf([true], 'Featured must be checked')
-  .required('Featured is required'),
+  featured: Yup.boolean().default(false),
 
   // scehma for image and video
   regular_media: Yup.mixed().required("Please select at least one file").test(
@@ -101,39 +100,57 @@ topdeals: Yup.boolean()
 });
 
 export const ActionUploadSchema = Yup.object().shape({
+
+  auction_media: Yup.mixed().required("Please select at least one file").test(
+      'regular_media',
+      'Please select at least one file',
+       (value) => Array.isArray(value) && value.length > 0
+    ),
+
+  topdeals: Yup.boolean().default(false),
+  featured: Yup.boolean().default(false),
+  cost_price: Yup.string().required("Cost Price is required"),
+  ticket_price: Yup.string().required("Ticket Price is required"),
+  weight: Yup.string().required("Weight is required"),
+  // auction_date: Yup.string().required("Date is required"),
+  auction_date: Yup.string().when('$isdisabled', {
+    is: (isdisabled: boolean) => isdisabled,
+    then: (schema: Yup.StringSchema) => schema.notRequired(),
+    otherwise: (schema: Yup.StringSchema) => schema.required("Date is required"),
+}),
+// auction_starttime: Yup.string().when('$isdisabled', {
+//     is: (isdisabled: boolean) => isdisabled,
+//     then: (schema: Yup.StringSchema) => schema.notRequired(),
+//     otherwise: (schema: Yup.StringSchema) => schema.required("Start Date is required"),
+// }),
+
+auction_starttime: Yup.string()
+    .matches(/^(0?[1-9]|1[0-2])(AM|PM)$/, "Enter time in 12-hour format (e.g., 12AM or 12PM)")
+    .required("Start Time is required"),
+
+auction_endtime: Yup.string()
+    .matches(/^(0?[1-9]|1[0-2])(AM|PM)$/, "Enter time in 12-hour format (e.g., 12AM or 12PM)")
+    .required("End Time is required"),
+
+
+
+  // auction_endtime: Yup.string().required("End date is required"),
+
   auction_name: Yup.string().required("Product name is required"),
   auction_category: Yup.string().required("Product category is required"),
   sub_category: Yup.string().required("Subcategory is required"),
   description: Yup.string().required("Description is required"),
-  auction_price: Yup.string().required("Price is required"),
-  ticket_price: Yup.string().required("Ticket Price is required"),
-  auction_start: Yup.string().required("Start Date is required"),
-  auction_endtime: Yup.string().required("End date is required"),
-  auction_date: Yup.string().required("Date is required"),
-  duration: Yup.string().required("Duration is required"),
-  // scehma for image and video
-  auction_media: Yup.mixed().required("Please select at least one file").test(
-      'regular_media',
-      'Please select at least one file',
-        (value) => Array.isArray(value) && value.length > 0
-    ),
-      cost_price: Yup.string().required("Cost Price is required"),
-  discount: Yup.string().required("Discount is required"),
+  // auction_price: Yup.string().required("Price is required"),
 
-topdeals: Yup.boolean()
-  .oneOf([true], 'Top Deals must be checked')
-  .required('Top Deals is required'),
 
-  featured: Yup.boolean()
-  .oneOf([true], 'Featured must be checked')
-  .required('Featured is required'),
 
-  // scehma for image and video
-  regular_media: Yup.mixed().required("Please select at least one file").test(
-      'regular_media',
-      'Please select at least one file',
-   (value) => Array.isArray(value) && value.length > 0
-    )
+  // duration: Yup.string().required("Duration is required"),
+
+
+  // discount: Yup.string().required("Discount is required"),
+
+
+
 });
 
 export const CategoriesSchema = Yup.object().shape({

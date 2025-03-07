@@ -20,7 +20,7 @@ import { useAuthStore } from '@/store/store'
 
 // import 'react-toastify/dist/ReactToastify.css'
 import { useState } from 'react'
-// import Cookies from 'js-cookie'
+ import Cookies from 'js-cookie'
 
 function Page() {
 
@@ -96,6 +96,7 @@ function Page() {
       })
       // console.log(data, 'datat')
       setAuthCookie(data?.data?.token, 0)
+        Cookies.set("token", data?.data?.token, { expires: 1 });
       setUser(data?.data)
       //  Cookies.set('ik', JSON.stringify(data?.data?.token), { sameSite: 'strict' });
 

@@ -16,7 +16,7 @@ export async function POST(request) {
 
           console.log(body, 'body')
    */
-        const res = await fetch(`${process.env.BASE_URL}/admin/upload_product/?${cacheBuster}`, {
+        const res = await fetch(`${process.env.BASE_URL}/admin/upload_auction/?${cacheBuster}`, {
             method: 'POST',
             maxBodyLength: Infinity,
             headers: {

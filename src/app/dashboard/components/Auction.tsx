@@ -4,7 +4,7 @@ import {
   SelectField,
   TextAreaField,
 } from "@/app/components/FormField";
-import { SetStateAction, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { useMutateData } from "@/hooks/useMutateData";
 import { DefaultButton } from "@/app/components/Button";
 import { categories, subcategories } from "@/app/data";
@@ -21,6 +21,34 @@ import "react-toastify/dist/ReactToastify.css";
 import Image from "next/image";
 import { div } from "framer-motion/m";
 import { tr } from "framer-motion/client";
+import { useQueryData } from "@/hooks/useQueryDataCat";
+import { setLocalStoreData } from "@/hooks/useLocalStorage";
+
+
+interface Subcategory {
+  toLowerCase: any;
+  id: string;
+  subcategory: any;
+  name?: string;
+  category?: string;
+  data?: any;
+}
+
+interface CategoryResponse {
+  data: Category[];
+}
+
+interface Category {
+  [x: string]: any;
+  category: string;
+  subcategories: Subcategory[];
+  data?: any;
+}
+
+interface CategoryResponse {
+  data: Category[];
+}
+
 
 export const Auction = () => {
   const router = useRouter();
@@ -28,8 +56,28 @@ export const Auction = () => {
   const [selectedImg, setSelectedImg] = useState<any>([]);
   const [selectedImgName, setSelectedImgName] = useState<any>([]);
   const [showModal, setShowModal] = useState(false);
+    const [previews, setPreviews] = useState<string[]>([]);
 
   const setproduct = useNewProductStore((state) => state.setproduct);
+
+
+    const { data: catInfo, isLoading: catnLoading } =
+    useQueryData<CategoryResponse>(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/commerce/categories_and_subcategories/`,
+      ["get categories_and_subcategories"],
+      true,
+    );
+
+  const catnew = catInfo?.data.map((cat) => ({
+    label: cat.category,
+    value: cat.id,
+    id: cat.id,
+    subcategories: cat.subcategories,
+  }));
+
+
+  const isDisabled = true;
+
 
   const {
     reset,
@@ -43,19 +91,44 @@ export const Auction = () => {
   } = useForm({
     mode: "all",
     resolver: yupResolver(ActionUploadSchema),
+     context: { isdisabled: isDisabled }
   });
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = event.target.files
-      ? Array.from(event.target.files)
-      : [];
-    const ImgArray = selectedFiles.map((file) => {
-      return URL.createObjectURL(file);
+  interface FileChangeEvent extends React.ChangeEvent<HTMLInputElement> {
+    target: HTMLInputElement & { files: FileList };
+  }
+
+  const handleFileChange = (e: FileChangeEvent): void => {
+    const files: File[] = Array.from(e.target.files);
+
+    const base64Promises = files.map((file) => {
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (error) => reject(error);
+      });
     });
 
-    console.log(ImgArray);
-    setSelectedImg((prevImg: string[]) => prevImg.concat(ImgArray));
+    Promise.all(base64Promises)
+      .then((base64Files) => {
+        const previousFiles = (watch("auction_media") as string[]) ?? [];
+        setValue("auction_media", [...previousFiles, ...base64Files]);
+        trigger("auction_media");
+      })
+      .catch((error) =>
+        console.error("Error converting files to base64:", error),
+      );
+
+    const imagePreviews = files.map((file) =>
+      URL.createObjectURL(file as Blob),
+    );
+    setPreviews((prev: string[]) => [...prev, ...imagePreviews]);
   };
+
+  useEffect(() => {
+    return () => previews.forEach((url) => URL.revokeObjectURL(url));
+  }, [previews]);
 
   const RemoveImg = (val: string) => {
     setSelectedImg(selectedImg.filter((e: string) => e !== val));
@@ -63,11 +136,14 @@ export const Auction = () => {
   };
 
   const handleSuccess = (data: any) => {
-    if (data.status === 201) {
-      router.push("/dashboard");
+    if (data.status === 200 || data.status === 201) {
+      /* router.push("/dashboard/userdetails"); */
       setShowModal(true);
+      setLocalStoreData(data);
+      setPreviews([]);
       reset();
     } else if (data.status === 400 || data.status === 409) {
+            setPreviews([]);
       toast.error(`${data?.data?.message}`, {
         position: "top-right",
         autoClose: 5000,
@@ -80,7 +156,8 @@ export const Auction = () => {
       });
       reset();
     } else {
-      toast.error(`${"An Error Occured"}`, {
+            setPreviews([]);
+  toast.error(`${data?.data?.message}`, {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -106,25 +183,65 @@ export const Auction = () => {
     });
     reset();
   };
-
   const { data, error, mutate, status } = useMutateData(
     "upload",
     handleSuccess,
-    handleError
+    handleError,
   );
 
-  const sumbitForm = (data: any) => {
-    mutate({
-      url: "/api/upload",
-      payload: data,
+const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-GB");  // Formats as DD/MM/YYYY
+};
+
+const sumbitForm = (data: any) => {
+    // Prepare FormData to handle file uploads
+    const formData = new FormData();
+
+    // Append simple fields
+    formData.append("auction_name", data.auction_name);
+    formData.append("auction_category", data.auction_category);
+    formData.append("sub_category", data.sub_category);
+    formData.append("cost_price", data.cost_price);
+    formData.append("ticket_price", data.ticket_price);
+    formData.append("start_date", formatDate(data.auction_date));  // Formatted date
+    formData.append("start_time", data.auction_starttime);
+    formData.append("end_time", data.auction_endtime);
+    formData.append("description", data.description);
+
+    // Append files if they exist
+    const auctionMedia = data.auction_media as File[];
+    auctionMedia.forEach((file, index) => {
+        formData.append(`auction_media[${index}]`, file);
     });
 
-    localStorage.setItem("product-details", JSON.stringify(data));
-    // router.push("/dashboard/product-details")
-  };
+    // Create a clean payload for the request
+    const Payload = {
+        name: data.auction_name,
+        category: data.auction_category,
+        subcategory: data.sub_category,
+        const_price: data.cost_price,
+        ticket_price: data.ticket_price,
+        start_date: formatDate(data.auction_date),
+        start_time: data.auction_starttime,
+        end_time: data.auction_endtime,
+        description: data.description,
+        auction_images: auctionMedia  // Use file names for payload
+    };
+
+    // console.log(Payload, "Payload");
+
+     mutate({
+         url: "/api/uploadauction",
+         payload: Payload,
+     });
+
+     localStorage.setItem("auction-details", JSON.stringify(Payload));
+
+};
 
 
- const [selectedOption, setSelectedOption] = useState("Upload Now");
+  const [selectedOption, setSelectedOption] = useState("Upload Now");
 
   const handleSelection = (value: SetStateAction<string>) => {
     setSelectedOption(value);
@@ -144,7 +261,6 @@ export const Auction = () => {
           Auction Details
         </h1>
         <hr className="w-full h-1 border-[#D2D2D2] rounded"></hr>
-
 
         <form
           onSubmit={handleSubmit(sumbitForm)}
@@ -175,7 +291,7 @@ export const Auction = () => {
                     max="5"
                     className="pt-6 hidden "
                     multiple
-                    {...register("auction_media", { required: true })}
+                    onChange={handleFileChange}
                   />
                 </label>
                 <div className="text-xs text-rose-500 pt-1">
@@ -184,23 +300,47 @@ export const Auction = () => {
               </div>
 
 
-  <div className="flex gap-12 mb-4 flex-col lg:flex-row md:flex-row ">
-              <CheckboxField
-        label=""
-        name="topdeals"
-        register={register}
-        errors={errors}
-        options={["Top Deals"]}
-        classname="mt-4"
-      />
-                 <CheckboxField
-        label=""
-        name="featured"
-        register={register}
-        errors={errors}
-        options={["Featured"]}
-        classname="mt-4"
-      />
+         <div className="flex gap-2 mt-4 flex-wrap">
+                {previews.map((src, index) => (
+                  <Image
+                    key={index}
+                    src={src}
+                    alt={`preview-${index}`}
+                    className="w-20 h-20 object-cover rounded-md shadow"
+                    width={80}
+                    height={80}
+                    priority
+                  />
+                ))}
+              </div>
+
+
+
+              <div className="flex gap-12 mb-4 flex-col lg:flex-row md:flex-row ">
+                {/* <CheckboxField
+                  label=""
+                  name="topdeals"
+                  register={register}
+                  errors={errors}
+                  options={["Top Deals"]}
+                  onChange={(e: { target: { checked: boolean } }) =>
+                    setValue("topdeals", e.target.checked)
+                  }
+                  classname="mt-4"
+                />
+
+
+                <CheckboxField
+                  label=""
+                  name="featured"
+                  register={register}
+                  errors={errors}
+                  options={["Featured"]}
+                  onChange={(e: { target: { checked: boolean } }) =>
+                    setValue("featured", e.target.checked)
+                  }
+                  classname="mt-4"
+                />  */}
               </div>
 
               <div className="flex gap-2  flex-col lg:flex-row md:flex-row ">
@@ -208,20 +348,19 @@ export const Auction = () => {
                   name="cost_price"
                   label="Cost Price"
                   type="text"
-                   placeholder="₦1234"
+                  placeholder="₦1234"
                   register={register}
                   errors={errors}
-
-            classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
-                 <InputField
+                <InputField
                   name="ticket_price"
                   label="Ticket Price"
                   type="text"
                   placeholder="₦1234"
                   register={register}
                   errors={errors}
-                 classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
               </div>
               <div className="flex gap-2 py-2 flex-col lg:flex-row md:flex-row ">
@@ -232,19 +371,15 @@ export const Auction = () => {
                   placeholder="50kg"
                   register={register}
                   errors={errors}
-                 classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
-
               </div>
-
-
-
             </div>
 
             <div className="flex items-center">
               <div className="flex-col flex gap-3">
                 <InputField
-                  name="product_name"
+                  name="auction_name"
                   label="Product Name"
                   type="text"
                   placeholder="Rice"
@@ -252,24 +387,31 @@ export const Auction = () => {
                   errors={errors}
                   classname={`text-sm w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
-                <SelectField
-                  name="product_category"
+                 <SelectField
+                  name="auction_category"
                   label="Category"
                   register={register}
                   errors={errors}
-                  options={categories}
-
-                 classname={`text-sm  xl:w-[298px] 2xl:w-[298px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  options={catnew?.map((cat) => ({
+                    label: cat.label,
+                    value: cat.value,
+                  }))}
+                  classname={`text-sm  xl:w-[298px] 2xl:w-[298px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
                 <SelectField
                   name="sub_category"
                   label="Sub Category"
                   register={register}
                   errors={errors}
-                  options={subcategories}
-                 classname={`text-sm  xl:w-[298px] 2xl:w-[298px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
-
-
+                  options={
+                    catnew
+                      ?.find((cat) => cat.id === watch("auction_category"))
+                      ?.subcategories.map((sub) => ({
+                        label: sub.subcategory,
+                        value: sub.id,
+                      })) || []
+                  }
+                  classname={`text-sm  xl:w-[298px] 2xl:w-[298px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
                 <TextAreaField
                   name="description"
@@ -277,7 +419,7 @@ export const Auction = () => {
                   register={register}
                   errors={errors}
                   placeholder={"Describe your product here..."}
-                     classname={`resize-none px-5 h-24 focus:text-black border rounded w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] p-4`}
+                  classname={`resize-none px-5 h-24 focus:text-black border rounded w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] p-4`}
                 />
               </div>
             </div>
@@ -285,156 +427,189 @@ export const Auction = () => {
 
           <hr className="w-full h-2 border-[#D2D2D2] rounded"></hr>
 
+           {/*    <div className="flex items-center space-x-8 mb-8">
+
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="radio"
+                name="uploadOption"
+                value="Upload Now"
+                className="hidden"
+                checked={selectedOption === "Upload Now"}
+                onChange={() => setSelectedOption("Upload Now")}
+              />
+              <div
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                  selectedOption === "Upload Now"
+                    ? "border-[#D55842]"
+                    : "border-gray-400"
+                }`}
+              >
+                {selectedOption === "Upload Now" && (
+                  <div className="w-3 h-3 rounded-full bg-[#D55842]"></div>
+                )}
+              </div>
+              <span
+                className={`text-sm ${
+                  selectedOption === "Upload Now"
+                    ? "text-black"
+                    : "text-gray-400"
+                }`}
+              >
+                Upload Now
+              </span>
+            </label>
+
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="radio"
+                name="uploadOption"
+                value="Schedule Upload"
+                className="hidden"
+                checked={selectedOption === "Schedule Upload"}
+                onChange={() => setSelectedOption("Schedule Upload")}
+              />
+              <div
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                  selectedOption === "Schedule Upload"
+                    ? "border-[#D55842]"
+                    : "border-gray-400"
+                }`}
+              >
+                {selectedOption === "Schedule Upload" && (
+                  <div className="w-3 h-3 rounded-full bg-[#D55842]"></div>
+                )}
+              </div>
+              <span
+                className={`text-sm ${
+                  selectedOption === "Schedule Upload"
+                    ? "text-black"
+                    : "text-gray-400"
+                }`}
+              >
+                Schedule Upload
+              </span>
+            </label>
+          </div>
+
+      {selectedOption === "Upload Now" ? (
+            <div>
+              <h1 className=" text-sm font-Poppins text-gray-400 mb-4">
+                Date & Time
+              </h1>
+              <div className="flex gap-4  flex-col lg:flex-row md:flex-row border border-gray-300 rounded-lg px-4 py-4 ">
+                <InputField
+                  name="auction_date"
+                  label="Date"
+                  type="date"
+                  placeholder="Start Date"
+                  isdisabled={true}
+                  register={register}
+                  errors={errors}
+                  classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
+                />
+                <InputField
+                  name="auction_starttime"
+                  label="Start Time"
+                  type="time"
+                  isdisabled={true}
+                  placeholder="End Date"
+                  register={register}
+                  errors={errors}
+                  classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
+                />
+                <InputField
+                  name="auction_endtime"
+                  label="End Time"
+                  type="time"
+                  placeholder="End Date"
+                  register={register}
+                  errors={errors}
+                  classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
+                />
+              </div>
+              <h1 className=" py-4 flex  justify-center items-center text-sm font-Poppins text-gray-400 mb-4">
+                Duration: 2hr: 00 mins
+              </h1>
+            </div>
+          ) : (
+            <div>
+              <div className="flex gap-4  flex-col lg:flex-row md:flex-row border border-gray-300 rounded-lg px-4 py-4 ">
+                <InputField
+                  name="auction_date"
+                  label="Date"
+                  type="date"
+                  placeholder="Start Date"
+                  isdisabled={false}
+                  register={register}
+                  errors={errors}
+                  classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
+                />
+                <InputField
+                  name="auction_starttime"
+                  label="Start Time"
+                  type="time"
+                  isdisabled={false}
+                  placeholder="End Date"
+                  register={register}
+                  errors={errors}
+                  classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
+                />
+                <InputField
+                  name="auction_endtime"
+                  label="End Time"
+                  type="time"
+                  placeholder="End Date"
+                  register={register}
+                  errors={errors}
+                  classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
+                />
+              </div>
+              <h1 className=" py-4 flex  justify-center items-center text-sm font-Poppins text-gray-400 mb-4">
+                Duration: 2hr: 00 mins
+              </h1>
+            </div>
+          )} */}
 
 
-
-
-      <div className="flex items-center space-x-8 mb-8">
-      {/* Upload Now Option */}
-      <label className="flex items-center space-x-2 cursor-pointer">
-        <input
-          type="radio"
-          name="uploadOption"
-          value="Upload Now"
-          className="hidden"
-          checked={selectedOption === "Upload Now"}
-          onChange={() => setSelectedOption("Upload Now")}
-        />
-        <div
-          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-            selectedOption === "Upload Now" ? "border-[#D55842]" : "border-gray-400"
-          }`}
-        >
-          {selectedOption === "Upload Now" && (
-            <div className="w-3 h-3 rounded-full bg-[#D55842]"></div>
-          )}
-        </div>
-        <span
-          className={`text-sm ${
-            selectedOption === "Upload Now" ? "text-black" : "text-gray-400"
-          }`}
-        >
-          Upload Now
-        </span>
-      </label>
-
-      {/* Schedule Upload Option */}
-      <label className="flex items-center space-x-2 cursor-pointer">
-        <input
-          type="radio"
-          name="uploadOption"
-          value="Schedule Upload"
-          className="hidden"
-          checked={selectedOption === "Schedule Upload"}
-          onChange={() => setSelectedOption("Schedule Upload")}
-        />
-        <div
-          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-            selectedOption === "Schedule Upload" ? "border-[#D55842]" : "border-gray-400"
-          }`}
-        >
-          {selectedOption === "Schedule Upload" && (
-            <div className="w-3 h-3 rounded-full bg-[#D55842]"></div>
-          )}
-        </div>
-        <span
-          className={`text-sm ${
-            selectedOption === "Schedule Upload" ? "text-black" : "text-gray-400"
-          }`}
-        >
-          Schedule Upload
-        </span>
-      </label>
-    </div>
-
-{
-  selectedOption === "Upload Now" ? (
-
-  <div>
-    <h1 className=" text-sm font-Poppins text-gray-400 mb-4" >Date & Time</h1>
-     <div className="flex gap-4  flex-col lg:flex-row md:flex-row border border-gray-300 rounded-lg px-4 py-4 ">
-      <InputField
-        name="start_date"
-        label="Date"
-        type="date"
-        placeholder="Start Date"
-        isdisabled={true}
-
-        register={register}
-        errors={errors}
-        classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-      />
-       <InputField
-        name="start_time"
-        label="Start Time"
-        type="time"
-      isdisabled={true}
-        placeholder="End Date"
-        register={register}
-        errors={errors}
-        classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-      />
-      <InputField
-        name="end_time"
-        label="End Time"
-        type="time"
-        placeholder="End Date"
-        register={register}
-        errors={errors}
-        classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-      />
-
-    </div>
-       <h1 className=" py-4 flex  justify-center items-center text-sm font-Poppins text-gray-400 mb-4" >Duration: 2hr: 00 mins</h1>
-
-
-
-  </div>
-
-
-  )  : (
-       <div>
-
-     <div className="flex gap-4  flex-col lg:flex-row md:flex-row border border-gray-300 rounded-lg px-4 py-4 ">
-      <InputField
-        name="start_date"
-        label="Date"
-        type="date"
-        placeholder="Start Date"
-
-        isdisabled={false}
-        register={register}
-        errors={errors}
-        classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-      />
-       <InputField
-        name="start_time"
-        label="Start Time"
-        type="time"
-      isdisabled={false}
-        placeholder="End Date"
-        register={register}
-        errors={errors}
-        classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-      />
-      <InputField
-        name="end_time"
-        label="End Time"
-        type="time"
-        placeholder="End Date"
-        register={register}
-        errors={errors}
-        classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-      />
-
-    </div>
-       <h1 className=" py-4 flex  justify-center items-center text-sm font-Poppins text-gray-400 mb-4" >Duration: 2hr: 00 mins</h1>
-
-
-
-  </div>  )
-
-}
+             <div>
+              <div className="flex gap-4  flex-col lg:flex-row md:flex-row border border-gray-300 rounded-lg px-4 py-4 ">
+                <InputField
+                  name="auction_date"
+                  label="Date"
+                  type="date"
+                  placeholder="Start Date"
+                  isdisabled={false}
+                  register={register}
+                  errors={errors}
+                  classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
+                />
+                <InputField
+                  name="auction_starttime"
+                  label="Start Time"
+                  type="text"
+                  isdisabled={false}
+                  placeholder="12AM or 12PM"
+                  register={register}
+                  errors={errors}
+                pattern="^(0?[1-9]|1[0-2])(AM|PM)$"
+                  classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
+                />
+                <InputField
+                  name="auction_endtime"
+                  label="End Time"
+                  type="text"
+                placeholder="12AM or 12PM"
+                  register={register}
+                  errors={errors}
+                pattern="^(0?[1-9]|1[0-2])(AM|PM)$"
+                  classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
+                />
+              </div>
+             {/*  <h1 className=" py-4 flex  justify-center items-center text-sm font-Poppins text-gray-400 mb-4">
+                Duration: 2hr: 00 mins
+              </h1> */}
+            </div>
 
 
           <div className={`py-4`}>
@@ -446,6 +621,7 @@ export const Auction = () => {
             />
           </div>
         </form>
+
       </section>
       {showModal && (
         <div className="flex absolute top-0 z-50 left-0">

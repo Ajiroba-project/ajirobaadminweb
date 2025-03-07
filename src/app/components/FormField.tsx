@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {AwaitedReactNode, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useState} from 'react'
 import { FaRegEyeSlash } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa6";
 import { FiUpload } from "react-icons/fi";
@@ -14,6 +14,7 @@ type inputProps ={
     classname?:any,
     value?:string
     isdisabled?:boolean
+    pattern?:string
 }
 type selectProps ={
     name:inputProps["name"],
@@ -35,7 +36,6 @@ type textareaProps ={
    classname?:any,
 }
 type fileUpoadProps ={
-    // hangleChange : ()=> void,
     label:string;
     name:inputProps["name"],
     register:inputProps["register"],
@@ -44,14 +44,15 @@ type fileUpoadProps ={
 
 }
 
-
 interface CheckboxProps {
   label: string;
   name: string;
-  register: any; // Replace `any` with the correct type if using TypeScript and a specific form library like React Hook Form
-  errors?: any;  // Replace with appropriate error type
-  options: string[]; // Array of options for the checkboxes
-  classname?: string; // Optional custom className for styling
+  register: any;
+  errors?: any;
+  options?: string[];
+  classname?: string;
+  value?: any
+  onChange?: any
 }
 
 
@@ -62,18 +63,21 @@ export const CheckboxField = ({
   errors,
   options,
   classname,
+  value,
+  onChange
 }: CheckboxProps) => {
   return (
     <div className="relative flex flex-col">
       <label className="py-2 font-Poppins text-sm text-[#353131]">{label}</label>
       <div className={`flex flex-col gap-2 ${classname ? classname : ""}`}>
-        {options.map((option: string, index: number) => (
+        {options && options.map((option: string, index: number) => (
           <div key={index} className="flex items-center gap-2">
             <input
               type="checkbox"
               {...register(name, { required: true })}
-              value={option}
+              value={value}
               id={`${name}-${index}`}
+              onAbort={onChange}
               className="h-4 w-4 border-gray-300 rounded focus:ring focus:ring-blue-500"
             />
             <label htmlFor={`${name}-${index}`} className="text-sm text-[#353131]">
@@ -89,7 +93,7 @@ export const CheckboxField = ({
   );
 };
 
-export const InputField =({label, type, placeholder, name, register, errors, showPassword, classname, value, isdisabled}:inputProps)=>{
+export const InputField =({label, type, pattern, placeholder, name, register, errors, showPassword, classname, value, isdisabled}:inputProps)=>{
     const [toggle, setToggle] = useState(showPassword)
 
     const handleTogglePasswordVisibility=()=>{
@@ -102,10 +106,9 @@ export const InputField =({label, type, placeholder, name, register, errors, sho
             <label className="py-2 font-Poppins text-sm text-[#353131]">{label}</label>
             <input name={name} type={toggle ? "text" :type}
              placeholder={placeholder}
+             pattern={pattern}
               className={`${classname ? classname :"px-5 h-12 focus:text-black border rounded  w-full xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] "}`}
-            /*   */
              {...register(name, { required: true })}
-
               disabled={isdisabled}
              />
              {showPassword && (
@@ -122,33 +125,41 @@ export const InputField =({label, type, placeholder, name, register, errors, sho
     )
 }
 
-export const SelectField =({label, name, register, errors, options, classname, multiple}:selectProps)=>{
-    return (
-        <div className="relative flex flex-col">
-            <label className="py-2 font-Poppins text-sm text-[#353131]">{label} </label>
-             <select {...register(name, { required: true })} name={name} className={`${classname ? classname : "px-5 h-12 focus:text-black border rounded w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xl-[300px] lg:w-[300px]"}  `} >
-                <option value="" className="text-wdc-textbody">
-                    Select a {label}
-                </option>
-                {options.map((val:string, key:number) => (
-                    <option key={key} className="text-wdc-textbody" value={val}>
-                        {val}
-                    </option>
-                ))}
-            </select>
 
-            <div className="text-xs text-rose-500 pt-1">
-                {errors?.[name]?.message}
-            </div>
-        </div>
-    )
-}
+export const SelectField = ({
+  label,
+  name,
+  register,
+  errors,
+  options,
+  classname,
+  multiple
+}: selectProps) => {
+  return (
+    <div className="relative flex flex-col">
+      <label className="py-2 font-Poppins text-sm text-[#353131]">{label}</label>
+      <select
+        {...register(name, { required: true })}
+        name={name}
+        multiple={multiple}
+        className={`${classname ? classname : "px-5 h-12 focus:text-black border rounded w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xl-[300px] lg:w-[300px]"}`}
+      >
+        <option value="" className="text-wdc-textbody">
+          Select a {label}
+        </option>
+        {options && options?.map((option: { value: string | number | readonly string[] | undefined; label: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; }, key: Key | null | undefined) => (
+          <option key={key} className="text-wdc-textbody" value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
 
-
-
-
-
-
+      <div className="text-xs text-rose-500 pt-1">
+        {errors?.[name]?.message}
+      </div>
+    </div>
+  );
+};
 
 export const TextAreaField =({label, name, register, errors, classname, placeholder}:textareaProps)=>{
     return (
