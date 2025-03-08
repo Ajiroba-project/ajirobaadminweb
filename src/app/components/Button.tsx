@@ -5,13 +5,14 @@ type ButtonProps = {
   className: string;
   type: "submit" | "reset" | "button" | undefined;
   icon?: any;
+  form?: any;
 };
 
 export const DefaultButton = ({
   text,
   type,
   handleClick,
-  className,
+  className, form
 }: ButtonProps) => {
   return (
     <>
@@ -20,6 +21,7 @@ export const DefaultButton = ({
         type={type}
         onClick={handleClick}
         value={text}
+        form={form}
       />
     </>
   );

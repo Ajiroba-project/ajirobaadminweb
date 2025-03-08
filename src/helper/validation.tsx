@@ -70,6 +70,33 @@ topdeals: Yup.boolean().default(false),
 });
 
 
+export const ProductEditUploadSchema = Yup.object().shape({
+  product_name: Yup.string().required("Product name is required"),
+  product_category: Yup.string().required("Product category is required"),
+  sub_category: Yup.string().required("Subcategory is required"),
+  description: Yup.string().required("Product Description is required"),
+  selling_price: Yup.string().required("selling Price is required"),
+  discount: Yup.string().required("discount Price is required"),
+  quantity: Yup.number().required("Quantity is required"),
+  weight: Yup.string().required("Weight is required"),
+
+// topdeals: Yup.boolean()
+//   .oneOf([true], 'Top Deals must be checked')
+//   .required('Top Deals is required'),
+topdeals: Yup.boolean().default(false),
+
+  featured: Yup.boolean().default(false),
+
+  // scehma for image and video
+  regular_media: Yup.mixed().required("Please select at least one file").test(
+      'regular_media',
+      'Please select at least one file',
+      (value) => Array.isArray(value) && value.length > 0
+    )
+});
+
+
+
 
 export const AuctionEditUploadSchema = Yup.object().shape({
   product_name: Yup.string().required("Product name is required"),
