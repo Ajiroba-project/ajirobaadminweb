@@ -50,8 +50,10 @@ export const ProductListCard = ({ object }: cardProps) => {
 
     const [currentPage, setCurrentPage] = useState<number>(0);
   const [filteredData, setFilteredData] = useState<any>([]);
-  const [itemsPerPage] = useState<number>(12);
+  const [itemsPerPage] = useState<number>(5);
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+
+  console.log(object, 'object')
 
 
    useMemo(() => {
@@ -75,14 +77,14 @@ export const ProductListCard = ({ object }: cardProps) => {
     <div>
 
  <section className="py-4 grid lg:grid-cols-3 gap-4 w-full">
-      {object?.map((val, index) => (
+      {filteredData?.map((val, index) => (
         <Fragment key={index}>
           <div className="border rounded-lg p-4">
             <div className="flex items-center justify-between">
               <p className="font-bold text-lg">{val.name}</p>
               <Image
-                src={"https://owayo-cdn.com/cdn-cgi/image/format=auto,fit=contain,width=490/newhp/img/productHome/productSeitenansicht/productservice/tshirts_classic_herren_basic_productservice/st2020_whi.png"}
-                alt="new"
+                  src={`https://ajiroba.onrender.com/media/${val?.images[0]?.image}`}
+               alt={val.category_name}
                 height={50}
                 width={50}
                 className="rounded-full "
@@ -91,15 +93,23 @@ export const ProductListCard = ({ object }: cardProps) => {
 
             <div className="py-2 mt-5 grid-cols-2 grid gap-y-2 gap-x-3">
               <h4 className="text-[#A09F9F] text-base font-Poppins">Category:</h4>
-              <p className="text-sm font-Poppins text-[#2A2A2A] " >{val.category}</p>
+              <p className="text-sm font-Poppins text-[#2A2A2A] " > {val.category_name.length > 100
+                ? val.category_name.slice(0, 50) + "..."
+                : val.category_name}</p>
               <h4 className="text-[#A09F9F] text-base font-Poppins">Sub category:</h4>
-              <p className="text-sm font-Poppins text-[#2A2A2A] ">{val.subcategory}</p>
+              <p className="text-sm font-Poppins text-[#2A2A2A] ">{val.subcategory_name}</p>
               <h4 className="text-[#A09F9F] text-base font-Poppins">Selling Price:</h4>
               <p className="text-sm font-Poppins text-[#2A2A2A] ">{val.price}</p>
               <h4 className="text-[#A09F9F] text-base font-Poppins">Discount Price:</h4>
               <p className="text-sm font-Poppins text-[#2A2A2A] ">{val.discount}</p>
               <h4 className="text-[#A09F9F] text-base font-Poppins">Product Description:</h4>
-              <p className="text-sm font-Poppins text-[#2A2A2A] ">{val.description}</p>
+            {/*   <p className="text-sm font-Poppins text-[#2A2A2A] ">{val.description}</p> */}
+            <p className="text-sm font-Poppins text-[#2A2A2A] ">
+              {val.description.length > 100
+                ? val.description.slice(0, 50) + "..."
+                : val.description}
+            </p>
+
 
               <div className="pt-4 ">
                 <Link
@@ -126,6 +136,11 @@ export const ProductListCard = ({ object }: cardProps) => {
 
   );
 };
+
+
+
+
+
 
 export const AuctionListCard = ({ object }: cardProps) => {
   const [currentPage, setCurrentPage] = useState<number>(0);

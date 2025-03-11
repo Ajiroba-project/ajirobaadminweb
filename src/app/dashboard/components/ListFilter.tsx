@@ -1,32 +1,74 @@
 import React from "react";
 import { useState } from "react";
 import { CiSearch } from "react-icons/ci";
-import DatePicker from "react-datepicker";
+// import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { DatePicker, Space } from 'antd';
+import type { RangePickerProps } from "antd/es/date-picker";
+import dayjs from "dayjs";
 
 interface ListFilterProps {
-  onSearch: (searchVal: string, dateVal: string) => void;
+  onSearch: (searchVal: string, startDate: string | null, endDate: string | null) => void;
 }
 
 export const ListFilter: React.FC<ListFilterProps> = ({ onSearch }) => {
-  const [searchVal, setsearchVal] = useState<string>("");
+  const [searchVal, setSearchVal] = useState<string>("");
   const [dateVal, setDate] = useState<string>("");
+    const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+    const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null]);
+
+  const { RangePicker } = DatePicker;
+
+
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const handleSearchInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const { value } = event.target;
-    setsearchVal(value);
-    onSearch(value, searchVal);
+ // Handle Search Input
+  const handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setSearchVal(value);
+    onSearch(value, dateRange[0]?.format("YYYY-MM-DD") || null, dateRange[1]?.format("YYYY-MM-DD") || null);
   };
 
-  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-    setDate(value);
-    onSearch(value, dateVal);
+
+    // Handle Start Date Change
+  const handleStartDateChange = (date: Date | null) => {
+    setStartDate(date);
+    onSearch(searchVal, date ? date.toISOString().split("T")[0] : null, endDate ? endDate.toISOString().split("T")[0] : null);
   };
+
+  // Handle End Date Change
+  const handleEndDateChange = (date: Date | null) => {
+    setEndDate(date);
+    onSearch(searchVal, startDate ? startDate.toISOString().split("T")[0] : null, date ? date.toISOString().split("T")[0] : null);
+  };
+
+ // Reset Filters
+  const handleReset = () => {
+    setSearchVal("");
+    setDateRange([null, null]);
+    onSearch("", null, null);
+  }
+
+  //   // Handle date selection
+  // const handleDateChange = (date: Date | null) => {
+  //   setSelectedDate(date);
+  //   onSearch(searchVal, date ? date.toISOString().split("T")[0] : "");
+  // };
+
+
+  // Handle Date Selection
+  const handleDateChange: RangePickerProps["onChange"] = (dates) => {
+    if (dates) {
+      setDateRange(dates);
+      onSearch(searchVal, dates[0]?.format("YYYY-MM-DD") || null, dates[1]?.format("YYYY-MM-DD") || null);
+    } else {
+      setDateRange([null, null]);
+      onSearch(searchVal, null, null);
+    }
+  };
+
 
   return (
     <section className="flex justify-between items-center mt-6 ">
@@ -49,14 +91,22 @@ export const ListFilter: React.FC<ListFilterProps> = ({ onSearch }) => {
 
       <div>
 
-        <DatePicker
-      selected={selectedDate}
-      onChange={(date) => setSelectedDate(date)}
-      placeholderText="Select dates"
-      className="border rounded-lg py-2 focus:outline-[#FCDFD4] px-2"
-      minDate={new Date("2025-01-01")}
-    />
+
+        <RangePicker
+          value={dateRange}
+          onChange={handleDateChange}
+          format="YYYY-MM-DD"
+          allowClear
+          className="mr-2"
+        />
+
+
+        <button onClick={handleReset} className="text-sm rounded-md border-2 border-[#F25E26] bg-white p-1 text-[#2A2A2A]">
+        Reset
+      </button>
       </div>
+
+
     </section>
   );
 };
