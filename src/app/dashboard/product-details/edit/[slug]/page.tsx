@@ -260,7 +260,7 @@ useEffect(() => {
       featured: data.featured,
       top_deals: data.topdeals,
       description: data.description,
-      auction_images: regularMedia,
+      product_images: regularMedia,
 
     };
 

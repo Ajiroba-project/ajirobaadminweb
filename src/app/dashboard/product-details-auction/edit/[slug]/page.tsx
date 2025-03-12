@@ -262,7 +262,7 @@ useEffect(() => {
       start_time: data.auction_starttime,
       end_time: data.auction_endtime,
       description: data.description,
-      product_images: regularMedia,
+      auction_images: regularMedia,
     };
 
 
