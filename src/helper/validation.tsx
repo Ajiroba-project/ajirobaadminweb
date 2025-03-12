@@ -100,23 +100,29 @@ topdeals: Yup.boolean().default(false),
 
 export const AuctionEditUploadSchema = Yup.object().shape({
   product_name: Yup.string().required("Product name is required"),
-  product_category: Yup.string().required("Product category is required"),
+
   sub_category: Yup.string().required("Subcategory is required"),
   description: Yup.string().required("Product Description is required"),
-  last_price: Yup.string().required("Last Price is required"),
+
   ticket_price: Yup.string().required("Ticket Price is required"),
-  selling_price: Yup.string().required("selling Price is required"),
-  discount: Yup.string().required("discount Price is required"),
-  quantity: Yup.number().required("Quantity is required"),
-  weight: Yup.string().required("Weight is required"),
+  cost_price: Yup.string().required("Cost Price is required"),
 
-topdeals: Yup.boolean()
-  .oneOf([true], 'Top Deals must be checked')
-  .required('Top Deals is required'),
+  auction_category: Yup.string().required("Product category is required"),
 
-  featured: Yup.boolean()
-  .oneOf([true], 'Featured must be checked')
-  .required('Featured is required'),
+    // last_price: Yup.string().required("Last Price is required"),
+   // product_category: Yup.string().required("Product category is required"),
+
+//     selling_price: Yup.string().required("selling Price is required"),
+//   discount: Yup.string().required("discount Price is required"),
+//   quantity: Yup.number().required("Quantity is required"),
+//   weight: Yup.string().required("Weight is required"),
+// topdeals: Yup.boolean()
+//   .oneOf([true], 'Top Deals must be checked')
+//   .required('Top Deals is required'),
+
+//   featured: Yup.boolean()
+//   .oneOf([true], 'Featured must be checked')
+//   .required('Featured is required'),
 
   // scehma for image and video
   regular_media: Yup.mixed().required("Please select at least one file").test(

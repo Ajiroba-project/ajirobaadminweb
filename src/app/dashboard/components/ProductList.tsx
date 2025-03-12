@@ -2,7 +2,6 @@
 import React, {useState, useEffect, useCallback} from "react";
 import { ListFilter } from "./ListFilter";
 import { ProductListCard } from "./Card";
-import {ProductLists} from "@/app/data"
 import Cookies from "js-cookie";
 import { useGetDatanew } from "@/hooks/useGetData";
 
@@ -19,9 +18,6 @@ export const ProductList = () => {
 
    const [userToken, setUserToken] = useState(Cookies.get("token"));
 
-
-
-
   // Construct URL with dynamic filters
   let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_products/`;
   if (startDate && endDate) {
@@ -33,10 +29,6 @@ export const ProductList = () => {
     "get_product_details",
     userToken || " "
   );
-
-
-  console.log(productInfo?.data, 'product info')
-
 
   useEffect(() => {
     setFilteredData(productInfo?.data || []);

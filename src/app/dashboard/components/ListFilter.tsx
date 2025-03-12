@@ -13,16 +13,9 @@ interface ListFilterProps {
 
 export const ListFilter: React.FC<ListFilterProps> = ({ onSearch }) => {
   const [searchVal, setSearchVal] = useState<string>("");
-  const [dateVal, setDate] = useState<string>("");
-    const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
     const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null]);
 
   const { RangePicker } = DatePicker;
-
-
-
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
  // Handle Search Input
   const handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,17 +25,7 @@ export const ListFilter: React.FC<ListFilterProps> = ({ onSearch }) => {
   };
 
 
-    // Handle Start Date Change
-  const handleStartDateChange = (date: Date | null) => {
-    setStartDate(date);
-    onSearch(searchVal, date ? date.toISOString().split("T")[0] : null, endDate ? endDate.toISOString().split("T")[0] : null);
-  };
 
-  // Handle End Date Change
-  const handleEndDateChange = (date: Date | null) => {
-    setEndDate(date);
-    onSearch(searchVal, startDate ? startDate.toISOString().split("T")[0] : null, date ? date.toISOString().split("T")[0] : null);
-  };
 
  // Reset Filters
   const handleReset = () => {
@@ -50,13 +33,6 @@ export const ListFilter: React.FC<ListFilterProps> = ({ onSearch }) => {
     setDateRange([null, null]);
     onSearch("", null, null);
   }
-
-  //   // Handle date selection
-  // const handleDateChange = (date: Date | null) => {
-  //   setSelectedDate(date);
-  //   onSearch(searchVal, date ? date.toISOString().split("T")[0] : "");
-  // };
-
 
   // Handle Date Selection
   const handleDateChange: RangePickerProps["onChange"] = (dates) => {
@@ -90,7 +66,6 @@ export const ListFilter: React.FC<ListFilterProps> = ({ onSearch }) => {
 
 
       <div>
-
 
         <RangePicker
           value={dateRange}

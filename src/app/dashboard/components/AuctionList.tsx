@@ -3,36 +3,52 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { ListFilter } from "./ListFilter";
 import { AuctionListCard } from "./Card";
 import { AuctionLists } from "@/app/data";
+import Cookies from "js-cookie";
+import { useGetDatanew } from "@/hooks/useGetData";
 
 export const AuctionList = (() => {
+  // filter by name
   const [filteredData, setFilteredData] = useState<any>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<string | null>(null);
+  const [endDate, setEndDate] = useState<string | null>(null);
+
+
+   const [userToken, setUserToken] = useState(Cookies.get("token"));
+
+  // Construct URL with dynamic filters
+  let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_auctions/`;
+  if (startDate && endDate) {
+    url += `?start_date=${startDate}&end_date=${endDate}`;
+  }
+
+  const { data: productInfo, isLoading: productLoading } = useGetDatanew(
+    url,
+    "get_product_details",
+    userToken || " "
+  );
 
   useEffect(() => {
-    setFilteredData(AuctionLists);
-  }, []);
+    setFilteredData(productInfo?.data || []);
+  }, [productInfo]);
 
-  const handleSearch = useCallback((searchVal: string, dateVal: string) => {
-    let filteredProducts = AuctionLists;
+  // Filter function (Search + Date)
+  const handleSearch = useCallback((searchVal: string, start: string | null, end: string | null) => {
+     setSearchTerm(searchVal);
+    setStartDate(start);
+    setEndDate(end);
 
-    // if (searchVal.length <= 2 && dateVal.length <= 2) {
-    //   setFilteredData(AuctionLists);
-    //   return;
-    // }
+    let filteredProducts: any[] = Array.isArray(productInfo?.data) ? productInfo.data : [];
 
     if (searchVal) {
-      filteredProducts = filteredProducts.filter((product: any) => {
-        return product.name.toLowerCase().includes(searchVal.toLowerCase());
-      });
+      filteredProducts = filteredProducts.filter((product: any) =>
+        product.name.toLowerCase().includes(searchVal.toLowerCase())
+      );
     }
 
-    // Filter by date
-    // if (dateVal) {
-    //   filteredProducts = filteredProducts.filter((product: any) => {
-    //     return product.date === dateVal;
-    //   });
-    // }
     setFilteredData(filteredProducts);
-  }, []);
+  }, [productInfo]);
 
   return (
     <section className="flex flex-col">

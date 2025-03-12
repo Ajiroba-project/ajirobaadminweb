@@ -25,8 +25,9 @@ import { setLocalStoreData } from "@/hooks/useLocalStorage";
 import { Modal } from "@/app/dashboard/components/Modal";
 import successIcon from "@/app/asset/signout.svg";
 import { useQueryData } from "@/hooks/useQueryDataCat";
-
-
+import { useSearchParams, useParams } from 'next/navigation'
+import { useGetDatanew } from "@/hooks/useGetData";
+import Cookies from "js-cookie";
 
 
 interface Subcategory {
@@ -54,15 +55,47 @@ interface CategoryResponse {
 }
 
 export default function Page() {
-  const [selectedImg, setSelectedImg] = useState<any>([
-    "https://www.shutterstock.com/image-illustration/vintage-apple-leaf-isolated-on-600nw-2293343413.jpg",
-    "https://media.istockphoto.com/id/184276818/photo/red-apple.jpg?s=612x612&w=0&k=20&c=NvO-bLsG0DJ_7Ii8SSVoKLurzjmV0Qi4eGfn6nW3l5w=",
-    "https://www.shutterstock.com/image-photo/unhealthy-blue-apple-isolated-260nw-782117749.jpg",
-    "https://i0.wp.com/blossomkitty.com/wp-content/uploads/2021/02/e0fe1c0ebd2f75d5f682b058142618fd.jpg?fit=648%2C677&ssl=1",
-  ]);
+
+      const params = useParams();
+  const productId = params.slug;
+
+  const [selectedImg, setSelectedImg] = useState<string[]>([]);
+
+
+   const [userToken, setUserToken] = useState(Cookies.get("token"));
+
+  // Construct URL with dynamic filters
+  let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_products/`;
+
+  const { data: productInfo, isLoading: productLoading } = useGetDatanew(
+    url,
+    "get_product_details",
+    userToken || " "
+  );
+
+
+
+  // Find the product that matches the productId
+  const productDetails = Array.isArray(productInfo?.data)
+    ? productInfo.data.find((product: any) => product.id === productId)
+    : null;
+
+
+useEffect(() => {
+  if (productDetails?.images) {
+    const images = productDetails.images.map(
+      (img: any) => `https://ajiroba.onrender.com/media/${img.image}`
+    );
+    setSelectedImg(images);
+  }
+}, [productDetails]);
+
+
   const router = useRouter();
 
   const [mainImage, setMainImage] = useState<string>(selectedImg[0]);
+
+
 
 
     const { data: catInfo, isLoading: catnLoading } =
@@ -93,6 +126,8 @@ export default function Page() {
     mode: "all",
     resolver: yupResolver(ProductEditUploadSchema),
   });
+
+
   const RemoveImg = (val: string) => {
     setSelectedImg(selectedImg.filter((e: string) => e !== val));
     URL.revokeObjectURL(val);
@@ -138,13 +173,13 @@ export default function Page() {
   }, [previews]);
 
   const handleSuccess = (data: any) => {
-    if (data.status === 200) {
+    if (data.status === 200 || data.status === 201) {
       /* router.push("/dashboard/userdetails"); */
       setShowModal(true);
       setLocalStoreData(data);
       setPreviews([]);
       reset();
-    } else if (data.status === 400 || data.status === 409) {
+    } else if (data.status === 400 || data.status === 409 || data.status === 405) {
             setPreviews([]);
       toast.error(`${data?.data?.message}`, {
         position: "top-right",
@@ -173,6 +208,7 @@ export default function Page() {
     }
   };
   const handleError = (error: any) => {
+      setPreviews([]);
     toast.error(`${"An Error Occured"}`, {
       position: "top-right",
       autoClose: 5000,
@@ -224,13 +260,35 @@ export default function Page() {
       featured: data.featured,
       top_deals: data.topdeals,
       description: data.description,
-      product_images: regularMedia,
+      auction_images: regularMedia,
+
     };
 
   console.log(Payload, 'payload');
+
+
+
+  mutate({
+      url: "/api/editproduct",
+      payload: {
+        ...Payload,
+        id: productId,
+      },
+
+    });
+
+  /*   setLocalStoreData({
+      name: "regularProduct",
+      obj: { ...data, regularMedia },
+    });
+ */
+
+
+
   };
 
 
+if (productLoading) return <p>Loading product details...</p>;
 
 
   return (
@@ -345,7 +403,7 @@ export default function Page() {
               classname={"w-full px-5 h-24 focus:text-black border rounded "}
             />
 
-            <div className="flex gap-2 py-8 flex-col lg:flex-row md:flex-row ">
+           {/*  <div className="flex gap-2 py-8 flex-col lg:flex-row md:flex-row ">
               <InputField
                 name="selling_price"
                 label="Selling Price"
@@ -364,7 +422,7 @@ export default function Page() {
                 errors={errors}
                 classname="px-5 h-12 focus:text-black border rounded"
               />
-            </div>
+            </div> */}
 
             <div className="">
               <div className="flex flex-col">
