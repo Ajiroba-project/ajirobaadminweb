@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function POST(request) {
     // console.log(request, 'requestttt')
@@ -6,6 +7,9 @@ export async function POST(request) {
         const body = await request.json();
 
         const cacheBuster = `cache=${Date.now()}`;
+
+        const cookieStore = cookies()
+        const token = cookieStore.get('token')
 
 
         /*  console.log(body.payload, 'bodyyyyyy') */
@@ -15,7 +19,7 @@ export async function POST(request) {
             maxBodyLength: Infinity,
             headers: {
                 "Content-Type": "application/json",
-                'Authorization': `Token ${body.tkn}`
+                'Authorization': `token ${token.value}`
             },
             body: JSON.stringify(body.payload),
         });

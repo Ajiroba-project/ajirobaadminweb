@@ -406,7 +406,7 @@ const sumbitForm = (data: any) => {
                   options={
                     catnew
                       ?.find((cat) => cat.id === watch("auction_category"))
-                      ?.subcategories.map((sub) => ({
+                      ?.subcategories?.map((sub) => ({
                         label: sub.subcategory,
                         value: sub.id,
                       })) || []

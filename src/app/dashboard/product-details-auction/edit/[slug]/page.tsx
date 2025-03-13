@@ -25,7 +25,8 @@ import { useQueryData } from "@/hooks/useQueryDataCat";
 import { FiUpload } from "react-icons/fi";
 import { useGetDatanew } from "@/hooks/useGetData";
 import Cookies from "js-cookie";
-
+import { Modal } from "@/app/dashboard/components/Modal";
+import successIcon from '@/app/asset/signout.svg'
 
 
 interface Subcategory {
@@ -342,7 +343,7 @@ useEffect(() => {
                   options={
                     catnew
                       ?.find((cat) => cat.id === watch("auction_category"))
-                      ?.subcategories.map((sub) => ({
+                      ?.subcategories?.map((sub) => ({
                         label: sub.subcategory,
                         value: sub.id,
                       })) || []
@@ -506,14 +507,20 @@ useEffect(() => {
         </div>
       </div>
 
-      {/*   <div className="flex justify-center items-center mt-12  mb-10">
-        <DefaultButton
-          type="submit"
-          className="text-sm  px-20  justify-center flex font-normal font-Poppins rounded-lg bg-[#FCDFD4]  py-2 transition delay-300 duration-300 ease-in-out hover:bg-[#E84526] hover:text-white hover:transition-all"
-          handleClick={() => null}
-          text={!true ? "loading..." : " Update"}
-        />
-      </div> */}
+      {showModal && (
+        <div className="flex absolute top-0 z-50 left-0">
+          <Modal
+            title="Product Updated Successfull!"
+            subtitle="Your product has been successfully uploaded"
+            buttoncount={1}
+            buttontext="Continue"
+            buttonclass="bg-[#FCDFD4] p-5 rounded-lg text-sm hover:bg-[#F25E26] hover:text-white hover:shadow w-full px-14"
+            buttontype="button"
+            handleEvent={() => setShowModal(!showModal)}
+            icon={successIcon}
+          />
+        </div>
+      )}
     </section>
   );
 }

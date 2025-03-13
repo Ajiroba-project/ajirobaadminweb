@@ -4,6 +4,7 @@ import { ListFilter } from "./ListFilter";
 import { ProductListCard } from "./Card";
 import Cookies from "js-cookie";
 import { useGetDatanew } from "@/hooks/useGetData";
+import Loading from "@/app/components/Loading";
 
 
 
@@ -51,6 +52,10 @@ export const ProductList = () => {
     setFilteredData(filteredProducts);
   }, [productInfo]);
 
+
+    if (productLoading){
+    return <Loading />
+  }
 
   return (
     <section className="flex flex-col">

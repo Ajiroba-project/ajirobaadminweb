@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useStore } from "@/store/nav-store";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -13,6 +13,8 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { ToastContainer, toast } from "react-toastify";
 import { InputField, SelectField } from "@/app/components/FormField";
 import "react-toastify/dist/ReactToastify.css";
+import { useGetDatanew } from "@/hooks/useGetData";
+import Cookies from "js-cookie";
 
 export const UpdateSubCategory = ({func}:any) => {
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
@@ -52,6 +54,32 @@ export const UpdateSubCategory = ({func}:any) => {
     func()
   }
 
+
+
+    const [userToken, setUserToken] = useState(Cookies.get("token"));
+
+  // Construct URL with dynamic filters
+  let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/categories_and_subcategories/`;
+
+  const {
+    data: catandsubInfo,
+    isLoading: catLoading,
+    error: catError,
+  } = useGetDatanew(url, "get_catandsubcat_details", userToken || " ");
+
+  // console.log(catandsubInfo);
+
+
+    const catnew = catandsubInfo?.data?.map((cat: { category: any; id: any; subcategories: any; }) => ({
+    label: cat.category,
+    value: cat.id,
+    id: cat.id,
+    subcategories: cat.subcategories,
+  }));
+
+
+  console.log(catnew, 'catnewwwww');
+
   return (
     <section className="flex flex-col ">
       <h2 className="text-center font-bold ">Create Sub-categories</h2>
@@ -61,7 +89,16 @@ export const UpdateSubCategory = ({func}:any) => {
           name="category"
           register={register}
           errors={errors}
-          options={categories}
+              //  options={catnew?.map((cat: { label: any; value: any; }) => ({
+              //       label: cat.label,
+              //       value: cat.value,
+              //     }))}
+
+               options={catnew?.map((cat: { label: any; value: any; }) => ({
+                    label: cat.label,
+                    value: cat.value,
+                  }))}
+        classname={`text-sm  xl:w-[298px] 2xl:w-[298px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter text-black font-normal focus:outline-none`}
         />
         <InputField
           label="Subcategory"

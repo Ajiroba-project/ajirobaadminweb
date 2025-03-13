@@ -26,6 +26,7 @@ type handleProp = {
 export const SideNav = () => {
   const toggleNavbar = useStore((state) => state.toggleNavbar);
   const clearAuthCookies = useAuthStore((state) => state.clearAuthCookies);
+  const clearUserCookies = useAuthStore((state)=> state.clearUserCookies )
   const user = useAuthStore((state) => state.user);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
@@ -34,6 +35,18 @@ export const SideNav = () => {
   const [signout, setSignout] = useState<boolean>(false);
   const router = useRouter();
  const pathname = usePathname()
+
+
+
+function clearAllCookies() {
+  const cookies = Cookies.get(); // Get all cookies as an object
+
+  for (const cookieName in cookies) {
+    if (cookies.hasOwnProperty(cookieName)) {
+      Cookies.remove(cookieName); // Remove each cookie
+    }
+  }
+}
 
 
 
@@ -69,11 +82,21 @@ export const SideNav = () => {
 
   const handleSuccess = () => {
     clearAuthCookies();
+    clearUserCookies()
+       localStorage.clear();
+       Cookies.remove('token');
+       Cookies.remove('refresh_token');
+       Cookies.remove('user');
+       clearAllCookies();
+
     router.replace("/signin");
   };
   const handleError = () => {
     console.log("Somthing went wrong...");
     clearAuthCookies();
+        clearUserCookies()
+    clearAllCookies();
+    localStorage.clear();
     router.replace("/signin");
   };
 
@@ -89,6 +112,43 @@ export const SideNav = () => {
       payload: {}, // Add an empty payload object
     });
   };
+
+
+
+
+ /*  const handleSuccess = () => {
+    clearAuthCookies();
+       localStorage.clear();
+    router.push('/signin');
+  };
+
+  const handleError = () => {
+    console.log('Something went wrong...');
+    clearAuthCookies();
+    localStorage.clear();
+    router.push('/signin');
+  };
+
+  const { mutate } = useMutateData(
+    'signout',
+    handleSuccess,
+    handleError
+  ); */
+
+  const SignoutFunc = () => {
+    mutate({
+      url: '/api/signout',
+      payload: {},
+    });
+  };
+
+
+
+
+
+
+
+
 
   const setNavbarOpen = useStore((state) => state.setNavbarOpen);
 

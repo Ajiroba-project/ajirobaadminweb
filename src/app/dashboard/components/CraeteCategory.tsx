@@ -45,56 +45,12 @@ export const CraeteCategory = ({func}:any) => {
   },
   });
 
- const handleSuccess = (data?: any) => {
-
-    if (data.status === 200 || data.status === 201) {
-      toast.success(`${data?.data?.message || data?.data?.detail}`, {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-        onClose: () => router.push("/dashboard/category"),
-      });
-      // refetch();
-       setCategoryOpen(false);
-    } else if (
-      data.status === 403 ||
-      data.status === 404 ||
-      data.status === 401 ||
-      data.status === 500 || data.status === 409
-    ) {
-
-      toast.error(`${data?.data?.message || data?.data?.detail}`, {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-
-      setCategoryOpen(false);
-    } else {
-
-      toast.error(`${data?.data?.detail}`, {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-      setCategoryOpen(false);
-    }
-  };
+const handleSuccess = (data?: any) => {
+  if (data?.status === 200 || data?.status === 201) {
+    toast.success(`${data?.data?.message || "Success!"}`);
+   /*  setSubCategoryOpen(false); */
+  }
+};
 
   const handleError = (error: any) => {
     toast.error(`${"An Error Occured"}`, {
@@ -108,7 +64,7 @@ export const CraeteCategory = ({func}:any) => {
       theme: "light",
     });
     reset();
-      setCategoryOpen(false);
+   /*    setCategoryOpen(false); */
   };
 
   const { data, error, isError, isSuccess, mutate, status } = useMutateData(
@@ -138,14 +94,16 @@ export const CraeteCategory = ({func}:any) => {
   };
 
    const handleFormSubmit = (data: any) => {
-    console.log("Form Data:", data, imageFile);
 
     const payload = {
       ...data,
       category_image: imagePreviews,
     } as any;
 
-     mutate({
+
+    // console.log(payload, "payload");
+
+      mutate({
       url: "/api/createcategory",
       payload: { payload: payload, tkn: userToken },
     });

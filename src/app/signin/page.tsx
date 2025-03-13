@@ -94,9 +94,12 @@ function Page() {
         theme: 'light',
         onClose: () => router.push('/dashboard')
       })
-      // console.log(data, 'datat')
+
       setAuthCookie(data?.data?.token, 0)
         Cookies.set("token", data?.data?.token, { expires: 1 });
+
+
+
       setUser(data?.data)
       //  Cookies.set('ik', JSON.stringify(data?.data?.token), { sameSite: 'strict' });
 

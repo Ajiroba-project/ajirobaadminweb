@@ -219,6 +219,10 @@ export const subcategories = [
   "Bracelet",
 ];
 
+
+
+
+
 export const ProductLists =[
     {
         name:"Apple",

@@ -5,6 +5,7 @@ import { AuctionListCard } from "./Card";
 import { AuctionLists } from "@/app/data";
 import Cookies from "js-cookie";
 import { useGetDatanew } from "@/hooks/useGetData";
+import Loading from "@/app/components/Loading";
 
 export const AuctionList = (() => {
   // filter by name
@@ -49,6 +50,11 @@ export const AuctionList = (() => {
 
     setFilteredData(filteredProducts);
   }, [productInfo]);
+
+
+      if (productLoading){
+    return <Loading />
+  }
 
   return (
     <section className="flex flex-col">

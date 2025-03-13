@@ -383,7 +383,7 @@ export const Regular = () => {
                   options={
                     catnew
                       ?.find((cat) => cat.id === watch("product_category"))
-                      ?.subcategories.map((sub) => ({
+                      ?.subcategories?.map((sub) => ({
                         label: sub.subcategory,
                         value: sub.id,
                       })) || []

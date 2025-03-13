@@ -105,6 +105,9 @@ useEffect(() => {
       true,
     );
 
+
+
+
   const catnew = catInfo?.data.map((cat) => ({
     label: cat.category,
     value: cat.id,
@@ -387,7 +390,7 @@ if (productLoading) return <p>Loading product details...</p>;
                   options={
                     catnew
                       ?.find((cat) => cat.id === watch("product_category"))
-                      ?.subcategories.map((sub) => ({
+                      ?.subcategories?.map((sub) => ({
                         label: sub.subcategory,
                         value: sub.id,
                       })) || []

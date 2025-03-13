@@ -62,6 +62,10 @@ export const useAuthStore = create((set, get) => ({
     Cookies.remove('token');
     set({ isLoggedIn: false, user: null }); // Update isLoggedIn and user state
   },
+  clearUserCookies: () => {
+    Cookies.remove('user');
+    set({ isLoggedIn: false, user: null });
+  }
 }));
 
 export const useNewProductStore = create((set) => ({
