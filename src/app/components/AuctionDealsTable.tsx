@@ -14,7 +14,7 @@ import Loading from '@/app/components/Loading';
 import "react-datepicker/dist/react-datepicker.css";
 
 
-function RegularsDealTable() {
+function AuctionDealsTable() {
 
     const router = useRouter();
 
@@ -26,7 +26,7 @@ function RegularsDealTable() {
 
   const [userToken, setUserToken] = useState(Cookies.get("token"));
 
-  let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/product_transactions/`;
+  let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/auction_transactions/`;
 
   const {
     data: transInfo,
@@ -35,16 +35,17 @@ function RegularsDealTable() {
   } = useGetDatanew(url, "get_catandsubcat_details", userToken || " ");
 
 
-  console.log(transInfo?.data, 'transInfo?.data')
+  console.log(transInfo, 'transInfo');
 
-  const transactions = transInfo && transInfo?.data?.map((order: { order_id: any; status: any; name: any; email: any; products: any[]; date_created: string | number | Date; profile_image: any; amount: any }, index: number) => ({
-   id: order?.order_id,
+
+  const transactions = transInfo && transInfo?.data?.map((order: {ticket_number: any,  auction: any, ticket_amount: any, status: any, order_id: any; name: any; email: any; products: any[]; date_created: string | number | Date; profile_image: any; amount: any }, index: number) => ({
+   id: order?.ticket_number,
   // id: index + 1,
   name: order.name,
   email: order.email,
-  amount: order?.amount || 'N/A',
   status: order?.status || 'N/A',
-  item: order.products[0],
+  amount: order?.ticket_amount || 'N/A',
+  item: order.auction,
   date: new Date(order.date_created).toLocaleDateString("en-GB"),
   img: `https://ajiroba.onrender.com/${order.profile_image}`,
 }));
@@ -153,15 +154,15 @@ const matchesSelectedDate =
         <div className="flex items-center space-x-4 mt-2 md:mt-0">
 
            <div className="flex items-center space-x-2">
-            <DatePicker
-  selected={selectedDate}
-  onChange={(date) => setSelectedDate(date)}
-  placeholderText="Select Date"
-  className="border border-gray-300 rounded-md p-2"
-  dateFormat="yyyy-MM-dd"
-  minDate={new Date("2024-01-01")}
-  isClearable
-/>
+                     <DatePicker
+                    selected={selectedDate}
+                    onChange={(date) => setSelectedDate(date)}
+                    placeholderText="Select Date"
+                    className="border border-gray-300 rounded-md p-2"
+                    dateFormat="yyyy-MM-dd"
+                    minDate={new Date("2024-01-01")}
+                    isClearable
+                    />
 
           </div>
         </div>
@@ -180,8 +181,7 @@ const matchesSelectedDate =
               </th>
               <th className="text-left px-4 py-2">Name</th>
               <th className="text-left px-4 py-2">Email</th>
-              <th className="text-left px-4 py-2">Ticket Amount</th>
-               <th className="text-left px-4 py-2">Status</th>
+              <th className="text-left px-4 py-2">Status</th>
               <th className="text-left px-4 py-2">Item</th>
               <th className="text-left px-4 py-2">Date</th>
               <th className="text-left px-4 py-2"></th>
@@ -205,8 +205,7 @@ const matchesSelectedDate =
                   <span className='text-[#101928] font-semibold font-Poppins text-sm'>{transaction.name}</span>
                 </td>
                 <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.email}</td>
-                <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.amount}</td>
-                                <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.status}</td>
+                <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.status}</td>
                 <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.item}</td>
                 <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.date}</td>
                 <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm relative">
@@ -224,7 +223,7 @@ const matchesSelectedDate =
                     <div className="absolute right-0 bg-white border border-gray-300 rounded shadow-md z-10 px-4 py-4">
                           <button
                             className="whitespace-nowrap px-4 mb-4 py-2 w-full text-center bg-[#E84526] rounded-lg text-[#F6F6F6] hover:bg-[#E84526]"
-                           onClick={()=> router.push(`/dashboard/regulardeals/${transaction.id}`)}
+                           onClick={()=> router.push(`/dashboard/auctiondeals/${transaction.id}`)}
                             >
                             View details
                             </button>
@@ -287,4 +286,4 @@ const matchesSelectedDate =
   )
 }
 
-export default RegularsDealTable
+export default AuctionDealsTable

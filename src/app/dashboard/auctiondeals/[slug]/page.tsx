@@ -17,18 +17,11 @@ interface PageProps {
 function Page({ params }: PageProps) {
   const product_id = params.slug;
 
-  //  console.log(product_id);
   const router = useRouter();
-
-
-  /*       const params = useParams();
-  const productId = params.slug; */
-
 
   const [userToken, setUserToken] = useState(Cookies.get("token"));
 
-  let url = `/api/fetchproduct?product_id=${product_id}`;
-
+  let url = `/api/fetchauction?product_id=${product_id}`;
 
   const {
     data: prodInfo,
@@ -36,46 +29,23 @@ function Page({ params }: PageProps) {
     error: prodError,
   } = useGetDatanew(url, "get_prod_details", userToken || " ");
 
-
+  console.log(prodInfo?.data, 'prodInfo?.data')
 
 const transformedData = prodInfo?.data?.data?.products_details?.map((item: { product_id: any; ticket_price: any; quantity: any; name: any; price: number; discount: number; images: any[]; average_ratings: any; total_reviews: any; }) => ({
     id: item.product_id,
     name: item.name,
-    cost_price: item.price.toFixed(2), // Convert to string with 2 decimal places
-    ticket_price: item?.ticket_price && parseFloat(item?.ticket_price?.toFixed(2)) || 0, // Convert to number
-    weight: `${item?.quantity}KG`, // Default value
+    cost_price: item.price.toFixed(2),
+    ticket_price: item?.ticket_price && parseFloat(item?.ticket_price?.toFixed(2)) || 0,
+    weight: `${item?.quantity}KG`,
     images: item.images.map((img: any) => ({
         auction: item.product_id,
-    /*     image: `auction_images/${img.split('/').pop()}`  */
     image: img
     })),
     product_reviews: {
-        average_ratings: item?.average_ratings || 0, // Random rating between 3.0 - 5.0
-        total_reviews:item?.total_reviews || 0 // Random number of reviews (1 - 50)
+        average_ratings: item?.average_ratings || 0,
+        total_reviews:item?.total_reviews || 0
     }
 }));
-
-// console.log(transformedData, 'trasnformedData');
-
-
-
-
-
-// useEffect(() => {
-//   if (prodInfo?.data?.status === "failed") {
-//     toast.error(`${prodInfo?.data?.message}`, {
-//       position: "top-right",
-//       autoClose: 5000,
-//       hideProgressBar: false,
-//       closeOnClick: true,
-//       pauseOnHover: true,
-//       draggable: true,
-//       progress: undefined,
-//       theme: "light",
-//       onClose: () => router.back(),
-//     });
-//   }
-// }, [prodInfo]);
 
 
 if (prodLoading) {
@@ -87,9 +57,8 @@ if (prodLoading) {
       <div>
 
 
-      {
-
- prodInfo?.data?.status === "failed" ? (
+    {
+        prodInfo?.data?.status === "failed" ? (
             <div className="flex flex-col items-center justify-center h-screen">
                 <h1 className="text-[#E84526] text-lg">{prodInfo?.data?.message}</h1>
                 <h1 onClick={()=> router.back()} className="text-[#FFFFFF] mt-2 cursor-pointer rounded-lg border bg-gray-600 p-2 font-Poppins text-sm ">Back</h1>
@@ -97,9 +66,14 @@ if (prodLoading) {
         )
 
 :
-<>
 
-  <section className="flex flex-col bg-[#F6F6F6] px-8">
+
+
+
+        <>
+
+
+          <section className="flex flex-col bg-[#F6F6F6] px-8">
           <div className="flex items-center justify-between py-8">
             <p onClick={()=> router.back()} className="text-[#E84526] text-base">Back</p>
             <h1 className="text-base 2xl:text-[20px] lg:text-[20px] md:text-[20px] xl:text-[20px] font-semibold font-Poppins mx-auto">
@@ -140,6 +114,7 @@ if (prodLoading) {
               {prodInfo?.data?.data?.address}
               </p>
               <p className="font-Poppins text-sm text-[#2A2A2A]"> {prodInfo?.data?.data?.phone}</p>
+
             </div>
           </div>
         </section>
@@ -161,8 +136,6 @@ if (prodLoading) {
 
 
          </section>
-
-
 
           <section className="px-8 mt-8">
           <div className="py-4 px-4 border rounded-lg">
@@ -214,13 +187,8 @@ if (prodLoading) {
         </section>
 
 
-
-
-</>
-
-      }
-
-
+        </>
+    }
 
 
 

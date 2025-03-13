@@ -7,6 +7,7 @@ import RegularsDealTable from './RegularsDealTable';
 import Cookies from 'js-cookie';
 import { useGetDatanew } from '@/hooks/useGetData';
 import Loading from '@/app/components/Loading';
+import AuctionDealsTable from '@/app/components/AuctionDealsTable';
 
 function Auctiondeals() {
 
@@ -15,7 +16,6 @@ function Auctiondeals() {
 
   const [userToken, setUserToken] = useState(Cookies.get("token"));
 
-  // Construct URL with dynamic filters
   let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/transaction_volume/`;
 
   const {
@@ -29,28 +29,28 @@ const salesDataMain = [
   {
     id: 1,
     title: "Total Sales Today",
-    amount: transInfo?.data?.auction_deals.today.today_sales, // Fetch from API
-    comparison: transInfo?.data?.auction_deals.today.today_vs_yesterday_diff, // Fetch from API
+    amount: transInfo?.data?.auction_deals.today.today_sales,
+    comparison: transInfo?.data?.auction_deals.today.today_vs_yesterday_diff,
     comparisonText: "Compared to Yesterday",
-    bidnum: 'N/A', // Example static value
+    bidnum: 'N/A',
     bidtxt: "Bids",
   },
   {
     id: 2,
     title: "Total Sales This Week",
-    amount: transInfo?.data?.auction_deals.this_week.this_week_sales, // Fetch from API
-    comparison: transInfo?.data?.auction_deals.this_week.this_week_vs_last_week_diff, // Fetch from API
+    amount: transInfo?.data?.auction_deals.this_week.this_week_sales,
+    comparison: transInfo?.data?.auction_deals.this_week.this_week_vs_last_week_diff,
     comparisonText: "Compared to Last Week",
-    bidnum: 'N/A', // Example static value
+    bidnum: 'N/A',
     bidtxt: "Bids",
   },
   {
     id: 3,
     title: "Total Sales This Month",
-    amount: transInfo?.data?.auction_deals.this_month.this_month_sales, // Fetch from API
-    comparison: transInfo?.data?.auction_deals.this_month.this_month_vs_last_month_diff, // Fetch from API
+    amount: transInfo?.data?.auction_deals.this_month.this_month_sales,
+    comparison: transInfo?.data?.auction_deals.this_month.this_month_vs_last_month_diff,
     comparisonText: "Compared to Last Month",
-    bidnum: 'N/A', // Example static value
+    bidnum: 'N/A',
     bidtxt: "Bids",
   },
 ];
@@ -110,10 +110,7 @@ const salesDataMain = [
       ))}
     </div>
 
-
-
-
-  <RegularsDealTable/>
+<AuctionDealsTable/>
 
         </div>
   )

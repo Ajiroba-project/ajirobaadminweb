@@ -1,9 +1,4 @@
-import { Card } from "./Card";
-import { regularDetails, auctionDetails } from "@/app/data";
-import { UserSearch } from "./UserSearch";
 import { useStore } from "@/store/nav-store";
-import { section } from "framer-motion/client";
-import { div } from "framer-motion/m";
 import { IconButton } from "@/app/component/Button";
 import { MdOutlineFileDownload } from "react-icons/md";
 import { useState } from "react";
@@ -12,7 +7,6 @@ import Recharge from "./Recharge";
 import Auctiondeals from "./Auctiondeals";
 
 export const Transaction = () => {
-  const isNavbarOpen = useStore((state) => state.isNavbarOpen);
   const [active, setActive] = useState(0);
 
   return (
