@@ -4,39 +4,66 @@ import icon from "../../asset/image/icon.svg"
 import Image from 'next/image';
 import chart from '../../asset/image/chart.svg'
 import RegularsDealTable from './RegularsDealTable';
+import Cookies from 'js-cookie';
+import { useGetDatanew } from '@/hooks/useGetData';
+import Loading from '@/app/components/Loading';
 
 function Regulardeals() {
 
 
-const salesData = [
+
+
+
+  const [userToken, setUserToken] = useState(Cookies.get("token"));
+
+  // Construct URL with dynamic filters
+  let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/transaction_volume/`;
+
+  const {
+    data: transInfo,
+    isLoading: transLoading,
+    error: transError,
+  } = useGetDatanew(url, "get_catandsubcat_details", userToken || " ");
+
+// console.log(transInfo?.data?.regular_deals, 'regular_deals_info')
+
+
+const salesDataMain = [
   {
     id: 1,
     title: "Total Sales Today",
-    amount: "₦45,823",
-    comparison: "10%",
+    amount: transInfo?.data?.regular_deals.today.today_sales, // Fetch from API
+    comparison: transInfo?.data?.regular_deals.today.today_vs_yesterday_diff, // Fetch from API
     comparisonText: "Compared to Yesterday",
-    bidnum: 70,
+    bidnum: 'N/A', // Example static value
     bidtxt: "Bids",
   },
   {
     id: 2,
     title: "Total Sales This Week",
-    amount: "₦45,823",
-    comparison: "10%",
+    amount: transInfo?.data?.regular_deals.this_week.this_week_sales, // Fetch from API
+    comparison: transInfo?.data?.regular_deals.this_week.this_week_vs_last_week_diff, // Fetch from API
     comparisonText: "Compared to Last Week",
-     bidnum: 70,
+    bidnum: 'N/A', // Example static value
     bidtxt: "Bids",
   },
   {
     id: 3,
     title: "Total Sales This Month",
-    amount: "₦45,823",
-    comparison: "10%",
+    amount: transInfo?.data?.regular_deals.this_month.this_month_sales, // Fetch from API
+    comparison: transInfo?.data?.regular_deals.this_month.this_month_vs_last_month_diff, // Fetch from API
     comparisonText: "Compared to Last Month",
-     bidnum: 70,
+    bidnum: 'N/A', // Example static value
     bidtxt: "Bids",
   },
 ];
+
+
+
+
+  if (transLoading) {
+    return <Loading/>
+  }
 
 
 
@@ -46,27 +73,13 @@ const salesData = [
 
 
      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
-      {salesData.map((data) => (
+      {salesDataMain?.map((data) => (
         <div
           key={data.id}
           className="bg-white shadow-md rounded-lg p-4 flex flex-col justify-between"
         >
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-white border border-[#E4E7EC] rounded-lg flex items-center justify-center">
-            {/*   <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-                className="w-5 h-5 text-gray-600"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 3h18M9 9h6M9 12h6M9 15h6M9 18h6"
-                />
-              </svg> */}
 
               <Image src={icon} width={20} height={20} alt='icon'/>
             </div>

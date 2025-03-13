@@ -18,6 +18,11 @@ interface UserData {
   amount?: any
   map?: any
   length?: any
+  regular_deals?: any
+  auction_deals?: any
+  status?: any
+  message?: any
+
 }
 
 // Define the interface for the expected response data structure

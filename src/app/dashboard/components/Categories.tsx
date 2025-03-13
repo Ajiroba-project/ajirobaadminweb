@@ -133,6 +133,40 @@ export const Categories = () => {
   const categoryOpen = useStore((state) => state.categoryOpen);
 
 
+
+  const [selectedSubcategories, setSelectedSubcategories] = useState<{
+  [key: number]: string[];
+}>({});
+
+
+const handleCheckboxChange = (
+  event: React.ChangeEvent<HTMLInputElement>,
+  categoryId: number,
+  subcategoryId: string
+) => {
+  setSelectedSubcategories((prev) => {
+    const updated = { ...prev };
+
+    if (event.target.checked) {
+      // Add subcategory ID if checked
+      updated[categoryId] = [...(updated[categoryId] || []), subcategoryId];
+    } else {
+      // Remove subcategory ID if unchecked
+      updated[categoryId] = updated[categoryId]?.filter((id) => id !== subcategoryId) || [];
+    }
+
+    return updated;
+  });
+};
+
+const handleEditClick = (categoryId: number) => {
+  console.log("Category ID:", categoryId);
+  console.log("Selected Subcategories:", selectedSubcategories[categoryId] || []);
+  setEditModal(!editmodal);
+};
+
+
+
 if (catLoading) {
  return <Loading/>
 }
@@ -191,6 +225,7 @@ if (catLoading) {
                   {currentItems?.map(
                     (
                       val: {
+                        id: number;
                         category:
                           | string
                           | number
@@ -228,6 +263,7 @@ if (catLoading) {
                                   name={`check${index}-${i}`}
                                   id={`check${index}-${i}`}
                                   className="outline-[#F25E26] mr-2"
+                                   onChange={(e) => handleCheckboxChange(e, val.id, sub.id)}
                                 />
                                 <label htmlFor={`check${index}-${i}`}>
                                   {sub.subcategory}
@@ -238,7 +274,8 @@ if (catLoading) {
                           <div className="flex gap-2 w-full items-end place-content-end mt-2">
                             <p
                               className="text-[#F25E26] cursor-pointer"
-                              onClick={() => setEditModal(!editmodal)}
+                            /*   onClick={() => setEditModal(!editmodal)} */
+                            onClick={() => handleEditClick(val.id)}
                             >
                               Edit
                             </p>

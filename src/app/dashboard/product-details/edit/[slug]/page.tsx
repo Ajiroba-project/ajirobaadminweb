@@ -267,8 +267,6 @@ useEffect(() => {
 
     };
 
-  console.log(Payload, 'payload');
-
 
 
   mutate({
@@ -395,7 +393,7 @@ if (productLoading) return <p>Loading product details...</p>;
                         value: sub.id,
                       })) || []
                   }
-  classname={"w-full px-5 h-12 focus:text-black border rounded "}
+                classname={"w-full px-5 h-12 focus:text-black border rounded "}
                 />
             <TextAreaField
               label="description"
