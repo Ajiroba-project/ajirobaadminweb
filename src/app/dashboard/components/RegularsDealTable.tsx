@@ -35,8 +35,6 @@ function RegularsDealTable() {
   } = useGetDatanew(url, "get_catandsubcat_details", userToken || " ");
 
 
-  console.log(transInfo?.data, 'transInfo?.data')
-
   const transactions = transInfo && transInfo?.data?.map((order: { order_id: any; status: any; name: any; email: any; products: any[]; date_created: string | number | Date; profile_image: any; amount: any }, index: number) => ({
    id: order?.order_id,
   // id: index + 1,
@@ -46,8 +44,10 @@ function RegularsDealTable() {
   status: order?.status || 'N/A',
   item: order.products[0],
   date: new Date(order.date_created).toLocaleDateString("en-GB"),
-  img: `https://ajiroba.onrender.com/${order.profile_image}`,
+  img: `https://ajiroba.onrender.com${order.profile_image}`,
 }));
+
+
 
 
 const [search, setSearch] = useState("");

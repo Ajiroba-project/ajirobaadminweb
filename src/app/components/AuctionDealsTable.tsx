@@ -35,7 +35,6 @@ function AuctionDealsTable() {
   } = useGetDatanew(url, "get_catandsubcat_details", userToken || " ");
 
 
-  console.log(transInfo, 'transInfo');
 
 
   const transactions = transInfo && transInfo?.data?.map((order: {ticket_number: any,  auction: any, ticket_amount: any, status: any, order_id: any; name: any; email: any; products: any[]; date_created: string | number | Date; profile_image: any; amount: any }, index: number) => ({
@@ -47,7 +46,7 @@ function AuctionDealsTable() {
   amount: order?.ticket_amount || 'N/A',
   item: order.auction,
   date: new Date(order.date_created).toLocaleDateString("en-GB"),
-  img: `https://ajiroba.onrender.com/${order.profile_image}`,
+  img: `https://ajiroba.onrender.com${order.profile_image}`,
 }));
 
 

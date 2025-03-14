@@ -31,7 +31,7 @@ function Page({ params }: PageProps) {
     error: prodError,
   } = useGetDatanew(url, "get_prod_details", userToken || " ");
 
-   console.log(prodInfo?.data, 'prodInfo?.data')
+
 
 const transformedData = prodInfo?.data?.data?.auction_details?.map((item: {
     description: string;ticket_number: any, product_id: any; ticket_price: any; quantity: any; name: any; price: number; discount: number; images: any[]; auction_details: any[], average_ratings: any; total_reviews: any;
@@ -53,7 +53,6 @@ const transformedData = prodInfo?.data?.data?.auction_details?.map((item: {
 }));
 
 
-console.log(transformedData, 'trasnformedData');
 
 
 if (prodLoading) {
@@ -95,7 +94,7 @@ if (prodLoading) {
           <div className="flex items-center justify-between ">
             <div className="w-20"></div>
             <Image
-              src={`https://ajiroba.onrender.com/${prodInfo?.data?.profile_image}`}
+              src={`https://ajiroba.onrender.com${prodInfo?.data?.data?.profile_image}`}
               className=" rounded-full border-4 border-[#F25E26]"
               width={100}
               height={100}

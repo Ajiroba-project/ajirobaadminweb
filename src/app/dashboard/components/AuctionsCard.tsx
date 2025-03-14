@@ -47,7 +47,6 @@ export const AuctionsCard = ({ cardInfo }: ProductsCardProps) => {
     const router = useRouter()
 
 
-console.log(cardInfo, 'paginatedCardInfo')
 
     return (
         <>
@@ -65,7 +64,7 @@ console.log(cardInfo, 'paginatedCardInfo')
                         <div className='py-2 bg-[#F6F6F6]'>
                             <div className='flex items-center justify-center'>
                                 <Image
-                                    src={`https://ajiroba.onrender.com/media/${value?.images[0]?.image}`}
+                                    src={`https://ajiroba.onrender.com${value?.images[0]?.image}`}
                                     alt="product"
                                     className=""
                                     width={120}

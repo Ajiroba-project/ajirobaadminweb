@@ -55,7 +55,7 @@ const transformedData = prodInfo?.data?.data?.products_details?.map((item: { pro
     }
 }));
 
-// console.log(transformedData, 'trasnformedData');
+//  console.log(transformedData, 'trasnformedData');
 
 
 
@@ -113,7 +113,7 @@ if (prodLoading) {
           <div className="flex items-center justify-between ">
             <div className="w-20"></div>
             <Image
-              src={`https://ajiroba.onrender.com/${prodInfo?.data?.data?.order_id.profile_image}`}
+              src={`https://ajiroba.onrender.com${prodInfo?.data?.data?.profile_image}`}
               className=" rounded-full border-4 border-[#F25E26]"
               width={100}
               height={100}
