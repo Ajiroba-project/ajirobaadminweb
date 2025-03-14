@@ -22,7 +22,7 @@ export async function GET(request) {
         }
 
         // /admin/view_product_transaction / 176409960
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/view_product_transaction/${id}?&${cacheBuster}/`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/view_auction_transaction/${id}?&${cacheBuster}/`, {
             method: "GET",
             maxBodyLength: Infinity,
             headers: headers,

@@ -9,6 +9,8 @@ import Cookies from "js-cookie";
 import { useGetDatanew } from "@/hooks/useGetData";
 import { toast } from "react-toastify";
 import Loading from "@/app/components/Loading";
+import { AuctionsCard } from "../../components/AuctionsCard";
+import { desc } from "framer-motion/m";
 
 interface PageProps {
   params: any;
@@ -29,23 +31,29 @@ function Page({ params }: PageProps) {
     error: prodError,
   } = useGetDatanew(url, "get_prod_details", userToken || " ");
 
-  console.log(prodInfo?.data, 'prodInfo?.data')
+   console.log(prodInfo?.data, 'prodInfo?.data')
 
-const transformedData = prodInfo?.data?.data?.products_details?.map((item: { product_id: any; ticket_price: any; quantity: any; name: any; price: number; discount: number; images: any[]; average_ratings: any; total_reviews: any; }) => ({
-    id: item.product_id,
-    name: item.name,
-    cost_price: item.price.toFixed(2),
-    ticket_price: item?.ticket_price && parseFloat(item?.ticket_price?.toFixed(2)) || 0,
-    weight: `${item?.quantity}KG`,
-    images: item.images.map((img: any) => ({
-        auction: item.product_id,
+const transformedData = prodInfo?.data?.data?.auction_details?.map((item: {
+    description: string;ticket_number: any, product_id: any; ticket_price: any; quantity: any; name: any; price: number; discount: number; images: any[]; auction_details: any[], average_ratings: any; total_reviews: any;
+}) => ({
+    id: prodInfo?.data?.data?.ticket_number,
+    name: prodInfo?.data?.data?.auction,
+    cost_price: item?.price && item?.price?.toFixed(2) || 0,
+    ticket_price: prodInfo?.data?.data?.ticket_price && parseFloat(Number(prodInfo?.data?.data?.ticket_price)?.toFixed(2)) || 0,
+    weight: `${item?.quantity}KG` || 'N/A',
+    description: prodInfo?.data?.data?.auction || 'N/A',
+     images: item?.images?.map((img: any) => ({
+        auction: item?.product_id,
     image: img
     })),
-    product_reviews: {
+    auction_details: {
         average_ratings: item?.average_ratings || 0,
         total_reviews:item?.total_reviews || 0
     }
 }));
+
+
+console.log(transformedData, 'trasnformedData');
 
 
 if (prodLoading) {
@@ -87,15 +95,15 @@ if (prodLoading) {
           <div className="flex items-center justify-between ">
             <div className="w-20"></div>
             <Image
-              src={`https://ajiroba.onrender.com/${prodInfo?.data?.data?.order_id.profile_image}`}
+              src={`https://ajiroba.onrender.com/${prodInfo?.data?.profile_image}`}
               className=" rounded-full border-4 border-[#F25E26]"
               width={100}
               height={100}
               alt="icon"
             />
             <div className="rounded-lg border border-[#E84526] py-4 px-4">
-              <h1>Order Code</h1>
-              <small className="text-[#E84526] text-sm">{prodInfo?.data?.data?.order_id}</small>
+              <h1>Ticket Number</h1>
+              <small className="text-[#E84526] text-sm">{prodInfo?.data?.data?.ticket_number}</small>
             </div>
           </div>
         </section>
@@ -128,7 +136,7 @@ if (prodLoading) {
 
 
 
-            <ProductsCard cardInfo={transformedData } />
+            <AuctionsCard cardInfo={transformedData } />
 
             </div>
 

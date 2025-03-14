@@ -22,6 +22,9 @@ interface UserData {
   auction_deals?: any
   status?: any
   message?: any
+  ticket_number?: any
+  profile_image?: any
+  name?: any
 
 }
 
