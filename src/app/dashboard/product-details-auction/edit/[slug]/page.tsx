@@ -91,6 +91,7 @@ useEffect(() => {
       (img: any) => `https://ajiroba.onrender.com/media/${img.image}`
     );
     setSelectedImg(images);
+    setMainImage(images[0]);
   }
 }, [productDetails]);
 
@@ -295,7 +296,7 @@ useEffect(() => {
         </p>
         <span className="w-full bg-gray-100">
           <h1 className="text-2xl text-center py-2 mb-6">
-            Regular Product Upload
+            Auction Product Upload
           </h1>
         </span>
       </div>

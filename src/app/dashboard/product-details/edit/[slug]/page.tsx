@@ -64,7 +64,6 @@ export default function Page() {
 
    const [userToken, setUserToken] = useState(Cookies.get("token"));
 
-  // Construct URL with dynamic filters
   let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_products/`;
 
   const { data: productInfo, isLoading: productLoading } = useGetDatanew(
@@ -74,8 +73,6 @@ export default function Page() {
   );
 
 
-
-  // Find the product that matches the productId
   const productDetails = Array.isArray(productInfo?.data)
     ? productInfo.data.find((product: any) => product.id === productId)
     : null;
@@ -87,6 +84,7 @@ useEffect(() => {
       (img: any) => `https://ajiroba.onrender.com/media/${img.image}`
     );
     setSelectedImg(images);
+    setMainImage(images[0]);
   }
 }, [productDetails]);
 
@@ -95,18 +93,12 @@ useEffect(() => {
 
   const [mainImage, setMainImage] = useState<string>(selectedImg[0]);
 
-
-
-
     const { data: catInfo, isLoading: catnLoading } =
     useQueryData<CategoryResponse>(
       `${process.env.NEXT_PUBLIC_BASE_URL}/commerce/categories_and_subcategories/`,
       ["get categories_and_subcategories"],
       true,
     );
-
-
-
 
   const catnew = catInfo?.data.map((cat) => ({
     label: cat.category,
@@ -278,19 +270,10 @@ useEffect(() => {
 
     });
 
-  /*   setLocalStoreData({
-      name: "regularProduct",
-      obj: { ...data, regularMedia },
-    });
- */
-
-
-
   };
 
 
 if (productLoading) return <p>Loading product details...</p>;
-
 
   return (
     <section className="flex-col flex justify-center">
@@ -308,7 +291,6 @@ if (productLoading) return <p>Loading product details...</p>;
           </h1>
         </span>
       </div>
-
 
       <form id="product-upload-form"     onSubmit={handleSubmit(sumbitForm)}
         className="flex justify-around gap-20 items-center lg:flex-row flex-col-reverse"
@@ -337,7 +319,6 @@ if (productLoading) return <p>Loading product details...</p>;
                 </div>
               ))}
 
-              {/* Play Icon for Video */}
               <div className="w-20 md:w-24 h-20 md:h-24 flex items-center justify-center border border-gray-300 bg-gray-200">
                 <button className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center">
                   ▶
@@ -404,27 +385,6 @@ if (productLoading) return <p>Loading product details...</p>;
               classname={"w-full px-5 h-24 focus:text-black border rounded "}
             />
 
-           {/*  <div className="flex gap-2 py-8 flex-col lg:flex-row md:flex-row ">
-              <InputField
-                name="selling_price"
-                label="Selling Price"
-                type="text"
-                placeholder="₦1234"
-                register={register}
-                errors={errors}
-                classname="px-5 h-12 focus:text-black border rounded "
-              />
-              <InputField
-                name="discount"
-                label="Discount"
-                type="text"
-                placeholder="₦100"
-                register={register}
-                errors={errors}
-                classname="px-5 h-12 focus:text-black border rounded"
-              />
-            </div> */}
-
             <div className="">
               <div className="flex flex-col">
                 <label htmlFor="upload-files">
@@ -479,7 +439,7 @@ if (productLoading) return <p>Loading product details...</p>;
                   options={["Top Deals"]}
                   onChange={(e: { target: { checked: boolean } }) =>
                     setValue("topdeals", e.target.checked)
-                  } // ✅ Handle checked state
+                  }
                   classname="mt-4"
                 />
 
@@ -491,7 +451,7 @@ if (productLoading) return <p>Loading product details...</p>;
                   options={["Featured"]}
                   onChange={(e: { target: { checked: boolean } }) =>
                     setValue("featured", e.target.checked)
-                  } // ✅ Handle checked state
+                  }
                   classname="mt-4"
                 />
               </div>
@@ -539,13 +499,10 @@ if (productLoading) return <p>Loading product details...</p>;
           </div>
         </div>
 
-
-
       </form>
 
 
-
-      <div className="flex justify-center items-center mt-12  mb-10">
+ <div className="flex justify-center items-center mt-12  mb-10">
         <DefaultButton
             handleClick={() => null}
           className="text-sm  px-20  justify-center flex font-normal font-Poppins rounded-lg bg-[#FCDFD4]  py-2 transition delay-300 duration-300 ease-in-out hover:bg-[#E84526] hover:text-white hover:transition-all"
@@ -570,6 +527,7 @@ if (productLoading) return <p>Loading product details...</p>;
           />
         </div>
       )}
+
     </section>
   );
 }
