@@ -58,16 +58,20 @@ const Page = () => {
         {/* Left Section - Image Gallery */}
         <div>
           <div className="mb-4">
-            <img
+            <Image
               src="https://via.placeholder.com/400"
               alt="Product"
               className="w-full rounded-lg"
+              width={400}
+              height={400}
             />
           </div>
           <div className="grid grid-cols-5 gap-2">
             {[...Array(5)].map((_, index) => (
-              <img
+              <Image
                 key={index}
+                width={100}
+                height={100}
                 src="https://via.placeholder.com/100"
                 alt={`Thumbnail ${index}`}
                 className="w-full h-20 rounded-lg object-cover"

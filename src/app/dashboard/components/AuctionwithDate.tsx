@@ -161,11 +161,11 @@ export const Auction = () => {
                     max="5"
                     className="pt-6 hidden "
                     multiple
-                    {...register("regular_media", { required: true })}
+                    {...register("auction_media", { required: true })}
                   />
                 </label>
                 <div className="text-xs text-rose-500 pt-1">
-                  {errors?.regular_media?.message}
+                  {errors?.auction_media?.message}
                 </div>
               </div>
               <div className="flex gap-2 py-8 flex-col lg:flex-row md:flex-row ">
