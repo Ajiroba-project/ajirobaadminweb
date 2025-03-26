@@ -65,7 +65,7 @@ export const HeaderNavMenu = [
 
 },  {
     name:"Live Chat",
-    path:"#",
+    path:"/livechat",
 
 }]
 

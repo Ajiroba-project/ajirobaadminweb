@@ -1,0 +1,115 @@
+.bubble {
+    position: relative;
+    font-family: sans-serif;
+    font-size: 18px;
+    line-height: 24px;
+    width: 300px;
+    background: #fff;
+    border-radius: 40px;
+    padding: 24px;
+    text-align: center;
+    color: #000;
+    border: 1px solid #b7b7b7;
+}
+
+/* Bubble with Bottom-Left Tail */
+.bubble-bottom-left {
+    position: relative;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 16px;
+    padding: 16px;
+}
+
+.bubble-bottom-left:before {
+    content: '';
+    position: absolute;
+    bottom: -24px;
+    left: 32px;
+    width: 0;
+    height: 0;
+    border-left: 24px solid #ddd;
+    border-right: 12px solid transparent;
+    border-top: 12px solid #ddd;
+    border-bottom: 20px solid transparent;
+}
+
+.bubble-bottom-left:after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 34px;
+    width: 0;
+    height: 0;
+    border-left: 22px solid #fff;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #fff;
+    border-bottom: 18px solid transparent;
+}
+
+/* Bubble with Bottom-Right Tail */
+.bubbleright-bottom-right {
+    position: relative;
+    background-color: #fff;
+    border: 2px solid #ddd;
+    border-radius: 16px;
+    padding: 16px;
+    margin-left: auto;
+    max-width: 300px;
+}
+
+.bubbleright-bottom-right:before {
+    content: '';
+    position: absolute;
+    bottom: -24px;
+    right: 32px;
+    width: 0;
+    height: 0;
+    border-left: 24px solid #ddd;
+    border-right: 12px solid transparent;
+    border-top: 12px solid #ddd;
+    border-bottom: 20px solid transparent;
+}
+
+.bubbleright-bottom-right:after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    right: 34px;
+    width: 0;
+    height: 0;
+    border-left: 22px solid #fff;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #fff;
+    border-bottom: 18px solid transparent;
+}
+
+/* Mobile Responsive Styles */
+@media screen and (max-width: 768px) {
+
+    .bubble,
+    .bubble-bottom-left,
+    .bubbleright-bottom-right {
+        width: 90%;
+        /* Make the bubbles take up 90% of the screen width */
+        max-width: none;
+        /* Remove max-width constraint */
+        padding: 16px;
+        /* Reduce padding for smaller screens */
+        font-size: 16px;
+        /* Adjust font size */
+        line-height: 22px;
+    }
+
+    .bubble-bottom-left:before,
+    .bubble-bottom-left:after {
+        left: 16px;
+        /* Move tail closer to the left edge */
+    }
+
+    .bubbleright-bottom-right:before,
+    .bubbleright-bottom-right:after {
+        right: 16px;
+        /* Move tail closer to the right edge */
+    }
+}
