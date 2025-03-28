@@ -264,11 +264,11 @@ const ChatData = useCallback(
         </div>
       </div>
 
-      <div className="bg-[#FCDFD433] w-full rounded-lg span-2">
+      <div className="bg-[#FCDFD433]  rounded-lg span-2">
         <div></div>
 
         <div
-          className="md:w-1/2 w-full flex justify-center"
+          className="  flex justify-center"
           style={{
             height: " min-content",
             overflow: "scroll",

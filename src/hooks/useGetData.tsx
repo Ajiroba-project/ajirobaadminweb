@@ -25,6 +25,7 @@ interface UserData {
   ticket_number?: any
   profile_image?: any
   name?: any
+  bills_payment?: any
 
 }
 

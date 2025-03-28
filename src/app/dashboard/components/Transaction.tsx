@@ -5,6 +5,7 @@ import { useState } from "react";
 import Regulardeals from "./Regulardeals";
 import Recharge from "./Recharge";
 import Auctiondeals from "./Auctiondeals";
+import Rechargedeals from "./Rechargedeals";
 
 export const Transaction = () => {
   const [active, setActive] = useState(0);
@@ -69,7 +70,7 @@ export const Transaction = () => {
       ) : active == 1 ? (
         <Auctiondeals />
       ) : (
-        <Recharge />
+        <Rechargedeals />
       )}
       </div>
 

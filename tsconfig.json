@@ -27,7 +27,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/app/api/auth/route.js",
-    "src/app/dashboard/components/GeoData.jsx"
+    "src/app/dashboard/components/GeoData.jsx",
+    "src/app/api/fetchbilldetails/route.js"
   ],
   "exclude": ["node_modules"]
 }
