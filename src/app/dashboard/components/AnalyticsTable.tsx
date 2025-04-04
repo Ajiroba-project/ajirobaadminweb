@@ -26,8 +26,6 @@ function AnalyticsTable() {
 
   const [userToken, setUserToken] = useState(Cookies.get("token"));
 
-  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_profile/`;
-
   const { data: analyticsInfo, isLoading: anaLoading, error, isError } = useGetDatanew(
     `/api/getanalytics/`,
     "get_analytics_details",
@@ -35,7 +33,7 @@ function AnalyticsTable() {
   );
 
 
-  console.log(analyticsInfo?.data, "analyticsInfo");
+  // console.log(analyticsInfo?.data, "analyticsInfo");
 
   // console.log(analyticsInfo?.data?.infromation?.top_five_customers,
   //   "analyticsInfo");

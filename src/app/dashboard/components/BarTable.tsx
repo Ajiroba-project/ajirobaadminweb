@@ -11,7 +11,9 @@ import {
   Legend,
 } from 'chart.js';
 import GeoGrapghy from './GeoData'
-import { Tooltip as ReactTooltip } from "react-tooltip";
+import ReactTooltip from "react-tooltip";
+import { useGetDatanew } from '@/hooks/useGetData';
+import Cookies from 'js-cookie';
 
 
 // Register the necessary components
@@ -52,12 +54,33 @@ const percentageLabelsPlugin: PercentageLabelsPlugin = {
 };
 
 
+
+
+
 const CustomerByGender = () => {
+
+  const [userToken, setUserToken] = useState(Cookies.get("token"));
+
+  const { data: analyticsInfo, isLoading: anaLoading, error, isError } = useGetDatanew(
+    `/api/getanalytics/`,
+    "get_analytics_details",
+    userToken || " ",
+  );
+
+
+  if (anaLoading) {
+    return <div>Loading...</div>;
+  }
+
+
+  console.log(analyticsInfo?.data?.infromation, "analyticsInfo");
+
+
   const data = {
     labels: ['Male', 'Female'],
     datasets: [
       {
-        data: [70, 30],
+        data: [analyticsInfo?.data?.infromation?.male_percentage, analyticsInfo?.data?.infromation?.female_percentage],
         backgroundColor: ['#F25E26', '#F25E26'],
         barPercentage: 0.8,
         barThickness: 10,
@@ -137,7 +160,39 @@ const CustomerByAge = () => {
 };
 
 const BarChart: React.FC = () => {
-  const [content, setContent] = useState<string>("");
+  const [content, setContent] = useState("");
+
+
+  const [userToken, setUserToken] = useState(Cookies.get("token"));
+
+  const { data: analyticsInfo, isLoading: anaLoading, error, isError } = useGetDatanew(
+    `/api/getanalytics/`,
+    "get_analytics_details",
+    userToken || " ",
+  );
+
+
+  if (anaLoading) {
+    return <div>Loading...</div>;
+  }
+  console.log(analyticsInfo?.data?.infromation?.customer_by_location, "analyticsInfo");
+
+  const datatouse = [
+    { state: 'OgunState', count: 1 },
+    { state: 'Edo', count: 1 },
+    { state: 'Osun', count: 1 },
+    { state: 'kwara', count: 3 },
+    { state: 'Abia', count: 2 },
+    { state: 'Adamawa', count: 2 },
+    { state: 'Ekiti', count: 2 },
+    { state: 'Lagos', count: 13 },
+    { state: 'AkwaIbom', count: 1 },
+    { state: 'Ogun', count: 3 }
+  ]
+
+  // <GeoGrapghy setTooltipContent={setContent} />
+  //     <div>{content}</div>
+  // <ReactTooltip>{content}</ReactTooltip>
 
   return (
     <div className="p-8 bg-[#F6F6F6]  flex flex-col items-center">
@@ -145,9 +200,16 @@ const BarChart: React.FC = () => {
         <CustomerByGender />
         <CustomerByAge />
         {/*   <MapChart setTooltipContent={setContent} /> */}
-        <GeoGrapghy setTooltipContent={setContent} />
-        {/*    <div>{content}</div> */}
-        <ReactTooltip>{content}</ReactTooltip>
+
+
+
+        <div>
+          <GeoGrapghy
+            setTooltipContent={setContent}
+            customerByLocation={analyticsInfo?.data?.infromation?.customer_by_location}
+          />
+          <ReactTooltip>{content}</ReactTooltip>
+        </div>
       </div>
     </div>
   );
