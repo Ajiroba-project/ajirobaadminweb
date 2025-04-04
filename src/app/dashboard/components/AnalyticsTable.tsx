@@ -13,24 +13,50 @@ import BarChart from './BarTable';
 import GeoGrapgh from './GeoData';
 import MapChart from './GeoData'
 import TopZonesList from './TopZonesList';
+import Cookies from 'js-cookie';
+import { useGetDatanew } from '@/hooks/useGetData';
 
 function AnalyticsTable() {
 
-    const router = useRouter();
+  const router = useRouter();
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedOption, setSelectedOption] = useState<string>('All');
 
-  const [transactions, setTransactions] = useState([
-    { id: 1, name: "Olamide Akintan", email: "olamideakintan@gmail.com", date: "03/02/2025", img: 'https://www.shutterstock.com/image-photo/unhealthy-blue-apple-isolated-260nw-782117749.jpg' },
-    { id: 2, name: "Alison David", email: "alisondavid@gmail.com",  date: "31/01/2024", img: 'https://www.shutterstock.com/image-photo/unhealthy-blue-apple-isolated-260nw-782117749.jpg' },
-    { id: 3, name: "Megan Willow", email: "meganwillow@gmail.com",  date: "27/01/2024" , img: 'https://www.shutterstock.com/image-photo/unhealthy-blue-apple-isolated-260nw-782117749.jpg'},
-    { id: 4, name: "Janelle Levi", email: "janellelevi@gmail.com",  date: "02/02/2024", img: 'https://www.shutterstock.com/image-photo/unhealthy-blue-apple-isolated-260nw-782117749.jpg' },
-    { id: 5, name: "King Fisher", email: "kingfisher@gmail.com",  date: "26/02/2024" , img: 'https://www.shutterstock.com/image-photo/unhealthy-blue-apple-isolated-260nw-782117749.jpg'},
 
-  ]);
+  const [userToken, setUserToken] = useState(Cookies.get("token"));
 
-const [search, setSearch] = useState("");
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_profile/`;
+
+  const { data: analyticsInfo, isLoading: anaLoading, error, isError } = useGetDatanew(
+    `/api/getanalytics/`,
+    "get_analytics_details",
+    userToken || " ",
+  );
+
+
+  console.log(analyticsInfo?.data, "analyticsInfo");
+
+  // console.log(analyticsInfo?.data?.infromation?.top_five_customers,
+  //   "analyticsInfo");
+
+  const BASE_URL = "https://ajiroba.onrender.com";
+
+  const formatted = analyticsInfo?.data?.infromation?.top_five_customers.map((customer: { full_name: any; email: any; date: string | number | Date; picture: any; }, index: number) => ({
+    id: index + 1,
+    name: customer.full_name,
+    email: customer.email,
+    date: new Date(customer.date).toLocaleDateString("en-GB"), // Formats to dd/mm/yyyy
+    img: `${BASE_URL}${customer.picture}`, // Append full image URL
+  })) || [];
+
+
+  // console.log(formatted, "formatted")
+
+
+
+
+  const [search, setSearch] = useState("");
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [menuOpen, setMenuOpen] = useState<number | null>(null); // Track which row's menu is open
@@ -42,13 +68,13 @@ const [search, setSearch] = useState("");
 
 
 
-   const handleOptionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleOptionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedOption(event.target.value);
   };
 
 
 
- const filterByDateRange = (transactionDate: string, days: number) => {
+  const filterByDateRange = (transactionDate: string, days: number) => {
     const transactionDateObj = new Date(transactionDate);
     const currentDate = new Date();
     const pastDate = new Date(currentDate.setDate(currentDate.getDate() - days));
@@ -57,10 +83,10 @@ const [search, setSearch] = useState("");
 
   const itemsPerPage = 5;
 
- const [content, setContent] = useState<string>("");
+  const [content, setContent] = useState<string>("");
 
-// Filtered Data Based on Search and Selected Option
-  const filteredTransactions = transactions.filter((transaction) => {
+  // Filtered Data Based on Search and Selected Option
+  const filteredTransactions = formatted?.filter((transaction: { name: string; email: string; date: string | string[]; }) => {
     const matchesSearch =
       transaction.name.toLowerCase().includes(search.toLowerCase()) ||
       transaction.email.toLowerCase().includes(search.toLowerCase()) ||
@@ -68,9 +94,9 @@ const [search, setSearch] = useState("");
 
     const matchesSelectedOption =
       selectedOption === 'All' ||
-      (selectedOption === '5' && filterByDateRange(transaction.date, 5)) ||
-      (selectedOption === '10' && filterByDateRange(transaction.date, 10)) ||
-      (selectedOption === '30' && filterByDateRange(transaction.date, 30));
+      (selectedOption === '5' && typeof transaction.date === 'string' && filterByDateRange(transaction.date, 5)) ||
+      (selectedOption === '10' && typeof transaction.date === 'string' && filterByDateRange(transaction.date, 10)) ||
+      (selectedOption === '30' && typeof transaction.date === 'string' && filterByDateRange(transaction.date, 30));
 
     return matchesSearch && matchesSelectedOption;
   });
@@ -78,22 +104,30 @@ const [search, setSearch] = useState("");
 
   // Pagination Logic
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = filteredTransactions.slice(
+  const paginatedData = filteredTransactions?.slice(
     startIndex,
     startIndex + itemsPerPage
   );
-  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredTransactions?.length / itemsPerPage);
 
   // Select All Logic
-  const isAllSelected =
+  interface Transaction {
+    id: number;
+    name: string;
+    email: string;
+    date: string;
+    img: string;
+  }
+
+  const isAllSelected: boolean =
     paginatedData.length > 0 &&
-    paginatedData.every((transaction) => selectedRows.includes(transaction.id));
+    paginatedData.every((transaction: Transaction) => selectedRows.includes(transaction.id));
 
   const toggleSelectAll = () => {
     if (isAllSelected) {
       setSelectedRows([]);
     } else {
-      const pageIds = paginatedData.map((transaction) => transaction.id);
+      const pageIds: number[] = paginatedData.map((transaction: Transaction) => transaction.id);
       setSelectedRows((prev) => Array.from(new Set([...prev, ...pageIds])));
     }
   };
@@ -109,18 +143,45 @@ const [search, setSearch] = useState("");
   };
 
 
+  anaLoading && (
+    <div className="flex justify-center items-center h-screen">
+      <svg
+        className="animate-spin h-10 w-10 text-blue-500"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          className="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          fill="none"
+          strokeWidth="4"
+          stroke="currentColor"
+        />
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 1 1 16 0A8 8 0 0 1 4 12z"
+        />
+      </svg>
+    </div>
+  )
+
+
+
   return (
 
     <div>
 
 
-<div className="p-4 max-w-7xl mx-auto rounded-lg shadow-md bg-white">
-       <div className="flex items-center space-x-2">
+      <div className="p-4 max-w-7xl mx-auto rounded-lg shadow-md bg-white">
+        <div className="flex items-center space-x-2">
 
-         {/* This should be drop down that has sort by past 5 days, past 10 days, past 30 days, instead of date picker  */}
+          {/* This should be drop down that has sort by past 5 days, past 10 days, past 30 days, instead of date picker  */}
 
 
-           {/*   <DatePicker
+          {/*   <DatePicker
             selected={selectedDate}
             onChange={(date) => setSelectedDate(date)}
             placeholderText="Select Date"
@@ -131,102 +192,102 @@ const [search, setSearch] = useState("");
           /> */}
 
 
-          </div>{/* Header Section */}
-      <div className="flex flex-wrap items-center justify-between mb-4">
-       <div className='flex w-full md:w-1/3 gap-4'>
+        </div>{/* Header Section */}
+        <div className="flex flex-wrap items-center justify-between mb-4">
+          <div className='flex w-full md:w-1/3 gap-4'>
 
-        <h1 className='text-sm font-Poppins text-[#111111] font-semibold' >Top 5 Customer Engagement</h1>
-       </div>
-        <div className="flex items-center space-x-4 mt-2 md:mt-0">
+            <h1 className='text-sm font-Poppins text-[#111111] font-semibold' >Top 5 Customer Engagement</h1>
+          </div>
+          <div className="flex items-center space-x-4 mt-2 md:mt-0">
 
- <select
-          value={selectedOption}
-          onChange={handleOptionChange}
-          className="border border-gray-300 rounded-md p-2"
-        >
-          {/* <option value="">Select Date Range</option> */}
-          <option value="5">Past 5 Days</option>
-          <option value="10">Past 10 Days</option>
-          <option value="30">Past 30 Days</option>
-             <option value="All">Select Date Range</option>
-        </select>
+            <select
+              value={selectedOption}
+              onChange={handleOptionChange}
+              className="border border-gray-300 rounded-md p-2"
+            >
+              {/* <option value="">Select Date Range</option> */}
+              <option value="5">Past 5 Days</option>
+              <option value="10">Past 10 Days</option>
+              <option value="30">Past 30 Days</option>
+              <option value="All">Select Date Range</option>
+            </select>
 
+          </div>
         </div>
-      </div>
 
-      {/* Table Section */}
-      <div className="bg-white  overflow-x-auto">
-        <table className="w-full table-auto border-collapse border border-[#E4E7EC]">
-          <thead className="bg-[#F9FAFB] border border-gray-100">
-            <tr className='text-[#344054] font-Poppins font-medium text-sm border border-[#E4E7EC]' >
-              <th className="px-4 py-2">
-                <input
-                  type="checkbox"
-                  checked={isAllSelected}
-                  onChange={toggleSelectAll}
-                />
-              </th>
-              <th className="text-left px-4 py-2">Name</th>
-              <th className="text-left px-4 py-2">Email</th>
-         {/*      <th className="text-left px-4 py-2">Ticket Amount</th>
-              <th className="text-left px-4 py-2">Item</th> */}
-              <th className="text-left px-4 py-2">Date</th>
-              <th className="text-left px-4 py-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedData.map((transaction) => (
-              <tr
-                key={transaction.id}
-                className="hover:bg-gray-100 even:bg-gray-50  border border-b-[#E4E7EC]"
-              >
-                <td className="px-4 py-4">
+        {/* Table Section */}
+        <div className="bg-white  overflow-x-auto">
+          <table className="w-full table-auto border-collapse border border-[#E4E7EC]">
+            <thead className="bg-[#F9FAFB] border border-gray-100">
+              <tr className='text-[#344054] font-Poppins font-medium text-sm border border-[#E4E7EC]' >
+                <th className="px-4 py-2">
                   <input
                     type="checkbox"
-                    checked={selectedRows.includes(transaction.id)}
-                    onChange={() => toggleRowSelection(transaction.id)}
+                    checked={isAllSelected}
+                    onChange={toggleSelectAll}
                   />
-                </td>
-                <td className="px-4 py-4 flex items-center space-x-2">
-                  {/* <div className="h-8 w-8 rounded-full bg-gray-300"></div> */}
-                  <Image src={transaction.img} alt="icon" width={30} height={30} />
-                  <span className='text-[#101928] font-semibold font-Poppins text-sm'>{transaction.name}</span>
-                </td>
-                <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.email}</td>
-
-                <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.date}</td>
-                <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm relative">
-                  <button
-                    className="whitespace-nowrap text-sm  py-2 w-full text-center bg-[#E84526] rounded text-[#F6F6F6] hover:bg-[#E84526]"
-
-                   onClick={ () => setUpdateCategory(true) }
-                  >
-                    Gift Point
-                  </button>
-
-
-
-
-                </td>
+                </th>
+                <th className="text-left px-4 py-2">Name</th>
+                <th className="text-left px-4 py-2">Email</th>
+                {/*      <th className="text-left px-4 py-2">Ticket Amount</th>
+              <th className="text-left px-4 py-2">Item</th> */}
+                <th className="text-left px-4 py-2">Date</th>
+                <th className="text-left px-4 py-2"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {paginatedData.map((transaction: Transaction) => (
+                <tr
+                  key={transaction.id}
+                  className="hover:bg-gray-100 even:bg-gray-50  border border-b-[#E4E7EC]"
+                >
+                  <td className="px-4 py-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.includes(transaction.id)}
+                      onChange={() => toggleRowSelection(transaction.id)}
+                    />
+                  </td>
+                  <td className="px-4 py-4 flex items-center space-x-2">
+                    {/* <div className="h-8 w-8 rounded-full bg-gray-300"></div> */}
+                    <Image src={transaction.img} alt="icon" width={30} height={30} />
+                    <span className='text-[#101928] font-semibold font-Poppins text-sm'>{transaction.name}</span>
+                  </td>
+                  <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.email}</td>
+
+                  <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.date}</td>
+                  <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm relative">
+                    <button
+                      className="whitespace-nowrap text-sm  py-2 w-full text-center bg-[#E84526] rounded text-[#F6F6F6] hover:bg-[#E84526]"
+
+                      onClick={() => setUpdateCategory(true)}
+                    >
+                      Gift Point
+                    </button>
+
+
+
+
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+
+
+        <BarChart />
+
+
+
+
+
       </div>
 
 
 
-            <BarChart />
-
-
-
-
-
-    </div>
-
-
-
- <ModalComponent
+      <ModalComponent
         content={
           <div className="flex flex-col justify-center">
             <div className="flex justify-center items-center flex-col">
@@ -241,11 +302,11 @@ const [search, setSearch] = useState("");
         }
         isModalOpen={updateCategory}
         showModal={handleUpdateSubCategory}
-        handleOk={() => {}}
+        handleOk={() => { }}
         handleCancel={() => setUpdateCategory(false)}
       />
 
-        </div>
+    </div>
   )
 }
 

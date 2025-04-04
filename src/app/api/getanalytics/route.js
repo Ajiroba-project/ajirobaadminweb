@@ -18,7 +18,7 @@ export async function GET(request) {
         // Append a cache buster to avoid stale responses
         const cacheBuster = `cache=${Date.now()}`;
         /*   https://jedida.onrender.com/md/staffs */
-        const apiUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_homepage/?${cacheBuster}`;
+        const apiUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/analytics/?${cacheBuster}`;
 
         const res = await fetch(apiUrl, {
             method: "GET",

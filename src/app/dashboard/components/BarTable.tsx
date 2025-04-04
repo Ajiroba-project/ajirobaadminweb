@@ -27,28 +27,28 @@ ChartJS.register(
 
 // Custom plugin to draw percentage labels
 interface PercentageLabelsPlugin {
-    id: string;
-    afterDatasetsDraw: (chart: ChartJS) => void;
+  id: string;
+  afterDatasetsDraw: (chart: ChartJS) => void;
 }
 
 const percentageLabelsPlugin: PercentageLabelsPlugin = {
-    id: 'percentageLabels',
-    afterDatasetsDraw: (chart: ChartJS) => {
-        const { ctx, data } = chart;
-        chart.data.datasets.forEach((dataset, i) => {
-            const meta = chart.getDatasetMeta(i);
-            meta.data.forEach((bar, index) => {
-                const value = dataset.data[index] as number;
-                const label = `${value}%`;
-                const x = bar.x;
-                const y = bar.y + 20; // Adjust the y position as needed
-                ctx.fillStyle = '#344054';
-                ctx.font = '12px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(label, x, y);
-            });
-        });
-    },
+  id: 'percentageLabels',
+  afterDatasetsDraw: (chart: ChartJS) => {
+    const { ctx, data } = chart;
+    chart.data.datasets.forEach((dataset, i) => {
+      const meta = chart.getDatasetMeta(i);
+      meta.data.forEach((bar, index) => {
+        const value = dataset.data[index] as number;
+        const label = `${value}%`;
+        const x = bar.x;
+        const y = bar.y + 20; // Adjust the y position as needed
+        ctx.fillStyle = '#344054';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, x, y);
+      });
+    });
+  },
 };
 
 
@@ -60,7 +60,7 @@ const CustomerByGender = () => {
         data: [70, 30],
         backgroundColor: ['#F25E26', '#F25E26'],
         barPercentage: 0.8,
-         barThickness: 10,
+        barThickness: 10,
       },
     ],
   };
@@ -69,7 +69,7 @@ const CustomerByGender = () => {
     indexAxis: 'y' as const,
     plugins: {
       legend: { display: false },
-            percentageLabels: {},
+      percentageLabels: {},
     },
     responsive: true,
     maintainAspectRatio: false,
@@ -89,7 +89,7 @@ const CustomerByGender = () => {
     <div className="bg-white p-6 rounded-lg shadow-lg">
       <h2 className="text-lg font-semibold mb-4">Customer by Gender</h2>
       <div className="h-32">
-        <Bar data={data} options={options}  plugins={[percentageLabelsPlugin]} />
+        <Bar data={data} options={options} plugins={[percentageLabelsPlugin]} />
       </div>
     </div>
   );
@@ -97,12 +97,12 @@ const CustomerByGender = () => {
 
 const CustomerByAge = () => {
   const data = {
-    labels: ['18 - 30', '31 - 40', '41 - 50', '51 - 60', '61 and Above'],
+    labels: ['Foodstuffs', 'Phones', 'Fashion & Beauty', 'Electronics', 'Mother & Child'],
     datasets: [
       {
         data: [3500, 2500, 2000, 1000, 500],
         backgroundColor: '#F25E26',
-         barThickness: 10,
+        barThickness: 10,
       },
     ],
   };
@@ -128,9 +128,9 @@ const CustomerByAge = () => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg">
-      <h2 className="text-lg font-semibold mb-4">Customer by Age</h2>
+      <h2 className="text-lg font-semibold mb-4">Auction Product Performance <small className='text-[#344054] font-normal text-sm'>(No of bids vs categories)</small></h2>
       <div className="h-64">
-        <Bar data={data} options={options}  />
+        <Bar data={data} options={options} />
       </div>
     </div>
   );
@@ -144,10 +144,10 @@ const BarChart: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-5xl">
         <CustomerByGender />
         <CustomerByAge />
-      {/*   <MapChart setTooltipContent={setContent} /> */}
-        <GeoGrapghy setTooltipContent={setContent}  />
-     {/*    <div>{content}</div> */}
-         <ReactTooltip>{content}</ReactTooltip>
+        {/*   <MapChart setTooltipContent={setContent} /> */}
+        <GeoGrapghy setTooltipContent={setContent} />
+        {/*    <div>{content}</div> */}
+        <ReactTooltip>{content}</ReactTooltip>
       </div>
     </div>
   );

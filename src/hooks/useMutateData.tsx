@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 interface RequestPayload {
     url: string;
     payload: any;
+    token?: any
 }
 
 const postData = async (request: RequestPayload): Promise<any> => {

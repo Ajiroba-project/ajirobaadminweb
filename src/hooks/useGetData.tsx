@@ -26,6 +26,7 @@ interface UserData {
   profile_image?: any
   name?: any
   bills_payment?: any
+  infromation?: any
 
 }
 
