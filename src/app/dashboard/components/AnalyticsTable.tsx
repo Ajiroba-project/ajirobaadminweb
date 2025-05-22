@@ -15,6 +15,8 @@ import MapChart from './GeoData'
 import TopZonesList from './TopZonesList';
 import Cookies from 'js-cookie';
 import { useGetDatanew } from '@/hooks/useGetData';
+import { GiftPointModal } from './GiftPointModal';
+import { toast } from 'react-toastify';
 
 function AnalyticsTable() {
 
@@ -24,7 +26,9 @@ function AnalyticsTable() {
   const [selectedOption, setSelectedOption] = useState<string>('All');
 
 
-  const [userToken, setUserToken] = useState(Cookies.get("token"));
+  const userToken = Cookies.get('token') as string;
+
+  const [giftPointEmail, setGiftPointEmail] = useState<string | null>(null);
 
   const { data: analyticsInfo, isLoading: anaLoading, error, isError } = useGetDatanew(
     `/api/getanalytics/`,
@@ -137,6 +141,53 @@ function AnalyticsTable() {
       setSelectedRows(selectedRows.filter((rowId) => rowId !== id));
     } else {
       setSelectedRows([...selectedRows, id]);
+    }
+  };
+
+
+
+  const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
+  const [giftPoint, setGiftPoint] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleGiftPoint = async () => {
+    if (!giftPoint || isNaN(Number(giftPoint))) {
+      toast.error('Please enter a valid number of points');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+
+      let data;
+
+      const response = await fetch('https://ajiroba.onrender.com/v1/admin/gift_points/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `token ${userToken}`
+        },
+        body: JSON.stringify({
+          email: selectedEmail,
+          point: giftPoint
+        })
+      });
+
+      data = await response.json();
+
+      if (response.ok) {
+        console.log(data, "data");
+        toast.success(data.message || 'Points gifted successfully');
+        setSelectedEmail(null);
+        setGiftPoint('');
+      } else {
+        console.log(data, "data");
+        toast.error(data.message || data.detail || 'Failed to gift points');
+      }
+    } catch (error) {
+      toast.error('An error occurred while gifting points');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -255,10 +306,18 @@ function AnalyticsTable() {
 
                   <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.date}</td>
                   <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm relative">
-                    <button
+                    {/*   <button
                       className="whitespace-nowrap text-sm  py-2 w-full text-center bg-[#E84526] rounded text-[#F6F6F6] hover:bg-[#E84526]"
 
                       onClick={() => setUpdateCategory(true)}
+                    >
+                      Gift Point
+                    </button> */}
+
+
+                    <button
+                      className="whitespace-nowrap text-sm py-2 w-full text-center bg-[#E84526] rounded text-[#F6F6F6] hover:bg-[#E84526]"
+                      onClick={() => setSelectedEmail(transaction.email)}
                     >
                       Gift Point
                     </button>
@@ -285,14 +344,14 @@ function AnalyticsTable() {
 
 
 
-      <ModalComponent
+      {/*   <ModalComponent
         content={
           <div className="flex flex-col justify-center">
             <div className="flex justify-center items-center flex-col">
 
             </div>
 
-            {/*    <CraeteCategory func={handleEditCategory} /> */}
+
             <UpdateSubCategory func={handleUpdateSubCategory} />
 
 
@@ -302,8 +361,51 @@ function AnalyticsTable() {
         showModal={handleUpdateSubCategory}
         handleOk={() => { }}
         handleCancel={() => setUpdateCategory(false)}
-      />
+      /> */}
 
+
+
+      <ModalComponent
+        content={
+          <div className="flex flex-col gap-6 p-4">
+            <h2 className="text-xl font-semibold text-center">Enter Gift Point</h2>
+            <div className="w-full">
+              <input
+                type="number"
+                value={giftPoint}
+                onChange={(e) => setGiftPoint(e.target.value)}
+                placeholder="Enter points"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F25E26]"
+              />
+            </div>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={handleGiftPoint}
+                disabled={isSubmitting}
+                className="bg-[#E84526] text-white px-6 py-2 rounded hover:bg-[#d13d21] disabled:opacity-50"
+              >
+                {isSubmitting ? 'Sending...' : 'Send Gift Point'}
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedEmail(null);
+                  setGiftPoint('');
+                }}
+                className="bg-gray-200 text-gray-800 px-6 py-2 rounded hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        }
+        isModalOpen={!!selectedEmail}
+        showModal={() => { }}
+        handleOk={() => { }}
+        handleCancel={() => {
+          setSelectedEmail(null);
+          setGiftPoint('');
+        }}
+      />
     </div>
   )
 }

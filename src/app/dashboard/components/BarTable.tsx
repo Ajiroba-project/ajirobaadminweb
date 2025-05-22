@@ -1,3 +1,6 @@
+
+
+
 'use client'
 import React, { useState } from 'react';
 import { Bar } from 'react-chartjs-2';
@@ -73,7 +76,6 @@ const CustomerByGender = () => {
   }
 
 
-  console.log(analyticsInfo?.data?.infromation, "analyticsInfo");
 
 
   const data = {
@@ -175,7 +177,6 @@ const BarChart: React.FC = () => {
   if (anaLoading) {
     return <div>Loading...</div>;
   }
-  console.log(analyticsInfo?.data?.infromation?.customer_by_location, "analyticsInfo");
 
   const datatouse = [
     { state: 'OgunState', count: 1 },
