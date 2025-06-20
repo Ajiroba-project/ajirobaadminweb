@@ -37,6 +37,11 @@ interface ResponseData {
   title: string
   description: string
   profile_image_url?: any
+  status: string
+  message: string
+  filter?: any
+  slice?: any
+  length?: any
 }
 
 // interface ApiResponse {
@@ -75,7 +80,7 @@ export const useGetDatanew = (
   title: string,
   userToken: string,
   p0?: { cacheTime?: number; staleTime?: number }
-): UseQueryResult<ApiResponse> => {
+): UseQueryResult<ResponseData> => {
   return useQuery({
     queryKey: [title, url],
     queryFn: () => fetchDatanew(url, userToken),
@@ -103,7 +108,7 @@ export const useGetOrderData = (
   url: string,
   title: string,
   userToken: string
-): UseQueryResult<ApiResponse> => {
+): UseQueryResult<ResponseData> => {
   return useQuery({
     queryKey: [title, url],
     queryFn: () => fetchOrderData(url, userToken, title),
@@ -131,7 +136,7 @@ export const useGetPointData = (
   url: string,
   title: string,
   userToken: string
-): UseQueryResult<ApiResponse> => {
+): UseQueryResult<ResponseData> => {
   return useQuery({
     queryKey: [title, url],
     queryFn: () => fetchPointData(url, userToken, title),
@@ -162,7 +167,7 @@ export const useGetProductData = (
   userToken: string,
   order_id: string,
   title: string
-): UseQueryResult<ApiResponse> => {
+): UseQueryResult<ResponseData> => {
   /*  console.log(url, userToken, order_id, title); */
   return useQuery({
     queryKey: [title, url],
@@ -194,7 +199,7 @@ export const useGetBidData = (
   userToken: string,
   order_id: string,
   title: string
-): UseQueryResult<ApiResponse> => {
+): UseQueryResult<ResponseData> => {
   /*  console.log(url, userToken, order_id, title); */
   return useQuery({
     queryKey: [title, url],
@@ -223,7 +228,7 @@ export const useGetOrderWinsData = (
   url: string,
   title: string,
   userToken: string
-): UseQueryResult<ApiResponse> => {
+): UseQueryResult<ResponseData> => {
   return useQuery({
     queryKey: [title, url],
     queryFn: () => fetchOrderwinsData(url, userToken, title),
