@@ -7,14 +7,12 @@ export async function GET(request) {
     try {
         // Extract the token from the Authorization header
         const token_ = request.headers.get('authorization')?.replace('Token ', '');
-
         if (!token_) {
             return NextResponse.json(
                 { error: 'Token is required' },
                 { status: 400 }
             );
         }
-
         // Append a cache buster to avoid stale responses
         const cacheBuster = `cache=${Date.now()}`;
         /*   https://jedida.onrender.com/md/staffs */
