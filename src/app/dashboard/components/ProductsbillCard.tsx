@@ -168,8 +168,8 @@ export const ProductsbillCard = ({ cardInfo }: BillCardProps) => {
     return (
         <div className={`${poppins.className} my-8  border border-white shadow-sm p-6 rounded-lg`}>
             <div className="flex items-center gap-4">
-              {/*   <Image
-                    src={`https://ajiroba.onrender.com${cardInfo.profile_image}`}
+                {/*   <Image
+                    src={`https://staging.ajiroba.ng/v1${cardInfo.profile_image}`}
                     alt={cardInfo.name}
                     width={80}
                     height={80}
@@ -189,7 +189,7 @@ export const ProductsbillCard = ({ cardInfo }: BillCardProps) => {
                 <p className="text-sm text-gray-500"><strong>Date:</strong> {new Date(cardInfo.date_created).toLocaleString()}</p>
             </div>
 
-          {/*   <button
+            {/*   <button
                 onClick={() => router.push(`/bills/${cardInfo.id}`)}
                 className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
             >

@@ -55,18 +55,18 @@ interface CategoryResponse {
 
 export default function Page() {
 
-    const router = useRouter();
+  const router = useRouter();
 
   const params = useParams();
   const productId = params.slug;
 
 
-   const [selectedImg, setSelectedImg] = useState<string[]>([]);
+  const [selectedImg, setSelectedImg] = useState<string[]>([]);
 
 
 
 
-   const [userToken, setUserToken] = useState(Cookies.get("token"));
+  const [userToken, setUserToken] = useState(Cookies.get("token"));
 
   // Construct URL with dynamic filters
   let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_auctions/`;
@@ -85,15 +85,15 @@ export default function Page() {
     : null;
 
 
-useEffect(() => {
-  if (productDetails?.images) {
-    const images = productDetails.images.map(
-      (img: any) => `https://ajiroba.onrender.com/media/${img.image}`
-    );
-    setSelectedImg(images);
-    setMainImage(images[0]);
-  }
-}, [productDetails]);
+  useEffect(() => {
+    if (productDetails?.images) {
+      const images = productDetails.images.map(
+        (img: any) => `https://staging.ajiroba.ng/v1/media/${img.image}`
+      );
+      setSelectedImg(images);
+      setMainImage(images[0]);
+    }
+  }, [productDetails]);
 
 
 
@@ -269,13 +269,13 @@ useEffect(() => {
 
 
     mutate({
-        url: "/api/editauction",
-        payload: {
-          ...Payload,
-          id: productId,
-        },
+      url: "/api/editauction",
+      payload: {
+        ...Payload,
+        id: productId,
+      },
 
-      });
+    });
 
     /*   setLocalStoreData({
       name: "regularProduct",
@@ -486,7 +486,7 @@ useEffect(() => {
               width={240}
               height={340}
               className="w-full h-auto bg-gray-100"
-              /*    className="w-full h-auto bg-gray-100" */
+            /*    className="w-full h-auto bg-gray-100" */
             />
           </div>
 

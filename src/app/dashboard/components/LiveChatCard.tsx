@@ -77,70 +77,70 @@ export const LiveChatCard: React.FC = () => {
     userToken || " "
   );
 
-const ChatData = useCallback(
-  async (chatroom_id: string) => {
-    try {
-      setMessages([]);
-      const headers = {
-        Authorization: `token ${userToken}`,
-      };
+  const ChatData = useCallback(
+    async (chatroom_id: string) => {
+      try {
+        setMessages([]);
+        const headers = {
+          Authorization: `token ${userToken}`,
+        };
 
-      const response = await axios.get(
-        `https://ajiroba.onrender.com/v1/admin/chat_messages/?chatroom_id=${chatroom_id}`,
-        { headers }
-      );
-
-      if (response.data.status === "success") {
-        const NewMessage: Message[] = response.data.data.map(
-          (item: { text: any; image: any; sender_role: any }) => {
-            return {
-              type: item.sender_role === "client" ? "client" : "admin",
-              text: item.text,
-              image: item.sender_role?.profile_image,
-            };
-          }
+        const response = await axios.get(
+          `https://staging.ajiroba.ng/v1/admin/chat_messages/?chatroom_id=${chatroom_id}`,
+          { headers }
         );
 
-        setMessages([...NewMessage]);
+        if (response.data.status === "success") {
+          const NewMessage: Message[] = response.data.data.map(
+            (item: { text: any; image: any; sender_role: any }) => {
+              return {
+                type: item.sender_role === "client" ? "client" : "admin",
+                text: item.text,
+                image: item.sender_role?.profile_image,
+              };
+            }
+          );
 
-        toast.success(`${response.data.message || "Success"}`, {
-          position: "top-right",
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
+          setMessages([...NewMessage]);
 
-        reset();
-      } else {
-        alert("Failed to send message: " + response.data.message);
-      }
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        console.error("Error sending message:", error);
-        toast.error(
-          `${error.response?.data?.message || "An Error Occurred"}`,
-          {
+          toast.success(`${response.data.message || "Success"}`, {
             position: "top-right",
-            autoClose: 4000,
+            autoClose: 2000,
             hideProgressBar: false,
             closeOnClick: true,
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
             theme: "light",
-          }
-        );
-      } else {
-        console.log("An unexpected error occurred:", error);
+          });
+
+          reset();
+        } else {
+          alert("Failed to send message: " + response.data.message);
+        }
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          console.error("Error sending message:", error);
+          toast.error(
+            `${error.response?.data?.message || "An Error Occurred"}`,
+            {
+              position: "top-right",
+              autoClose: 4000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+            }
+          );
+        } else {
+          console.log("An unexpected error occurred:", error);
+        }
       }
-    }
-  },
-  [userToken, reset]
-);
+    },
+    [userToken, reset]
+  );
 
 
   useEffect(() => {
@@ -163,7 +163,7 @@ const ChatData = useCallback(
       setFilteredUsers(usersdata);
 
     }
-  }, [customerdetails, userToken, ]);
+  }, [customerdetails, userToken,]);
 
   const searchQuery = (value: string | undefined) => {
     if (!value) {
@@ -237,9 +237,8 @@ const ChatData = useCallback(
               {filteredUsers?.map((val: any, index: number) => (
                 <div
                   key={index}
-                  className={`${
-                    active === index ? "bg-[#F6F6F6]" : ""
-                  } flex gap-4 py-2 items-center cursor-pointer hover:bg-[#F6F6F6] p-4`}
+                  className={`${active === index ? "bg-[#F6F6F6]" : ""
+                    } flex gap-4 py-2 items-center cursor-pointer hover:bg-[#F6F6F6] p-4`}
                   onClick={() => {
                     setUserInfo(val);
                     setActive(index);
@@ -302,7 +301,7 @@ const ChatData = useCallback(
                     </div>
 
                     <div>
-                     {/*  <button
+                      {/*  <button
                         onClick={() => console.log("end chat")}
                         className="bg-[#EF5E4A] text-white text-sm px-4 py-2 rounded-lg hover:bg-red-500">
                         End Chat
@@ -316,9 +315,8 @@ const ChatData = useCallback(
                     {messages.map((message, index) => (
                       <div
                         key={index}
-                        className={`chat ${
-                          message.type === "admin" ? "chat-start" : "chat-end"
-                        } mb-4 `}>
+                        className={`chat ${message.type === "admin" ? "chat-start" : "chat-end"
+                          } mb-4 `}>
                         {message.type === "admin" && (
                           <div className="chat-image avatar mt-8">
                             <div className="w-10 rounded-full">
@@ -326,7 +324,7 @@ const ChatData = useCallback(
                                 alt="Admin Avatar"
                                 src={
                                   message?.image
-                                    ? `https://ajiroba.onrender.com${message?.image}`
+                                    ? `https://staging.ajiroba.ng/v1${message?.image}`
                                     : "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
                                 }
                                 width={24}
@@ -336,11 +334,10 @@ const ChatData = useCallback(
                           </div>
                         )}
                         <div
-                          className={`bubble ${
-                            message.type === "admin"
+                          className={`bubble ${message.type === "admin"
                               ? "bubble-bottom-left"
                               : "bubbleright bubbleright-bottom-right"
-                          } mb-12 `}>
+                            } mb-12 `}>
                           {message.text}
                         </div>
                       </div>

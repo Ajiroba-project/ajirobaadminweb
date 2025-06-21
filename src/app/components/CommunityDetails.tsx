@@ -343,7 +343,7 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
                                 <Image
                                     src={
                                         item?.images?.[0]?.image
-                                            ? `https://ajiroba.onrender.com/media/${item?.images?.[0]?.image}`
+                                            ? `https://staging.ajiroba.ng/v1/media/${item?.images?.[0]?.image}`
                                             : ''
                                     }
                                     alt="Bracelet"
@@ -397,7 +397,7 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
                                     <Image
                                         src={
                                             item?.images?.[0]?.image
-                                                ? `https://ajiroba.onrender.com/media/${item?.images?.[0]?.image}`
+                                                ? `https://staging.ajiroba.ng/v1/media/${item?.images?.[0]?.image}`
                                                 : ''
                                         }
                                         alt="Profile"

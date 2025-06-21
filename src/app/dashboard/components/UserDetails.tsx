@@ -1,9 +1,9 @@
 'use client';
 
-import {Card} from "./Card"
-import {regularDetails, auctionDetails} from "@/app/data"
-import {UserSearch} from './UserSearch'
-import {useStore } from '@/store/nav-store';
+import { Card } from "./Card"
+import { regularDetails, auctionDetails } from "@/app/data"
+import { UserSearch } from './UserSearch'
+import { useStore } from '@/store/nav-store';
 import { section } from "framer-motion/client";
 import { div } from "framer-motion/m";
 import { useState } from "react";
@@ -20,11 +20,11 @@ import ticket from "@/app/asset/ticket.svg"
 import user_img from "@/app/asset/user.png"
 
 
-export const UserDetails =()=>{
-    const isNavbarOpen = useStore(state=> state.isNavbarOpen)
+export const UserDetails = () => {
+  const isNavbarOpen = useStore(state => state.isNavbarOpen)
 
 
- const [userToken, setUserToken] = useState(Cookies.get("token"));
+  const [userToken, setUserToken] = useState(Cookies.get("token"));
 
   const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_profile/`;
 
@@ -37,26 +37,26 @@ export const UserDetails =()=>{
   // console.log(userInfo?.data?.data?.regular, 'user info')
 
 
-interface UserInfoType {
-  data: {
+  interface UserInfoType {
     data: {
-      regular: {
-        users_count: number;
-        total_sales: number;
-        amount_generated: number;
-        pending_sales: number;
+      data: {
+        regular: {
+          users_count: number;
+          total_sales: number;
+          amount_generated: number;
+          pending_sales: number;
+        };
       };
     };
-  };
-}
+  }
 
-interface Detail {
-  icon: string;
-  name: string;
-  count: number;
-}
+  interface Detail {
+    icon: string;
+    name: string;
+    count: number;
+  }
 
-const mapUserInfoToDetails = [
+  const mapUserInfoToDetails = [
     {
       icon: tmg,
       name: "TOTAL REGISTERED USER",
@@ -77,43 +77,43 @@ const mapUserInfoToDetails = [
       name: "PENDING SALES",
       count: userInfo?.data?.data?.regular.pending_sales || 0,
     },
-];
+  ];
 
 
 
- const auctionDetails =[
+  const auctionDetails = [
     {
-        icon:tmg,
-        name:"TOTAL REGISTERED USER",
-          count: userInfo?.data?.data?.auction?.users_count || 0,
-    },
-     {
-        icon:ticket,
-        name:"TOTAL TICKET PURCHASED",
-        count:0
+      icon: tmg,
+      name: "TOTAL REGISTERED USER",
+      count: userInfo?.data?.data?.auction?.users_count || 0,
     },
     {
-        icon:bid,
-        name:"TOTAL BID MADE",
-        count:0
+      icon: ticket,
+      name: "TOTAL TICKET PURCHASED",
+      count: 0
     },
     {
-        icon:ag,
-        name:"TOTAL AMOUNT GENERATED",
-        count:0
+      icon: bid,
+      name: "TOTAL BID MADE",
+      count: 0
     },
-]
+    {
+      icon: ag,
+      name: "TOTAL AMOUNT GENERATED",
+      count: 0
+    },
+  ]
 
 
 
 
 
-  if (userLoading ) {
+  if (userLoading) {
     return <Loading />
   }
 
 
-    // Handle error state
+  // Handle error state
   if (isError) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -134,27 +134,27 @@ const mapUserInfoToDetails = [
   }
 
 
-    return (
+  return (
 
-       <div>
+    <div>
 
-  <div className="bg-[#F6F6F6] border border-b-[#e9dddd] h-32 flex justify-center items-center sticky top-0 ">
-      <h1 className="xl:text-2xl 2xl:text-2xl md:text-2xl text-base  leading-tight tracking-tight font-Poppins">User Details</h1>
+      <div className="bg-[#F6F6F6] border border-b-[#e9dddd] h-32 flex justify-center items-center sticky top-0 ">
+        <h1 className="xl:text-2xl 2xl:text-2xl md:text-2xl text-base  leading-tight tracking-tight font-Poppins">User Details</h1>
+      </div>
+
+      <section className="mt-6 px-4">
+        <div className="flex gap-4 lg:flex-row flex-col lg:justify-center lg:items-center">
+          {/*       <Card title="Regular" object={userInfo?.data?.data?.regular} /> */}
+          <Card title="Regular" object={mapUserInfoToDetails} />
+          <Card title="Auction" object={auctionDetails} />
+        </div>
+
+        <div className="mt-6 px-2">
+          <UserSearch />
+        </div>
+      </section>
     </div>
 
-    <section className="mt-6 px-4">
-      <div className="flex gap-4 lg:flex-row flex-col lg:justify-center lg:items-center">
-  {/*       <Card title="Regular" object={userInfo?.data?.data?.regular} /> */}
-        <Card title="Regular" object={mapUserInfoToDetails} />
-        <Card title="Auction" object={auctionDetails} />
-      </div>
 
-      <div className="mt-6 px-2">
-        <UserSearch />
-      </div>
-    </section>
-</div>
-
-
-    )
+  )
 }

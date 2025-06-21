@@ -1,7 +1,7 @@
- 'use client'
-import {useEffect, useState} from 'react'
+'use client'
+import { useEffect, useState } from 'react'
 import { CiSearch } from 'react-icons/ci'
-import {users} from "@/app/data"
+import { users } from "@/app/data"
 import Image from "next/image"
 import Link from "next/link"
 import { useGetDatanew } from '@/hooks/useGetData'
@@ -52,11 +52,15 @@ export const UserSearch: React.FC = () => {
         id: user.id,
       }));
       setFilteredUsers(usersdata);
+      if (usersdata.length > 0) {
+        setUserInfo(usersdata[0]);
+        setActive(0);
+      }
     }
   }, [userdetails]);
 
 
-const searchQuery = (value: string | undefined) => {
+  const searchQuery = (value: string | undefined) => {
     if (!value) {
       setFilteredUsers(userdetails?.data?.data?.users.map((user: any) => ({
         first_name: user.first_name,
@@ -123,12 +127,12 @@ const searchQuery = (value: string | undefined) => {
         <div className="relative">
           <ul>
             <li className="text-break h-[15em] overflow-y-auto pt-2">
+              {/* {console.log(filteredUsers, 'filteredUsers')} */}
               {filteredUsers?.map((val: any, index: number) => (
                 <div
                   key={index}
-                  className={`${
-                    active === index ? 'bg-[#F6F6F6]' : ''
-                  } flex gap-4 py-2 items-center cursor-pointer hover:bg-[#F6F6F6] p-4`}
+                  className={`${active === index ? 'bg-[#F6F6F6]' : ''
+                    } flex gap-4 py-2 items-center cursor-pointer hover:bg-[#F6F6F6] p-4`}
                   onClick={() => {
                     setUserInfo(val);
                     setActive(index);
@@ -156,9 +160,9 @@ const searchQuery = (value: string | undefined) => {
         <div></div>
         {userInfo && (
           <div className="p-6 flex flex-col gap-5">
-            <Image src={userInfo?.photo} alt={userInfo?.first_name}      className="rounded-full w-20 h-20"
-                    width={50}
-                    height={50}/>
+            <Image src={userInfo?.photo} alt={userInfo?.first_name} className="rounded-full w-20 h-20"
+              width={50}
+              height={50} />
             <div className="grid lg:grid-cols-2 md:grid-cols-2 grid-cols-1 gap-2 items-center mt-3">
               <p>FirstName:</p>
               <p>{userInfo?.first_name}</p>

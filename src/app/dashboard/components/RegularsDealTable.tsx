@@ -16,11 +16,11 @@ import "react-datepicker/dist/react-datepicker.css";
 
 function RegularsDealTable() {
 
-    const router = useRouter();
+  const router = useRouter();
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-        const params = useParams();
+  const params = useParams();
   const productId = params.slug;
 
 
@@ -36,25 +36,25 @@ function RegularsDealTable() {
 
 
   const transactions = transInfo && transInfo?.data?.map((order: { order_id: any; status: any; name: any; email: any; products: any[]; date_created: string | number | Date; profile_image: any; amount: any }, index: number) => ({
-   id: order?.order_id,
-  // id: index + 1,
-  name: order.name,
-  email: order.email,
-  amount: order?.amount || 'N/A',
-  status: order?.status || 'N/A',
-  item: order.products[0],
-  date: new Date(order.date_created).toLocaleDateString("en-GB"),
-  img: `https://ajiroba.onrender.com${order.profile_image}`,
-}));
+    id: order?.order_id,
+    // id: index + 1,
+    name: order.name,
+    email: order.email,
+    amount: order?.amount || 'N/A',
+    status: order?.status || 'N/A',
+    item: order.products[0],
+    date: new Date(order.date_created).toLocaleDateString("en-GB"),
+    img: `https://staging.ajiroba.ng/v1${order.profile_image}`,
+  }));
 
 
 
 
-const [search, setSearch] = useState("");
+  const [search, setSearch] = useState("");
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [menuOpen, setMenuOpen] = useState<number | null>(null);
-   const [startDate, setStartDate] = useState(null);
+  const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
 
@@ -68,10 +68,10 @@ const [search, setSearch] = useState("");
       transaction.item.toLowerCase().includes(search.toLowerCase()) ||
       transaction.date.includes(search);
 
-const matchesSelectedDate =
-  !selectedDate ||
-  new Date((transaction.date as string).split("/").reverse().join("-")).toISOString().split("T")[0] ===
-  selectedDate.toISOString().split("T")[0];
+    const matchesSelectedDate =
+      !selectedDate ||
+      new Date((transaction.date as string).split("/").reverse().join("-")).toISOString().split("T")[0] ===
+      selectedDate.toISOString().split("T")[0];
 
 
 
@@ -128,162 +128,161 @@ const matchesSelectedDate =
     <div>
 
 
-<div className="p-4 max-w-7xl mx-auto rounded-lg shadow-md bg-white">
-      <div className="flex flex-wrap items-center justify-between mb-4">
-       <div className='flex w-full md:w-1/3 gap-4'>
-        <div>
-           <input
-          type="text"
-          placeholder="Search here..."
-          className="border border-gray-300 rounded-md p-2 "
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="p-4 max-w-7xl mx-auto rounded-lg shadow-md bg-white">
+        <div className="flex flex-wrap items-center justify-between mb-4">
+          <div className='flex w-full md:w-1/3 gap-4'>
+            <div>
+              <input
+                type="text"
+                placeholder="Search here..."
+                className="border border-gray-300 rounded-md p-2 "
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+
+            <div className=''>
+              <button
+                className="border border-gray-300 rounded-md p-2 flex items-center gap-1 text-[#344054]"
+                onClick={() => alert("Filter functionality coming soon!")}
+              >
+                <IoFilter />  Filter
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4 mt-2 md:mt-0">
+
+            <div className="flex items-center space-x-2">
+              <DatePicker
+                selected={selectedDate}
+                onChange={(date) => setSelectedDate(date)}
+                placeholderText="Select Date"
+                className="border border-gray-300 rounded-md p-2"
+                dateFormat="yyyy-MM-dd"
+                minDate={new Date("2024-01-01")}
+                isClearable
+              />
+
+            </div>
+          </div>
         </div>
 
-        <div className=''>
-           <button
-            className="border border-gray-300 rounded-md p-2 flex items-center gap-1 text-[#344054]"
-            onClick={() => alert("Filter functionality coming soon!")}
-          >
-          <IoFilter />  Filter
-          </button>
+        <div className="bg-white  overflow-x-auto">
+          <table className="w-full table-auto border-collapse border border-[#E4E7EC]">
+            <thead className="bg-[#F9FAFB] border border-gray-100">
+              <tr className='text-[#344054] font-Poppins font-medium text-sm border border-[#E4E7EC]' >
+                <th className="px-4 py-2">
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    onChange={toggleSelectAll}
+                  />
+                </th>
+                <th className="text-left px-4 py-2">Name</th>
+                <th className="text-left px-4 py-2">Email</th>
+                <th className="text-left px-4 py-2">Ticket Amount</th>
+                <th className="text-left px-4 py-2">Status</th>
+                <th className="text-left px-4 py-2">Item</th>
+                <th className="text-left px-4 py-2">Date</th>
+                <th className="text-left px-4 py-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedData?.map((transaction: { status: any, id: React.Key | null | undefined; img: string | StaticImport; name: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; email: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; amount: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; item: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; date: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; }) => (
+                <tr
+                  key={transaction.id}
+                  className="hover:bg-gray-100 even:bg-gray-50  border border-b-[#E4E7EC]"
+                >
+                  <td className="px-4 py-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.includes(transaction.id as number)}
+                      onChange={() => toggleRowSelection(transaction.id as number)}
+                    />
+                  </td>
+                  <td className="px-4 py-4 flex items-center space-x-2">
+                    <Image src={transaction.img} alt="icon" width={30} height={30} />
+                    <span className='text-[#101928] font-semibold font-Poppins text-sm'>{transaction.name}</span>
+                  </td>
+                  <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.email}</td>
+                  <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.amount}</td>
+                  <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.status}</td>
+                  <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.item}</td>
+                  <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.date}</td>
+                  <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm relative">
+                    <button
+                      className="text-gray-500 hover:text-gray-700"
+                      onClick={() =>
+                        setMenuOpen((prev: number | null) =>
+                          prev === transaction.id ? null : transaction.id as number | null
+                        )
+                      }
+                    >
+                      ...
+                    </button>
+                    {menuOpen === transaction.id && (
+                      <div className="absolute right-0 bg-white border border-gray-300 rounded shadow-md z-10 px-4 py-4">
+                        <button
+                          className="whitespace-nowrap px-4 mb-4 py-2 w-full text-center bg-[#E84526] rounded-lg text-[#F6F6F6] hover:bg-[#E84526]"
+                          onClick={() => router.push(`/dashboard/regulardeals/${transaction.id}`)}
+                        >
+                          View details
+                        </button>
+
+                        <button
+                          className="whitespace-nowrap px-4 mb-4 py-2 w-full text-center border border-[#D0D5DD] bg-[#FCFCFC] rounded-lg text-[#E84526]"
+                          onClick={() =>
+                            alert(`Deleting transaction ${transaction.id}`)
+                          }
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-       </div>
-        <div className="flex items-center space-x-4 mt-2 md:mt-0">
 
-           <div className="flex items-center space-x-2">
-            <DatePicker
-  selected={selectedDate}
-  onChange={(date) => setSelectedDate(date)}
-  placeholderText="Select Date"
-  className="border border-gray-300 rounded-md p-2"
-  dateFormat="yyyy-MM-dd"
-  minDate={new Date("2024-01-01")}
-  isClearable
-/>
+        <div className="flex justify-between items-center mt-4 rounded-full ">
 
+          <h1 className='text-[#667185] text-sm font-Poppins'>Page {currentPage} of {totalPages}</h1>
+          <div className="flex space-x-2">
+            {Array.from({ length: totalPages }, (_, index) => (
+              <button
+                key={index}
+                className={`px-3 py-1 rounded ${currentPage === index + 1
+                    ? "bg-[#FFECE5] text-[#EB5017] text-sm font-medium font-Poppins "
+                    : "bg-gray-100 text-[#98A2B3] text-sm font-medium font-Poppins hover:bg-gray-200"
+                  }`}
+                onClick={() => setCurrentPage(index + 1)}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </div>
+          <div className='flex space-x-2 justify-end' >
+            <button
+              className="flex items-center justify-center gap-1 text-[#344054] border border-[#D0D5DD] bg-[white] rounded-lg px-4 py-2 hover:text-gray-700"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
+            >
+              <IoIosArrowRoundBack size={20} /> Previous
+            </button>
+            <button
+              className="flex items-center justify-center gap-1 text-[#344054] border border-[#D0D5DD] bg-[white] rounded-lg px-4 py-2 hover:text-gray-700"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              Next <IoIosArrowRoundForward size={20} />
+            </button>
           </div>
         </div>
       </div>
 
-      <div className="bg-white  overflow-x-auto">
-        <table className="w-full table-auto border-collapse border border-[#E4E7EC]">
-          <thead className="bg-[#F9FAFB] border border-gray-100">
-            <tr className='text-[#344054] font-Poppins font-medium text-sm border border-[#E4E7EC]' >
-              <th className="px-4 py-2">
-                <input
-                  type="checkbox"
-                  checked={isAllSelected}
-                  onChange={toggleSelectAll}
-                />
-              </th>
-              <th className="text-left px-4 py-2">Name</th>
-              <th className="text-left px-4 py-2">Email</th>
-              <th className="text-left px-4 py-2">Ticket Amount</th>
-               <th className="text-left px-4 py-2">Status</th>
-              <th className="text-left px-4 py-2">Item</th>
-              <th className="text-left px-4 py-2">Date</th>
-              <th className="text-left px-4 py-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedData?.map((transaction: { status: any, id: React.Key | null | undefined; img: string | StaticImport; name: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; email: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; amount: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; item: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; date: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; }) => (
-              <tr
-                key={transaction.id}
-                className="hover:bg-gray-100 even:bg-gray-50  border border-b-[#E4E7EC]"
-              >
-                <td className="px-4 py-4">
-                  <input
-                    type="checkbox"
-                    checked={selectedRows.includes(transaction.id as number)}
-                    onChange={() => toggleRowSelection(transaction.id as number)}
-                  />
-                </td>
-                <td className="px-4 py-4 flex items-center space-x-2">
-                  <Image src={transaction.img} alt="icon" width={30} height={30} />
-                  <span className='text-[#101928] font-semibold font-Poppins text-sm'>{transaction.name}</span>
-                </td>
-                <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.email}</td>
-                <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.amount}</td>
-                                <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.status}</td>
-                <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.item}</td>
-                <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.date}</td>
-                <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm relative">
-                  <button
-                    className="text-gray-500 hover:text-gray-700"
-                    onClick={() =>
-                      setMenuOpen((prev: number | null) =>
-                        prev === transaction.id ? null : transaction.id as number | null
-                      )
-                    }
-                  >
-                    ...
-                  </button>
-                  {menuOpen === transaction.id && (
-                    <div className="absolute right-0 bg-white border border-gray-300 rounded shadow-md z-10 px-4 py-4">
-                          <button
-                            className="whitespace-nowrap px-4 mb-4 py-2 w-full text-center bg-[#E84526] rounded-lg text-[#F6F6F6] hover:bg-[#E84526]"
-                           onClick={()=> router.push(`/dashboard/regulardeals/${transaction.id}`)}
-                            >
-                            View details
-                            </button>
-
-                      <button
-                            className="whitespace-nowrap px-4 mb-4 py-2 w-full text-center border border-[#D0D5DD] bg-[#FCFCFC] rounded-lg text-[#E84526]"
-                        onClick={() =>
-                          alert(`Deleting transaction ${transaction.id}`)
-                        }
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="flex justify-between items-center mt-4 rounded-full ">
-
-        <h1 className='text-[#667185] text-sm font-Poppins'>Page {currentPage} of {totalPages}</h1>
-        <div className="flex space-x-2">
-          {Array.from({ length: totalPages }, (_, index) => (
-            <button
-              key={index}
-              className={`px-3 py-1 rounded ${
-                currentPage === index + 1
-                  ? "bg-[#FFECE5] text-[#EB5017] text-sm font-medium font-Poppins "
-                  : "bg-gray-100 text-[#98A2B3] text-sm font-medium font-Poppins hover:bg-gray-200"
-              }`}
-              onClick={() => setCurrentPage(index + 1)}
-            >
-              {index + 1}
-            </button>
-          ))}
-        </div>
-        <div className='flex space-x-2 justify-end' >
-          <button
-          className="flex items-center justify-center gap-1 text-[#344054] border border-[#D0D5DD] bg-[white] rounded-lg px-4 py-2 hover:text-gray-700"
-          disabled={currentPage === 1}
-          onClick={() => setCurrentPage(currentPage - 1)}
-        >
-         <IoIosArrowRoundBack size={20} /> Previous
-        </button>
-        <button
-          className="flex items-center justify-center gap-1 text-[#344054] border border-[#D0D5DD] bg-[white] rounded-lg px-4 py-2 hover:text-gray-700"
-          disabled={currentPage === totalPages}
-          onClick={() => setCurrentPage(currentPage + 1)}
-        >
-          Next <IoIosArrowRoundForward size={20} />
-        </button>
-        </div>
-      </div>
     </div>
-
-        </div>
   )
 }
 

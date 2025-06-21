@@ -23,7 +23,7 @@ export const GiftPointModal = ({ email, onClose }: GiftPointModalProps) => {
         setIsSubmitting(true);
         try {
             const token = Cookies.get('token');
-            const response = await fetch('https://ajiroba.onrender.com/v1/admin/gift_points/', {
+            const response = await fetch('https://staging.ajiroba.ng/v1/admin/gift_points/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -42,7 +42,7 @@ function AnalyticsTable() {
   // console.log(analyticsInfo?.data?.infromation?.top_five_customers,
   //   "analyticsInfo");
 
-  const BASE_URL = "https://ajiroba.onrender.com";
+  const BASE_URL = "https://staging.ajiroba.ng/v1";
 
   const formatted = analyticsInfo?.data?.infromation?.top_five_customers.map((customer: { full_name: any; email: any; date: string | number | Date; picture: any; }, index: number) => ({
     id: index + 1,
@@ -161,7 +161,7 @@ function AnalyticsTable() {
 
       let data;
 
-      const response = await fetch('https://ajiroba.onrender.com/v1/admin/gift_points/', {
+      const response = await fetch('https://staging.ajiroba.ng/v1/admin/gift_points/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

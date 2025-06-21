@@ -56,13 +56,13 @@ interface CategoryResponse {
 
 export default function Page() {
 
-      const params = useParams();
+  const params = useParams();
   const productId = params.slug;
 
   const [selectedImg, setSelectedImg] = useState<string[]>([]);
 
 
-   const [userToken, setUserToken] = useState(Cookies.get("token"));
+  const [userToken, setUserToken] = useState(Cookies.get("token"));
 
   let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_products/`;
 
@@ -78,22 +78,22 @@ export default function Page() {
     : null;
 
 
-useEffect(() => {
-  if (productDetails?.images) {
-    const images = productDetails.images.map(
-      (img: any) => `https://ajiroba.onrender.com/media/${img.image}`
-    );
-    setSelectedImg(images);
-    setMainImage(images[0]);
-  }
-}, [productDetails]);
+  useEffect(() => {
+    if (productDetails?.images) {
+      const images = productDetails.images.map(
+        (img: any) => `https://staging.ajiroba.ng/v1/media/${img.image}`
+      );
+      setSelectedImg(images);
+      setMainImage(images[0]);
+    }
+  }, [productDetails]);
 
 
   const router = useRouter();
 
   const [mainImage, setMainImage] = useState<string>(selectedImg[0]);
 
-    const { data: catInfo, isLoading: catnLoading } =
+  const { data: catInfo, isLoading: catnLoading } =
     useQueryData<CategoryResponse>(
       `${process.env.NEXT_PUBLIC_BASE_URL}/commerce/categories_and_subcategories/`,
       ["get categories_and_subcategories"],
@@ -129,7 +129,7 @@ useEffect(() => {
   };
 
   const [previews, setPreviews] = useState<string[]>([]);
-    const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   interface FileChangeEvent extends React.ChangeEvent<HTMLInputElement> {
     target: HTMLInputElement & { files: FileList };
@@ -175,7 +175,7 @@ useEffect(() => {
       setPreviews([]);
       reset();
     } else if (data.status === 400 || data.status === 409 || data.status === 405) {
-            setPreviews([]);
+      setPreviews([]);
       toast.error(`${data?.data?.message}`, {
         position: "top-right",
         autoClose: 5000,
@@ -188,8 +188,8 @@ useEffect(() => {
       });
       reset();
     } else {
-            setPreviews([]);
-  toast.error(`${data?.data?.message}`, {
+      setPreviews([]);
+      toast.error(`${data?.data?.message}`, {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -203,7 +203,7 @@ useEffect(() => {
     }
   };
   const handleError = (error: any) => {
-      setPreviews([]);
+    setPreviews([]);
     toast.error(`${"An Error Occured"}`, {
       position: "top-right",
       autoClose: 5000,
@@ -218,7 +218,7 @@ useEffect(() => {
   };
 
 
-    const { data, error, mutate, status } = useMutateData(
+  const { data, error, mutate, status } = useMutateData(
     "upload",
     handleSuccess,
     handleError,
@@ -261,7 +261,7 @@ useEffect(() => {
 
 
 
-  mutate({
+    mutate({
       url: "/api/editproduct",
       payload: {
         ...Payload,
@@ -273,7 +273,7 @@ useEffect(() => {
   };
 
 
-if (productLoading) return <p>Loading product details...</p>;
+  if (productLoading) return <p>Loading product details...</p>;
 
   return (
     <section className="flex-col flex justify-center">
@@ -292,7 +292,7 @@ if (productLoading) return <p>Loading product details...</p>;
         </span>
       </div>
 
-      <form id="product-upload-form"     onSubmit={handleSubmit(sumbitForm)}
+      <form id="product-upload-form" onSubmit={handleSubmit(sumbitForm)}
         className="flex justify-around gap-20 items-center lg:flex-row flex-col-reverse"
         style={{
           margin: "0 auto",
@@ -345,37 +345,37 @@ if (productLoading) return <p>Loading product details...</p>;
               type="text"
               name="product_name"
               register={register}
-               errors={errors}
+              errors={errors}
               classname={"w-full px-5 h-12 focus:text-black border rounded "}
             />
 
-              <SelectField
-                  name="product_category"
-                  label="Category"
-                  register={register}
-                  errors={errors}
-                  options={catnew?.map((cat) => ({
-                    label: cat.label,
-                    value: cat.value,
-                  }))}
-           classname={"w-full px-5 h-12 focus:text-black border rounded "}
-                />
+            <SelectField
+              name="product_category"
+              label="Category"
+              register={register}
+              errors={errors}
+              options={catnew?.map((cat) => ({
+                label: cat.label,
+                value: cat.value,
+              }))}
+              classname={"w-full px-5 h-12 focus:text-black border rounded "}
+            />
 
-               <SelectField
-                  name="sub_category"
-                  label="Sub Category"
-                  register={register}
-                  errors={errors}
-                  options={
-                    catnew
-                      ?.find((cat) => cat.id === watch("product_category"))
-                      ?.subcategories?.map((sub) => ({
-                        label: sub.subcategory,
-                        value: sub.id,
-                      })) || []
-                  }
-                classname={"w-full px-5 h-12 focus:text-black border rounded "}
-                />
+            <SelectField
+              name="sub_category"
+              label="Sub Category"
+              register={register}
+              errors={errors}
+              options={
+                catnew
+                  ?.find((cat) => cat.id === watch("product_category"))
+                  ?.subcategories?.map((sub) => ({
+                    label: sub.subcategory,
+                    value: sub.id,
+                  })) || []
+              }
+              classname={"w-full px-5 h-12 focus:text-black border rounded "}
+            />
             <TextAreaField
               label="description"
               name="description"
@@ -502,18 +502,18 @@ if (productLoading) return <p>Loading product details...</p>;
       </form>
 
 
- <div className="flex justify-center items-center mt-12  mb-10">
+      <div className="flex justify-center items-center mt-12  mb-10">
         <DefaultButton
-            handleClick={() => null}
+          handleClick={() => null}
           className="text-sm  px-20  justify-center flex font-normal font-Poppins rounded-lg bg-[#FCDFD4]  py-2 transition delay-300 duration-300 ease-in-out hover:bg-[#E84526] hover:text-white hover:transition-all"
-  type="submit"
-  form="product-upload-form"
-            text={status === "pending" ? "loading..." : "Update"}
+          type="submit"
+          form="product-upload-form"
+          text={status === "pending" ? "loading..." : "Update"}
         />
       </div>
 
 
-       {showModal && (
+      {showModal && (
         <div className="flex absolute top-0 z-50 left-0">
           <Modal
             title="Product Upload Successfull!"

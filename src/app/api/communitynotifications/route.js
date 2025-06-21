@@ -13,7 +13,6 @@ export async function GET(request) {
             return NextResponse.json({ error: 'Token is required' }, { status: 400 });
         }
 
-        // https://ajiroba.onrender.com/v1/admin/post_notifications/
 
         const cacheBuster = `cache=${Date.now()}`;
         const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/post_notifications/?${cacheBuster}`, {

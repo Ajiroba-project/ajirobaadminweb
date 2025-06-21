@@ -24,7 +24,7 @@ export const PhotoUpload = () => {
   }));
 
 
-  const userToken =  Cookies.get('token') as string;
+  const userToken = Cookies.get('token') as string;
 
   const [files, setFiles] = useState<FileProps[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -59,9 +59,9 @@ export const PhotoUpload = () => {
 
 
   const { profileurl, setProfileurl } = profilePhoto((state) => ({
-  profileurl: state.profileurl,
-  setProfileurl: state.setProfileurl,
-}));
+    profileurl: state.profileurl,
+    setProfileurl: state.setProfileurl,
+  }));
 
   const uploadImage = async () => {
     if (files.length === 0) return;
@@ -70,7 +70,7 @@ export const PhotoUpload = () => {
     setUploading(true);
 
     try {
-      const response = await fetch('https://ajiroba.onrender.com/v1/user/change_profile_image/', {
+      const response = await fetch('https://staging.ajiroba.ng/v1/user/change_profile_image/', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -83,9 +83,9 @@ export const PhotoUpload = () => {
 
       if (response.ok) {
         const responseData = await response.json();
-    /*     console.log('Response data:', responseData); */
+        /*     console.log('Response data:', responseData); */
         setUploadSuccess(true);
-   /*      console.log('Image uploaded successfully'); */
+        /*      console.log('Image uploaded successfully'); */
         setProfile(false);
         // console.log('Image uploaded successfully');
         setProfileurl(responseData?.profile_image_url)
@@ -119,19 +119,19 @@ export const PhotoUpload = () => {
           <hr className="w-full" />
         </div>
 
-         {files.length > 0 && (
-        <div className="mt-4 text-center">
-          {files.map((val) => (
-            <div key={val.name}>
-              {val.name} ({val.size} bytes)
-            </div>
-          ))}
-        </div>
-      )}
+        {files.length > 0 && (
+          <div className="mt-4 text-center">
+            {files.map((val) => (
+              <div key={val.name}>
+                {val.name} ({val.size} bytes)
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="my-2 flex w-full flex-col items-center justify-center">
 
-          <button        onClick={files.length === 0 ? open : uploadImage}   disabled={uploading}    type="button" className="rounded-md bg-[#f25e26] px-8 py-4 text-white">
+          <button onClick={files.length === 0 ? open : uploadImage} disabled={uploading} type="button" className="rounded-md bg-[#f25e26] px-8 py-4 text-white">
             {files.length === 0 ? "Browse files" : "Upload"}
           </button>
         </div>

@@ -59,7 +59,7 @@ const PostCreationForm = () => {
                 post_images: base64Images.map(base64 => [base64.split(',')[1]])  // Array of arrays
             };
 
-            const response: Response = await fetch('https://ajiroba.onrender.com/v1/admin/create_post/', {
+            const response: Response = await fetch('https://staging.ajiroba.ng/v1/admin/create_post/', {
                 method: 'POST',
                 headers: {
                     'Authorization': `token ${userToken}`,
