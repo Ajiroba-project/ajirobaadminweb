@@ -96,9 +96,6 @@ export default function Page() {
   }, [productDetails]);
 
 
-
-
-
   const [mainImage, setMainImage] = useState<string>(selectedImg[0]);
 
   const [previews, setPreviews] = useState<string[]>([]);
@@ -284,6 +281,15 @@ export default function Page() {
  */
   };
 
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.toLocaleString('en-US', { month: 'long' });
+    const year = date.getFullYear();
+    return `${day} ${month}, ${year}`;
+  };
+
   return (
     <section className="flex-col flex justify-center ">
       <div className="w-full bg-gray-100">
@@ -409,11 +415,11 @@ export default function Page() {
                   <InputField
                     name="auction_endtime"
                     label="End Time"
-                    type="text"
-                    placeholder="12AM or 12PM"
+                    type="time"
+                    placeholder="HH:MM AM/PM"
                     register={register}
                     errors={errors}
-                    pattern="^(0?[1-9]|1[0-2])(AM|PM)$"
+                    pattern="^(0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$"
                     classname="px-5 h-12 focus:text-black border rounded "
                   />
 
@@ -424,12 +430,12 @@ export default function Page() {
                   <InputField
                     name="auction_starttime"
                     label="Start Time"
-                    type="text"
+                    type="time"
                     isdisabled={false}
-                    placeholder="12AM or 12PM"
+                    placeholder="HH:MM AM/PM"
                     register={register}
                     errors={errors}
-                    pattern="^(0?[1-9]|1[0-2])(AM|PM)$"
+                    pattern="^(0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$"
                     classname="px-5 h-12 focus:text-black border rounded "
                   />
                   <InputField
