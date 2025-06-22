@@ -26,7 +26,7 @@ type handleProp = {
 export const SideNav = () => {
   const toggleNavbar = useStore((state) => state.toggleNavbar);
   const clearAuthCookies = useAuthStore((state) => state.clearAuthCookies);
-  const clearUserCookies = useAuthStore((state)=> state.clearUserCookies )
+  const clearUserCookies = useAuthStore((state) => state.clearUserCookies)
   const user = useAuthStore((state) => state.user);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
@@ -34,19 +34,19 @@ export const SideNav = () => {
   const [active, setActive] = useState<MenuState>(0);
   const [signout, setSignout] = useState<boolean>(false);
   const router = useRouter();
- const pathname = usePathname()
+  const pathname = usePathname()
 
 
 
-function clearAllCookies() {
-  const cookies = Cookies.get(); // Get all cookies as an object
+  function clearAllCookies() {
+    const cookies = Cookies.get(); // Get all cookies as an object
 
-  for (const cookieName in cookies) {
-    if (cookies.hasOwnProperty(cookieName)) {
-      Cookies.remove(cookieName); // Remove each cookie
+    for (const cookieName in cookies) {
+      if (cookies.hasOwnProperty(cookieName)) {
+        Cookies.remove(cookieName); // Remove each cookie
+      }
     }
   }
-}
 
 
 
@@ -70,7 +70,7 @@ function clearAllCookies() {
     index,
   }: handleProp & { val: { name: string } }) => {
     /* setActive(active === index ? null : index); */
-   /*  setHeadingText(val.name); */
+    /*  setHeadingText(val.name); */
   };
 
   const openModal = () => {
@@ -83,18 +83,18 @@ function clearAllCookies() {
   const handleSuccess = () => {
     clearAuthCookies();
     clearUserCookies()
-       localStorage.clear();
-       Cookies.remove('token');
-       Cookies.remove('refresh_token');
-       Cookies.remove('user');
-       clearAllCookies();
+    localStorage.clear();
+    Cookies.remove('token');
+    Cookies.remove('refresh_token');
+    Cookies.remove('user');
+    clearAllCookies();
 
     router.replace("/signin");
   };
   const handleError = () => {
     console.log("Somthing went wrong...");
     clearAuthCookies();
-        clearUserCookies()
+    clearUserCookies()
     clearAllCookies();
     localStorage.clear();
     router.replace("/signin");
@@ -108,7 +108,7 @@ function clearAllCookies() {
 
   const sumbitForm = async () => {
     mutate({
-      url: "api/signout/",
+      url: "/api/signout/",
       payload: {}, // Add an empty payload object
     });
   };
@@ -116,24 +116,24 @@ function clearAllCookies() {
 
 
 
- /*  const handleSuccess = () => {
-    clearAuthCookies();
-       localStorage.clear();
-    router.push('/signin');
-  };
-
-  const handleError = () => {
-    console.log('Something went wrong...');
-    clearAuthCookies();
-    localStorage.clear();
-    router.push('/signin');
-  };
-
-  const { mutate } = useMutateData(
-    'signout',
-    handleSuccess,
-    handleError
-  ); */
+  /*  const handleSuccess = () => {
+     clearAuthCookies();
+        localStorage.clear();
+     router.push('/signin');
+   };
+ 
+   const handleError = () => {
+     console.log('Something went wrong...');
+     clearAuthCookies();
+     localStorage.clear();
+     router.push('/signin');
+   };
+ 
+   const { mutate } = useMutateData(
+     'signout',
+     handleSuccess,
+     handleError
+   ); */
 
   const SignoutFunc = () => {
     mutate({
@@ -183,9 +183,8 @@ function clearAllCookies() {
                 <li
                   key={index}
                   onClick={() => handleClick({ val, index })}
-                  className={`${
-                  pathname === val.path ? "bg-[#FCDFD4] ring-[#E84526]" : ""
-                  } py-4 hover:ring-[#E84526] hover:ring-2 hover:bg-[#FCDFD4] px-6`}
+                  className={`${pathname === val.path ? "bg-[#FCDFD4] ring-[#E84526]" : ""
+                    } py-4 hover:ring-[#E84526] hover:ring-2 hover:bg-[#FCDFD4] px-6`}
                 >
                   <Link href={val.path} className="flex gap-3 items-center">
                     <Image src={val.icon} alt={val.name} /> <p>{val.name}</p>

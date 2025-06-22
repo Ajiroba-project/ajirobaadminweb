@@ -38,17 +38,17 @@ export const UserSearch: React.FC = () => {
 
   useEffect(() => {
     if (userdetails) {
-      // console.log(userdetails?.data?.data?.users, 'userdetails')
+      /*   console.log(userdetails?.data?.data?.users, 'userdetails') */
       const usersdata: User[] = userdetails?.data?.data?.users.map((user: any) => ({
         first_name: user.first_name,
         surname: user.last_name,
         email: user.email || 'N/A',
-        phone: 'N/A',
-        city: 'N/A',
-        address: 'N/A',
-        ticketPurchase: 'N/A',
-        totalAmount: 'N/A',
-        photo: user.profile_image_url || user_img,
+        phone: user.phone || 'N/A',
+        city: user.city || 'N/A',
+        address: user.address || 'N/A',
+        ticketPurchase: user.tickets || 'N/A',
+        totalAmount: user.total_amount || 'N/A',
+        photo: user.profile_image || user_img,
         id: user.id,
       }));
       setFilteredUsers(usersdata);
@@ -66,12 +66,13 @@ export const UserSearch: React.FC = () => {
         first_name: user.first_name,
         surname: user.last_name,
         email: user.email || 'N/A',
-        phone: 'N/A',
-        city: 'N/A',
-        address: 'N/A',
-        ticketPurchase: 'N/A',
-        totalAmount: 'N/A',
-        photo: user.profile_image_url || user_img,
+        phone: user.phone || 'N/A',
+        city: user.city || 'N/A',
+        address: user.address || 'N/A',
+        ticketPurchase: user.tickets || 'N/A',
+        totalAmount: user.total_amount || 'N/A',
+        photo: user.profile_image || user_img,
+        id: user.id,
       })) || []);
       return;
     }
@@ -83,12 +84,13 @@ export const UserSearch: React.FC = () => {
       first_name: user.first_name,
       surname: user.last_name,
       email: user.email || 'N/A',
-      phone: 'N/A',
-      city: 'N/A',
-      address: 'N/A',
-      ticketPurchase: 'N/A',
-      totalAmount: 'N/A',
-      photo: user.profile_image_url || user_img,
+      phone: user.phone || 'N/A',
+      city: user.city || 'N/A',
+      address: user.address || 'N/A',
+      ticketPurchase: user.tickets || 'N/A',
+      totalAmount: user.total_amount || 'N/A',
+      photo: user.profile_image || user_img,
+      id: user.id,
     }));
     setFilteredUsers(filtered);
   };
@@ -103,6 +105,9 @@ export const UserSearch: React.FC = () => {
   if (userLoading) {
     return <Loading />;
   }
+
+
+  /*  { console.log(userdetails?.data?.data?.users, 'userinfo') } */
 
   return (
     <section className="flex flex-col lg:flex-row gap-4 my-8 h-full">
@@ -139,7 +144,7 @@ export const UserSearch: React.FC = () => {
                   }}
                 >
                   <Image
-                    src={val.photo}
+                    src={`https://staging.ajiroba.ng/v1${val.photo}`}
                     alt={val.first_name}
                     className="rounded-full w-10 h-10"
                     width={50}
@@ -160,7 +165,9 @@ export const UserSearch: React.FC = () => {
         <div></div>
         {userInfo && (
           <div className="p-6 flex flex-col gap-5">
-            <Image src={userInfo?.photo} alt={userInfo?.first_name} className="rounded-full w-20 h-20"
+            {/*     {console.log(userInfo, 'usee')} */}
+
+            <Image src={`https://staging.ajiroba.ng/v1${userInfo.photo}`} alt={userInfo?.first_name} className="rounded-full w-20 h-20"
               width={50}
               height={50} />
             <div className="grid lg:grid-cols-2 md:grid-cols-2 grid-cols-1 gap-2 items-center mt-3">
@@ -179,12 +186,20 @@ export const UserSearch: React.FC = () => {
               <p>Ticket Purchase:</p>
               <p className="flex gap-1 items-center">
                 {userInfo?.ticketPurchase}{' '}
-                <Link href={`/dashboard/userprofile/${userInfo?.id}`} className="text-[#F25E26] underline">
+                <Link href={`/dashboard/ticketdetails/${userInfo?.id}`} className="text-[#F25E26] underline">
                   view{' '}
                 </Link>
               </p>
               <p>Total Amount:</p>
-              <p>₦{userInfo?.totalAmount}</p>
+              <p>
+                ₦
+                {userInfo?.totalAmount !== undefined && userInfo?.totalAmount !== null
+                  ? Number(userInfo.totalAmount).toLocaleString('en-NG', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })
+                  : '0.00'}
+              </p>
             </div>
           </div>
         )}

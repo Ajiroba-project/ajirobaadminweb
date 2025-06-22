@@ -13,7 +13,7 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex h-screen relative">
       {/* Sidebar */}
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)}  />
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
 
 
