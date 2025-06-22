@@ -50,7 +50,15 @@ export const Card = ({ title, object }: cardProps) => {
               <Image src={val.icon} alt={val.name} />
             </div>
             <div className="">{val.name}</div>
-            <h2 className="leading-2 font-bold">{val.count}</h2>
+            <h2 className="leading-2 text-[#353131] text-lg font-Poppins font-bold">
+              {val.name.includes("USER") ? (
+                <>
+                  {val.count} <span className="font-normal text-sm">Users</span>
+                </>
+              ) : (
+                val.count
+              )}
+            </h2>
           </div>
         ))}
       </div>
