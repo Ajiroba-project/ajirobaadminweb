@@ -16,33 +16,33 @@ export const SignUpValidationSchema = Yup.object().shape({
 });
 
 export const SignInValidationSchema = Yup.object().shape({
-        email_or_phone: Yup.string().matches(
-                /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,3}))$/,
-                "Valid email is required",
-            )
-            .required("Email is required"),
+  email_or_phone: Yup.string().matches(
+    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,3}))$/,
+    "Valid email is required",
+  )
+    .required("Email is required"),
 
-        password: Yup.string().required("Password is required").min(6, "Can't be lesser than 6 digits"),
-    });
+  password: Yup.string().required("Password is required").min(6, "Can't be lesser than 6 digits"),
+});
 
 export const EmailSchema = Yup.object().shape({
-        email: Yup.string().matches(
-                /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,3}))$/,
-                "Valid email is required",
-            )
-            .required("Email is required")
-  });
+  email: Yup.string().matches(
+    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,3}))$/,
+    "Valid email is required",
+  )
+    .required("Email is required")
+});
 
 export const PasswordResetschema = Yup.object().shape({
-        password: Yup
-            .string()
-            .required("Password is required")
-            .min(6, "Can't be lesser than 6 digits"),
-        c_password: Yup
-            .string().oneOf([Yup.ref('password')], 'Passwords must match')
-            .required("Password is required"),
+  password: Yup
+    .string()
+    .required("Password is required")
+    .min(6, "Can't be lesser than 6 digits"),
+  c_password: Yup
+    .string().oneOf([Yup.ref('password')], 'Passwords must match')
+    .required("Password is required"),
 
-    });
+});
 
 export const ProductUploadSchema = Yup.object().shape({
   product_name: Yup.string().required("Product name is required"),
@@ -54,19 +54,19 @@ export const ProductUploadSchema = Yup.object().shape({
   quantity: Yup.number().required("Quantity is required"),
   weight: Yup.string().required("Weight is required"),
 
-// topdeals: Yup.boolean()
-//   .oneOf([true], 'Top Deals must be checked')
-//   .required('Top Deals is required'),
-topdeals: Yup.boolean().default(false),
+  // topdeals: Yup.boolean()
+  //   .oneOf([true], 'Top Deals must be checked')
+  //   .required('Top Deals is required'),
+  topdeals: Yup.boolean().default(false),
 
   featured: Yup.boolean().default(false),
 
   // scehma for image and video
   regular_media: Yup.mixed().required("Please select at least one file").test(
-      'regular_media',
-      'Please select at least one file',
-      (value) => Array.isArray(value) && value.length > 0
-    )
+    'regular_media',
+    'Please select at least one file',
+    (value) => Array.isArray(value) && value.length > 0
+  )
 });
 
 
@@ -80,19 +80,19 @@ export const ProductEditUploadSchema = Yup.object().shape({
   quantity: Yup.number().required("Quantity is required"),
   weight: Yup.string().required("Weight is required"),
 
-// topdeals: Yup.boolean()
-//   .oneOf([true], 'Top Deals must be checked')
-//   .required('Top Deals is required'),
-topdeals: Yup.boolean().default(false),
+  // topdeals: Yup.boolean()
+  //   .oneOf([true], 'Top Deals must be checked')
+  //   .required('Top Deals is required'),
+  topdeals: Yup.boolean().default(false),
 
   featured: Yup.boolean().default(false),
 
   // scehma for image and video
   regular_media: Yup.mixed().required("Please select at least one file").test(
-      'regular_media',
-      'Please select at least one file',
-      (value) => Array.isArray(value) && value.length > 0
-    )
+    'regular_media',
+    'Please select at least one file',
+    (value) => Array.isArray(value) && value.length > 0
+  )
 });
 
 
@@ -108,37 +108,40 @@ export const AuctionEditUploadSchema = Yup.object().shape({
   cost_price: Yup.string().required("Cost Price is required"),
 
   auction_category: Yup.string().required("Product category is required"),
+  auction_starttime: Yup.string().required("Start time is required"),
+  auction_endtime: Yup.string().required("End time is required"),
+  auction_date: Yup.string().required("Date is required"),
 
-    // last_price: Yup.string().required("Last Price is required"),
-   // product_category: Yup.string().required("Product category is required"),
+  // last_price: Yup.string().required("Last Price is required"),
+  // product_category: Yup.string().required("Product category is required"),
 
-//     selling_price: Yup.string().required("selling Price is required"),
-//   discount: Yup.string().required("discount Price is required"),
-//   quantity: Yup.number().required("Quantity is required"),
-//   weight: Yup.string().required("Weight is required"),
-// topdeals: Yup.boolean()
-//   .oneOf([true], 'Top Deals must be checked')
-//   .required('Top Deals is required'),
+  //     selling_price: Yup.string().required("selling Price is required"),
+  //   discount: Yup.string().required("discount Price is required"),
+  //   quantity: Yup.number().required("Quantity is required"),
+  //   weight: Yup.string().required("Weight is required"),
+  // topdeals: Yup.boolean()
+  //   .oneOf([true], 'Top Deals must be checked')
+  //   .required('Top Deals is required'),
 
-//   featured: Yup.boolean()
-//   .oneOf([true], 'Featured must be checked')
-//   .required('Featured is required'),
+  //   featured: Yup.boolean()
+  //   .oneOf([true], 'Featured must be checked')
+  //   .required('Featured is required'),
 
   // scehma for image and video
   regular_media: Yup.mixed().required("Please select at least one file").test(
-      'regular_media',
-      'Please select at least one file',
-       (value) => Array.isArray(value) && value.length > 0
-    )
+    'regular_media',
+    'Please select at least one file',
+    (value) => Array.isArray(value) && value.length > 0
+  )
 });
 
 export const ActionUploadSchema = Yup.object().shape({
 
   auction_media: Yup.mixed().required("Please select at least one file").test(
-      'regular_media',
-      'Please select at least one file',
-       (value) => Array.isArray(value) && value.length > 0
-    ),
+    'regular_media',
+    'Please select at least one file',
+    (value) => Array.isArray(value) && value.length > 0
+  ),
 
   topdeals: Yup.boolean().default(false),
   featured: Yup.boolean().default(false),
@@ -150,18 +153,18 @@ export const ActionUploadSchema = Yup.object().shape({
     is: (isdisabled: boolean) => isdisabled,
     then: (schema: Yup.StringSchema) => schema.notRequired(),
     otherwise: (schema: Yup.StringSchema) => schema.required("Date is required"),
-}),
-// auction_starttime: Yup.string().when('$isdisabled', {
-//     is: (isdisabled: boolean) => isdisabled,
-//     then: (schema: Yup.StringSchema) => schema.notRequired(),
-//     otherwise: (schema: Yup.StringSchema) => schema.required("Start Date is required"),
-// }),
+  }),
+  // auction_starttime: Yup.string().when('$isdisabled', {
+  //     is: (isdisabled: boolean) => isdisabled,
+  //     then: (schema: Yup.StringSchema) => schema.notRequired(),
+  //     otherwise: (schema: Yup.StringSchema) => schema.required("Start Date is required"),
+  // }),
 
-auction_starttime: Yup.string()
+  auction_starttime: Yup.string()
     .matches(/^(0?[1-9]|1[0-2])(AM|PM)$/, "Enter time in 12-hour format (e.g., 12AM or 12PM)")
     .required("Start Time is required"),
 
-auction_endtime: Yup.string()
+  auction_endtime: Yup.string()
     .matches(/^(0?[1-9]|1[0-2])(AM|PM)$/, "Enter time in 12-hour format (e.g., 12AM or 12PM)")
     .required("End Time is required"),
 
@@ -189,14 +192,14 @@ auction_endtime: Yup.string()
 export const CategoriesSchema = Yup.object().shape({
   description: Yup.string().required("description is required"),
   category: Yup.string().required("Category is required"),
-   /* category_image: Yup.mixed()
-    .required('Image is required') */
-    /*  .test('fileSize', 'The file is too large', (value) => {
-       return value && value[0] && value[0].size <= 2000000; // 2MB
-     })
-     .test('fileType', 'Unsupported File Format', (value) => {
-       return value && value[0] && ['image/jpeg', 'image/png', 'image/gif'].includes(value[0].type);
-     }), */
+  /* category_image: Yup.mixed()
+   .required('Image is required') */
+  /*  .test('fileSize', 'The file is too large', (value) => {
+     return value && value[0] && value[0].size <= 2000000; // 2MB
+   })
+   .test('fileType', 'Unsupported File Format', (value) => {
+     return value && value[0] && ['image/jpeg', 'image/png', 'image/gif'].includes(value[0].type);
+   }), */
 });
 
 
@@ -204,12 +207,12 @@ export const CategoriesSchema = Yup.object().shape({
 export const SubCategoriesSchema = Yup.object().shape({
   subcategory: Yup.string().required("subcategory is required"),
   category: Yup.string().required("Category is required"),
-   /* category_image: Yup.mixed()
-    .required('Image is required') */
-    /*  .test('fileSize', 'The file is too large', (value) => {
-       return value && value[0] && value[0].size <= 2000000; // 2MB
-     })
-     .test('fileType', 'Unsupported File Format', (value) => {
-       return value && value[0] && ['image/jpeg', 'image/png', 'image/gif'].includes(value[0].type);
-     }), */
+  /* category_image: Yup.mixed()
+   .required('Image is required') */
+  /*  .test('fileSize', 'The file is too large', (value) => {
+     return value && value[0] && value[0].size <= 2000000; // 2MB
+   })
+   .test('fileType', 'Unsupported File Format', (value) => {
+     return value && value[0] && ['image/jpeg', 'image/png', 'image/gif'].includes(value[0].type);
+   }), */
 });

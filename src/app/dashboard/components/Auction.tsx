@@ -23,6 +23,9 @@ import { div } from "framer-motion/m";
 import { tr } from "framer-motion/client";
 import { useQueryData } from "@/hooks/useQueryDataCat";
 import { setLocalStoreData } from "@/hooks/useLocalStorage";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { Controller } from "react-hook-form";
 
 
 interface Subcategory {
@@ -213,6 +216,19 @@ export const Auction = () => {
     const year = date.getFullYear();
     return `${day} ${month}, ${year}`;
   };
+
+
+  function convertTo24Hour(time12h: string) {
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    if (hours === '12') {
+      hours = '00';
+    }
+    if (modifier === 'PM') {
+      hours = String(parseInt(hours, 10) + 12);
+    }
+    return `${hours.padStart(2, '0')}:${minutes}`;
+  }
 
   const sumbitForm = (data: any) => {
     // Prepare FormData to handle file uploads
@@ -450,49 +466,123 @@ export const Auction = () => {
 
           <div>
             <div className="flex gap-4  flex-col lg:flex-row md:flex-row border border-gray-300 rounded-lg px-4 py-4 ">
-              <InputField
-                name="auction_date"
-                label="Date"
-                type="date"
-                placeholder="Start Date"
-                isdisabled={false}
-                register={register}
-                errors={errors}
-                classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-              />
-              <InputField
-                name="auction_starttime"
-                label="Start Time"
-                type="time"
-                isdisabled={false}
-                placeholder="HH:MM AM/PM"
-                register={register}
-                errors={errors}
-                classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-              />
-              <InputField
-                name="auction_endtime"
-                label="End Time"
-                type="time"
-                placeholder="HH:MM AM/PM"
-                register={register}
-                errors={errors}
-                classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
+
+              <div className="">
+                <div className="">
+                  <label htmlFor="auction_date" className="text-sm font-medium text-gray-700">Start Date</label>
+                  <div>
+                    <Controller
+                      control={control}
+                      name="auction_date"
+                      render={({ field }) => (
+                        <DatePicker
+                          selected={field.value ? new Date(field.value) : null}
+                          onChange={date => {
+                            if (date) {
+                              const day = date.getDate();
+                              const month = date.toLocaleString('default', { month: 'long' });
+                              const year = date.getFullYear();
+                              const formatted = `${day} ${month}, ${year}`;
+                              field.onChange(formatted);
+                            } else {
+                              field.onChange("");
+                            }
+                          }}
+                          dateFormat="d MMMM, yyyy"
+                          placeholderText="22 June, 2025"
+                          className="px-5 h-12 focus:text-black border rounded w-full"
+                        />
+                      )}
+                    />
+                    <p className="text-xs text-rose-500 pt-1" >{errors?.auction_date?.message}</p>
+                  </div>
+                </div>
+              </div>
+
+
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Start Time</label>
+                  <Controller
+                    control={control}
+                    name="auction_starttime"
+
+                    render={({ field }) => (
+                      <DatePicker
+                        selected={
+                          field.value && /^\d{2}:\d{2} (AM|PM)$/.test(field.value)
+                            ? new Date(`1970-01-01T${convertTo24Hour(field.value)}`)
+                            : null
+                        }
+                        onChange={date => {
+                          const formatted = date
+                            ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase()
+                            : "";
+                          field.onChange(formatted);
+                        }}
+                        showTimeSelect
+                        showTimeSelectOnly
+                        timeIntervals={15}
+                        timeCaption="Time"
+                        dateFormat="hh:mm aa"
+                        placeholderText="HH:MM AM/PM"
+                        className="px-5 h-12 focus:text-black border rounded w-full"
+                      />
+                    )}
+                  />
+                  <p className="text-xs text-rose-500 pt-1" >{errors?.auction_starttime?.message}</p>
+                </div>
+
+              </div>
+
+
+              <div className="grid grid-cols-2 gap-4">
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700">End Time</label>
+                  <Controller
+                    control={control}
+                    name="auction_endtime"
+
+                    render={({ field }) => (
+                      <DatePicker
+                        selected={
+                          field.value && /^\d{2}:\d{2} (AM|PM)$/.test(field.value)
+                            ? new Date(`1970-01-01T${convertTo24Hour(field.value)}`)
+                            : null
+                        }
+                        onChange={date => {
+                          const formatted = date
+                            ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase()
+                            : "";
+                          field.onChange(formatted);
+                        }}
+                        showTimeSelect
+                        showTimeSelectOnly
+                        timeIntervals={15}
+                        timeCaption="Time"
+                        dateFormat="hh:mm aa"
+                        placeholderText="HH:MM AM/PM"
+                        className="px-5 h-12 focus:text-black border rounded w-full"
+                      />
+                    )}
+                  />
+                  <p className="text-xs text-rose-500 pt-1" >{errors?.auction_endtime?.message}</p>
+                </div>
+              </div>
+
+            </div>
+
+
+            <div className={`py-4`}>
+              <DefaultButton
+                text={status === "pending" ? "loading..." : "Upload"}
+                type="submit"
+                handleClick={() => null}
+                className=" bg-[#FCDFD4] p-4 text-sm w-[10em] hover:bg-[#F25E26] hover:text-white rounded-lg"
               />
             </div>
-            {/*  <h1 className=" py-4 flex  justify-center items-center text-sm font-Poppins text-gray-400 mb-4">
-                Duration: 2hr: 00 mins
-              </h1> */}
-          </div>
-
-
-          <div className={`py-4`}>
-            <DefaultButton
-              text={status === "pending" ? "loading..." : "Upload"}
-              type="submit"
-              handleClick={() => null}
-              className=" bg-[#FCDFD4] p-4 text-sm w-[10em] hover:bg-[#F25E26] hover:text-white rounded-lg"
-            />
           </div>
         </form>
 
