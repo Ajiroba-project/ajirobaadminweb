@@ -96,6 +96,9 @@ export const UserSearch: React.FC = () => {
   };
 
 
+  // console.log(filteredUsers, 'filtered')
+
+
   const handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
     setSearchVal(value);
@@ -132,7 +135,6 @@ export const UserSearch: React.FC = () => {
         <div className="relative">
           <ul>
             <li className="text-break h-[15em] overflow-y-auto pt-2">
-              {/* {console.log(filteredUsers, 'filteredUsers')} */}
               {filteredUsers?.map((val: any, index: number) => (
                 <div
                   key={index}
@@ -144,7 +146,7 @@ export const UserSearch: React.FC = () => {
                   }}
                 >
                   <Image
-                    src={`https://staging.ajiroba.ng/v1${val.photo}`}
+                    src={`https://staging.ajiroba.ng/${val.photo}`}
                     alt={val.first_name}
                     className="rounded-full w-10 h-10"
                     width={50}
@@ -167,7 +169,7 @@ export const UserSearch: React.FC = () => {
           <div className="p-6 flex flex-col gap-5">
             {/*     {console.log(userInfo, 'usee')} */}
 
-            <Image src={`https://staging.ajiroba.ng/v1${userInfo.photo}`} alt={userInfo?.first_name} className="rounded-full w-20 h-20"
+            <Image src={`https://staging.ajiroba.ng/${userInfo.photo}`} alt={userInfo?.first_name} className="rounded-full w-20 h-20"
               width={50}
               height={50} />
             <div className="grid lg:grid-cols-2 md:grid-cols-2 grid-cols-1 gap-2 items-center mt-3">

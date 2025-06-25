@@ -50,7 +50,7 @@ export const Auction = () => {
       return URL.createObjectURL(file);
     });
 
-    console.log(ImgArray);
+    // console.log(ImgArray);
     setSelectedImg((prevImg: string[]) => prevImg.concat(ImgArray));
   };
 
@@ -124,9 +124,8 @@ export const Auction = () => {
     <>
       <ToastContainer closeOnClick />
       <section
-        className={`my-10 container ${
-          isNavbarOpen ? "justify-center items-center flex-col flex" : ""
-        }`}
+        className={`my-10 container ${isNavbarOpen ? "justify-center items-center flex-col flex" : ""
+          }`}
       >
         <h1
           className={`xl:text-2xl 2xl:text-2xl md:text-2xl text-base font-normal pb-4 leading-tight tracking-tight underline p-3`}

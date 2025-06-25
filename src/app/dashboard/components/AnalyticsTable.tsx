@@ -49,9 +49,11 @@ function AnalyticsTable() {
     name: customer.full_name,
     email: customer.email,
     date: new Date(customer.date).toLocaleDateString("en-GB"), // Formats to dd/mm/yyyy
-    img: `${BASE_URL}${customer.picture}`, // Append full image URL
+    img: customer.picture ? `https://staging.ajiroba.ng${customer.picture}` : icon, // Use fallback icon if picture is null
   })) || [];
 
+
+  // console.log(analyticsInfo?.data?.infromation?.top_five_customers, "analyticsInfo")
 
   // console.log(formatted, "formatted")
 
@@ -176,12 +178,12 @@ function AnalyticsTable() {
       data = await response.json();
 
       if (response.ok) {
-        console.log(data, "data");
+        /*   console.log(data, "data"); */
         toast.success(data.message || 'Points gifted successfully');
         setSelectedEmail(null);
         setGiftPoint('');
       } else {
-        console.log(data, "data");
+        /*  console.log(data, "data"); */
         toast.error(data.message || data.detail || 'Failed to gift points');
       }
     } catch (error) {

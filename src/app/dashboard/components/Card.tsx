@@ -74,7 +74,7 @@ export const ProductListCard = ({ object }: cardProps) => {
   const [filteredData, setFilteredData] = useState<any>([]);
   const [itemsPerPage] = useState<number>(5);
 
-  console.log(filteredData, 'filteredData')
+  // console.log(filteredData, 'filteredData')
 
   useMemo(() => {
     if (object) {
@@ -104,7 +104,7 @@ export const ProductListCard = ({ object }: cardProps) => {
               <div className="flex items-center justify-between">
                 <p className="font-bold text-lg">{val.name}</p>
                 <Image
-                  src={`https://staging.ajiroba.ng/v1/media/${val?.images[0]?.image}`}
+                  src={`https://staging.ajiroba.ng/media/${val?.images[0]?.image}`}
                   alt={val.category_name}
                   height={50}
                   width={50}
@@ -196,7 +196,7 @@ export const AuctionListCard = ({ object }: cardProps) => {
               <div className="flex items-center justify-between">
                 <p className="font-bold text-lg">{val.name}</p>
                 <Image
-                  src={`https://staging.ajiroba.ng/v1/media/${val?.images[0]?.image}`}
+                  src={`https://staging.ajiroba.ng/media/${val?.images[0]?.image}`}
                   alt={val.category_name}
                   height={50}
                   width={50}

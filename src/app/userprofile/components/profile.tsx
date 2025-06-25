@@ -62,7 +62,10 @@ export const Profile = () => {
   }, [isLoggedIn, userInfo, setProfileurl]);
 
   const userData = isLoggedIn ? userInfo?.data : userDetails;
-  const userphoto = profileurl || userDetails?.profile_image_url || "";
+  const userphoto = userInfo?.profile_image_url || "";
+
+
+  // console.log(userInfo?.profile_image_url, "userInfo")
 
   const menu = ["my profile"];
 

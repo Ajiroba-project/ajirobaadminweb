@@ -12,6 +12,7 @@ import { useGetDatanew } from '@/hooks/useGetData';
 import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import Loading from '@/app/components/Loading';
 import "react-datepicker/dist/react-datepicker.css";
+import ajirobalogo from '@/app/asset/logo.svg'
 
 
 function AuctionDealsTable() {
@@ -35,7 +36,7 @@ function AuctionDealsTable() {
   } = useGetDatanew(url, "get_catandsubcat_details", userToken || " ");
 
 
-
+  // console.log(transInfo?.data, 'transInfo?.data')
 
   const transactions = transInfo && transInfo?.data?.map((order: { ticket_number: any, auction: any, ticket_amount: any, status: any, order_id: any; name: any; email: any; products: any[]; date_created: string | number | Date; profile_image: any; amount: any }, index: number) => ({
     id: order?.ticket_number,
@@ -46,7 +47,7 @@ function AuctionDealsTable() {
     amount: order?.ticket_amount || 'N/A',
     item: order.auction,
     date: new Date(order.date_created).toLocaleDateString("en-GB"),
-    img: `https://staging.ajiroba.ng/v1${order.profile_image}`,
+    img: order.profile_image ? `https://staging.ajiroba.ng${order.profile_image}` : 'https://staging.ajiroba.ng/',
   }));
 
 
@@ -200,7 +201,7 @@ function AuctionDealsTable() {
                     />
                   </td>
                   <td className="px-4 py-4 flex items-center space-x-2">
-                    <Image src={transaction.img} alt="icon" width={30} height={30} />
+                    {transaction.img !== 'https://staging.ajiroba.ng/' ? <Image src={transaction.img} alt="icon" width={30} height={30} className='rounded-full' /> : <Image src={ajirobalogo} alt="icon" width={30} height={30} />}
                     <span className='text-[#101928] font-semibold font-Poppins text-sm'>{transaction.name}</span>
                   </td>
                   <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.email}</td>
@@ -252,8 +253,8 @@ function AuctionDealsTable() {
               <button
                 key={index}
                 className={`px-3 py-1 rounded ${currentPage === index + 1
-                    ? "bg-[#FFECE5] text-[#EB5017] text-sm font-medium font-Poppins "
-                    : "bg-gray-100 text-[#98A2B3] text-sm font-medium font-Poppins hover:bg-gray-200"
+                  ? "bg-[#FFECE5] text-[#EB5017] text-sm font-medium font-Poppins "
+                  : "bg-gray-100 text-[#98A2B3] text-sm font-medium font-Poppins hover:bg-gray-200"
                   }`}
                 onClick={() => setCurrentPage(index + 1)}
               >

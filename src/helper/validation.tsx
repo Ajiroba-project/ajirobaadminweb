@@ -149,24 +149,21 @@ export const ActionUploadSchema = Yup.object().shape({
   ticket_price: Yup.string().required("Ticket Price is required"),
   weight: Yup.string().required("Weight is required"),
   // auction_date: Yup.string().required("Date is required"),
-  auction_date: Yup.string().when('$isdisabled', {
-    is: (isdisabled: boolean) => isdisabled,
-    then: (schema: Yup.StringSchema) => schema.notRequired(),
-    otherwise: (schema: Yup.StringSchema) => schema.required("Date is required"),
-  }),
+  // auction_date: Yup.string().when('$isdisabled', {
+  //   is: (isdisabled: boolean) => isdisabled,
+  //   then: (schema: Yup.StringSchema) => schema.notRequired(),
+  //   otherwise: (schema: Yup.StringSchema) => schema.required("Date is required"),
+  // }),
   // auction_starttime: Yup.string().when('$isdisabled', {
   //     is: (isdisabled: boolean) => isdisabled,
   //     then: (schema: Yup.StringSchema) => schema.notRequired(),
   //     otherwise: (schema: Yup.StringSchema) => schema.required("Start Date is required"),
   // }),
 
-  auction_starttime: Yup.string()
-    .matches(/^(0?[1-9]|1[0-2])(AM|PM)$/, "Enter time in 12-hour format (e.g., 12AM or 12PM)")
-    .required("Start Time is required"),
+  auction_starttime: Yup.string().required("Start time is required"),
 
-  auction_endtime: Yup.string()
-    .matches(/^(0?[1-9]|1[0-2])(AM|PM)$/, "Enter time in 12-hour format (e.g., 12AM or 12PM)")
-    .required("End Time is required"),
+  auction_endtime: Yup.string().required("End time is required"),
+  auction_date: Yup.string().required("Date is required"),
 
 
 

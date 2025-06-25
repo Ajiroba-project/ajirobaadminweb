@@ -37,7 +37,7 @@ const Page = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form Data Submitted:", formData);
+    /*   console.log("Form Data Submitted:", formData); */
 
     // Add logic to send data to the backend
     alert("Product Updated Successfully!");
@@ -45,7 +45,7 @@ const Page = () => {
 
 
   return (
-   <div className="min-h-screen bg-[#F6F6F6] p-4 lg:p-8">
+    <div className="min-h-screen bg-[#F6F6F6] p-4 lg:p-8">
       <button
         className="text-red-500 mb-4 text-sm hover:underline"
         onClick={() => router.back()}

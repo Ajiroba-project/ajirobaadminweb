@@ -59,7 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     userToken || " ",
   );
 
-  //  console.log(userInfo, 'usss')
+  // console.log(userInfo?.profile_image_url, 'usss')
 
   const handleClick = ({
     val,
@@ -165,8 +165,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         <div className="flex flex-col gap-3 items-center justify-center">
           <div className="flex gap-3 pb-4 items-center">
             <div className="rounded-full h-8 w-8 bg-[#FCDFD4] ring-[#F25E26]">
-              <Image src={user_img} alt="dp" />
+              <Image src={userInfo?.profile_image_url || user_img} alt="dp" width={50} height={50} />
             </div>
+            {/*   {console.log(userInfo?.data)} */}
             <div>
               <h2 className="text-[#2A2A2A]">{`${userInfo?.data?.first_name}`}</h2>
               <p className="text-sm">{`${userInfo?.data?.email}`}</p>

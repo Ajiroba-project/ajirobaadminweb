@@ -143,6 +143,9 @@ export const LiveChatCard: React.FC = () => {
   );
 
 
+  // console.log(customerdetails?.data?.data)
+
+
   useEffect(() => {
     if (customerdetails) {
       const usersdata: User[] = customerdetails?.data?.data?.map(
@@ -287,7 +290,7 @@ export const LiveChatCard: React.FC = () => {
                       <div className="avatar">
                         <div className="ring-primary ring-offset-base-100 w-8 rounded-full ring ring-offset-2">
                           <Image
-                            src={userInfo?.photo}
+                            src={userInfo?.photo || user_img}
                             alt={userInfo?.first_name}
                             className=" rounded-lg mt-1"
                             width={40}
@@ -335,8 +338,8 @@ export const LiveChatCard: React.FC = () => {
                         )}
                         <div
                           className={`bubble ${message.type === "admin"
-                              ? "bubble-bottom-left"
-                              : "bubbleright bubbleright-bottom-right"
+                            ? "bubble-bottom-left"
+                            : "bubbleright bubbleright-bottom-right"
                             } mb-12 `}>
                           {message.text}
                         </div>

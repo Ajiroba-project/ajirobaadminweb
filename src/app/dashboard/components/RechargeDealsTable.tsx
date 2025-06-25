@@ -12,6 +12,7 @@ import { useGetDatanew } from '@/hooks/useGetData';
 import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import Loading from '@/app/components/Loading';
 import "react-datepicker/dist/react-datepicker.css";
+import ajirobalogo from '@/app/asset/logo.svg'
 
 
 function RechargeDealsTable() {
@@ -43,7 +44,7 @@ function RechargeDealsTable() {
     date: new Date(item.date_created).toLocaleDateString("en-GB"),
     email: item?.email || 'N/A',
     name: item?.name || 'N/A',
-    img: `https://staging.ajiroba.ng/v1${item.profile_image}`,
+    img: item.profile_image ? `https://staging.ajiroba.ng${item.profile_image}` : 'https://staging.ajiroba.ng/',
     reference: item?.reference,
 
 
@@ -214,7 +215,7 @@ function RechargeDealsTable() {
                   <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.email}</td>
                   <td className="px-4 py-4 text-[#344054] font-medium font-Poppins text-sm">{transaction.name}</td>
                   <td className="px-4 py-4 flex items-center space-x-2">
-                    <Image src={transaction.img} alt="icon" width={30} height={30} />
+                    {transaction.img !== 'https://staging.ajiroba.ng/' ? <Image src={transaction.img} alt="icon" width={30} height={30} className='rounded-full' /> : <Image src={ajirobalogo} alt="icon" width={30} height={30} />}
                     <span className='text-[#101928] font-semibold font-Poppins text-sm'>{transaction.name}</span>
                   </td>
 
@@ -267,8 +268,8 @@ function RechargeDealsTable() {
               <button
                 key={index}
                 className={`px-3 py-1 rounded ${currentPage === index + 1
-                    ? "bg-[#FFECE5] text-[#EB5017] text-sm font-medium font-Poppins "
-                    : "bg-gray-100 text-[#98A2B3] text-sm font-medium font-Poppins hover:bg-gray-200"
+                  ? "bg-[#FFECE5] text-[#EB5017] text-sm font-medium font-Poppins "
+                  : "bg-gray-100 text-[#98A2B3] text-sm font-medium font-Poppins hover:bg-gray-200"
                   }`}
                 onClick={() => setCurrentPage(index + 1)}
               >

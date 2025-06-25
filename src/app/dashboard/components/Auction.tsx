@@ -193,12 +193,20 @@ export const Auction = () => {
   );
 
   const formatTime = (timeString: string) => {
-    if (!timeString || !timeString.includes(':')) {
-      if (typeof timeString === 'string' && (timeString.includes('AM') || timeString.includes('PM'))) {
-        return timeString;
-      }
+    if (!timeString) {
       return '';
     }
+
+    // If the time string already contains AM or PM, return it as-is
+    if (typeof timeString === 'string' && (timeString.includes('AM') || timeString.includes('PM'))) {
+      return timeString;
+    }
+
+    // If the time string doesn't contain ':', it's not a valid time format
+    if (!timeString.includes(':')) {
+      return '';
+    }
+
     const [hours, minutes] = timeString.split(':');
     let h = parseInt(hours, 10);
     const ampm = h >= 12 ? 'PM' : 'AM';

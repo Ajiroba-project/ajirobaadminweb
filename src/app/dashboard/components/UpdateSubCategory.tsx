@@ -5,7 +5,7 @@ import { useStore } from "@/store/nav-store";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { categories } from "@/app/data";
-import {Header} from "@/app/components/Header"
+import { Header } from "@/app/components/Header"
 import { CategoriesSchema } from "@/helper/validation";
 import { useMutateData } from "@/hooks/useMutateData";
 import { DefaultButton } from "@/app/components/Button";
@@ -16,7 +16,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useGetDatanew } from "@/hooks/useGetData";
 import Cookies from "js-cookie";
 
-export const UpdateSubCategory = ({func}:any) => {
+export const UpdateSubCategory = ({ func }: any) => {
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
   const router = useRouter();
   const {
@@ -29,7 +29,7 @@ export const UpdateSubCategory = ({func}:any) => {
     resolver: yupResolver(CategoriesSchema),
   });
 
-  const handleSuccess = () => {};
+  const handleSuccess = () => { };
   const handleError = (error: any) => {
     toast.error(`${"An Error Occured"}`, {
       position: "top-right",
@@ -50,13 +50,13 @@ export const UpdateSubCategory = ({func}:any) => {
     handleError
   );
 
-  const handleCreate=()=>{
+  const handleCreate = () => {
     func()
   }
 
 
 
-    const [userToken, setUserToken] = useState(Cookies.get("token"));
+  const [userToken, setUserToken] = useState(Cookies.get("token"));
 
   // Construct URL with dynamic filters
   let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/categories_and_subcategories/`;
@@ -70,7 +70,7 @@ export const UpdateSubCategory = ({func}:any) => {
   // console.log(catandsubInfo);
 
 
-    const catnew = catandsubInfo?.data?.map((cat: { category: any; id: any; subcategories: any; }) => ({
+  const catnew = catandsubInfo?.data?.map((cat: { category: any; id: any; subcategories: any; }) => ({
     label: cat.category,
     value: cat.id,
     id: cat.id,
@@ -78,7 +78,7 @@ export const UpdateSubCategory = ({func}:any) => {
   }));
 
 
-  console.log(catnew, 'catnewwwww');
+  // console.log(catnew, 'catnewwwww');
 
   return (
     <section className="flex flex-col ">
@@ -89,16 +89,16 @@ export const UpdateSubCategory = ({func}:any) => {
           name="category"
           register={register}
           errors={errors}
-              //  options={catnew?.map((cat: { label: any; value: any; }) => ({
-              //       label: cat.label,
-              //       value: cat.value,
-              //     }))}
+          //  options={catnew?.map((cat: { label: any; value: any; }) => ({
+          //       label: cat.label,
+          //       value: cat.value,
+          //     }))}
 
-               options={catnew?.map((cat: { label: any; value: any; }) => ({
-                    label: cat.label,
-                    value: cat.value,
-                  }))}
-        classname={`text-sm  xl:w-[298px] 2xl:w-[298px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter text-black font-normal focus:outline-none`}
+          options={catnew?.map((cat: { label: any; value: any; }) => ({
+            label: cat.label,
+            value: cat.value,
+          }))}
+          classname={`text-sm  xl:w-[298px] 2xl:w-[298px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter text-black font-normal focus:outline-none`}
         />
         <InputField
           label="Subcategory"

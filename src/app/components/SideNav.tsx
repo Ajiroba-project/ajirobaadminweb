@@ -63,7 +63,7 @@ export const SideNav = () => {
   );
 
 
-  console.log(userInfo, 'userInfo')
+  // console.log(userInfo, 'userInfo')
 
   const handleClick = ({
     val,
@@ -121,14 +121,14 @@ export const SideNav = () => {
         localStorage.clear();
      router.push('/signin');
    };
- 
+
    const handleError = () => {
      console.log('Something went wrong...');
      clearAuthCookies();
      localStorage.clear();
      router.push('/signin');
    };
- 
+
    const { mutate } = useMutateData(
      'signout',
      handleSuccess,

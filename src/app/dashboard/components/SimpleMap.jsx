@@ -20,7 +20,7 @@ const SimpleMap = ({ customerByLocation = [] }) => {
                     }
                 });
 
-            console.log("Processed location data:", dataMap);
+            // console.log("Processed location data:", dataMap);
             setLocationData(dataMap);
         }
     }, [customerByLocation]);

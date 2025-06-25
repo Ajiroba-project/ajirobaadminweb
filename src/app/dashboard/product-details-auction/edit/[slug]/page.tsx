@@ -91,11 +91,13 @@ export default function Page() {
   useEffect(() => {
     if (productDetails?.images) {
       const images = productDetails.images.map(
-        (img: any) => `https://staging.ajiroba.ng/v1/media/${img.image}`
+        (img: any) => `https://staging.ajiroba.ng/media/${img.image}`
       );
       setSelectedImg(images);
       setMainImage(images[0]);
     }
+
+    // console.log(productDetails?.images, 'productDetails.images')
   }, [productDetails]);
 
 
