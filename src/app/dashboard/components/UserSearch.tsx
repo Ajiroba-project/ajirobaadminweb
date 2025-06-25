@@ -38,7 +38,7 @@ export const UserSearch: React.FC = () => {
 
   useEffect(() => {
     if (userdetails) {
-      /*   console.log(userdetails?.data?.data?.users, 'userdetails') */
+
       const usersdata: User[] = userdetails?.data?.data?.users.map((user: any) => ({
         first_name: user.first_name,
         surname: user.last_name,
@@ -167,7 +167,6 @@ export const UserSearch: React.FC = () => {
         <div></div>
         {userInfo && (
           <div className="p-6 flex flex-col gap-5">
-            {/*     {console.log(userInfo, 'usee')} */}
 
             <Image src={`https://staging.ajiroba.ng/${userInfo.photo}`} alt={userInfo?.first_name} className="rounded-full w-20 h-20"
               width={50}
