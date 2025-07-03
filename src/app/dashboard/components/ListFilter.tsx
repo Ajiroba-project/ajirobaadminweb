@@ -1,11 +1,13 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState, useRef } from "react";
 import { CiSearch } from "react-icons/ci";
 // import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { DatePicker, Space } from 'antd';
+import { Space } from 'antd';
 import type { RangePickerProps } from "antd/es/date-picker";
 import dayjs from "dayjs";
+
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 interface ListFilterProps {
   onSearch: (searchVal: string, startDate: string | null, endDate: string | null) => void;
@@ -13,24 +15,47 @@ interface ListFilterProps {
 
 export const ListFilter: React.FC<ListFilterProps> = ({ onSearch }) => {
   const [searchVal, setSearchVal] = useState<string>("");
-    const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null]);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null]);
 
-  const { RangePicker } = DatePicker;
+  // const { RangePicker } = DatePicker;
 
- // Handle Search Input
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [tempSelectedDate, setTempSelectedDate] = useState<Date | null>(null);
+  const datePickerRef = useRef<DatePicker>(null);
+
+  const handleOkClick = () => {
+    setSelectedDate(tempSelectedDate);
+    datePickerRef.current?.setOpen(false);
+
+    // Convert the selected date to start and end date format
+    if (tempSelectedDate) {
+      const dateString = tempSelectedDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+      onSearch(searchVal, dateString, dateString);
+    } else {
+      onSearch(searchVal, null, null);
+    }
+  };
+
+  // Handle Search Input
   const handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setSearchVal(value);
-    onSearch(value, dateRange[0]?.format("YYYY-MM-DD") || null, dateRange[1]?.format("YYYY-MM-DD") || null);
+
+    // Pass the current selected date when searching
+    if (selectedDate) {
+      const dateString = selectedDate.toISOString().split('T')[0];
+      onSearch(value, dateString, dateString);
+    } else {
+      onSearch(value, null, null);
+    }
   };
 
-
-
-
- // Reset Filters
+  // Reset Filters
   const handleReset = () => {
     setSearchVal("");
     setDateRange([null, null]);
+    setSelectedDate(null);
+    setTempSelectedDate(null);
     onSearch("", null, null);
   }
 
@@ -44,7 +69,6 @@ export const ListFilter: React.FC<ListFilterProps> = ({ onSearch }) => {
       onSearch(searchVal, null, null);
     }
   };
-
 
   return (
     <section className="flex justify-between items-center mt-6 ">
@@ -64,24 +88,36 @@ export const ListFilter: React.FC<ListFilterProps> = ({ onSearch }) => {
         />
       </div>
 
+      <div className="flex gap-2 items-center">
+        <div className="w-full md:w-auto">
+          <DatePicker
+            ref={datePickerRef}
+            selected={tempSelectedDate}
+            onChange={(date) => setTempSelectedDate(date)}
+            onCalendarOpen={() => setTempSelectedDate(selectedDate)}
+            placeholderText="Select date"
+            className="border rounded-lg py-2 focus:outline-[#FCDFD4] px-2 w-full"
+            shouldCloseOnSelect={false}
+          >
+            <div className="flex justify-end p-2 border-t mt-1">
+              <button
+                type="button"
+                onClick={handleOkClick}
+                className="bg-[#F25E26] text-white px-4 py-1 rounded-md text-sm"
+              >
+                Ok
+              </button>
+            </div>
+          </DatePicker>
+        </div>
 
-      <div>
-
-        <RangePicker
-          value={dateRange}
-          onChange={handleDateChange}
-          format="YYYY-MM-DD"
-          allowClear
-          className="mr-2"
-        />
-
-
-        <button onClick={handleReset} className="text-sm rounded-md border-2 border-[#F25E26] bg-white p-1 text-[#2A2A2A]">
-        Reset
-      </button>
+        <button
+          onClick={handleReset}
+          className="text-sm rounded-md border-2 border-[#F25E26] bg-white p-2 text-[#2A2A2A]"
+        >
+          Reset
+        </button>
       </div>
-
-
     </section>
   );
 };

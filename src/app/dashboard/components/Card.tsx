@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Poppins } from "next/font/google";
 import { Fragment, useMemo, useState } from "react";
 import Link from "next/link"
-import { MdOutlineEdit } from "react-icons/md";
+import { MdArrowRight, MdOutlineEdit } from "react-icons/md";
 import { Pagination } from "@/app/components/Pagination";
 import { div } from "framer-motion/m";
 
@@ -132,7 +132,7 @@ export const ProductListCard = ({ object }: cardProps) => {
                     : val.description}
                 </p>
 
-                <div className="pt-4 ">
+                {/* <div className="pt-4 ">
                   <Link
                     href={`/dashboard/product-details/edit/${val.id}`}
                     className="bg-[#FCDFD4] flex gap-2 rounded-lg  p-2 font-Poppins text-sm items-center "
@@ -140,6 +140,32 @@ export const ProductListCard = ({ object }: cardProps) => {
                     <MdOutlineEdit className="text-lg" />
                     Edit product
                   </Link>
+
+
+                </div> */}
+
+                <div className="pt-4 flex justify-between col-span-2">
+                  <div>
+                    <Link
+                      href={`/dashboard/product-details/edit/${val.id}`}
+                      className=" bg-[#FCDFD4] transition delay-300 duration-300 ease-in-out hover:bg-[#F25E26] hover:text-white hover:transition-all flex gap-2 rounded-lg  p-2 font-Poppins text-sm items-center "
+                    >
+                      <MdOutlineEdit className="text-sm" />
+                      Edit product
+                    </Link>
+                  </div>
+
+
+                  <div>
+                    <Link
+                      href={`/dashboard/productdetails-product/${val.id}`}
+                      className="bg-[#FCDFD4] transition delay-300 duration-300 ease-in-out hover:bg-[#F25E26] hover:text-white hover:transition-all flex gap-2 rounded-lg  p-2 font-Poppins text-sm items-center "
+                    >
+
+                      See More
+                      <MdArrowRight className="text-sm" />
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
@@ -206,32 +232,46 @@ export const AuctionListCard = ({ object }: cardProps) => {
 
               <div className="py-2 mt-5 grid-cols-2 grid gap-y-2">
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Category:</h4>
-                <p>{val.category_name}</p>
+                <p className="text-sm font-Poppins text-[#2A2A2A]">{val.category_name}</p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Sub category:</h4>
-                <p>{val.subcategory_name}</p>
+                <p className="text-sm font-Poppins text-[#2A2A2A]">{val.subcategory_name}</p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Date of auction:</h4>
-                <p>{val.start_date || 'N/A'}</p>
+                <p className="text-sm font-Poppins text-[#2A2A2A]">{val.start_date || 'N/A'}</p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Time:</h4>
-                <p>{val.start_date || 'N/A'}</p>
+                <p className="text-sm font-Poppins text-[#2A2A2A]">{val.start_date || 'N/A'}</p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Duration:</h4>
-                <p>{val.duration}</p>
+                <p className="text-sm font-Poppins text-[#2A2A2A]">{val.duration}</p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Total number of bidders:</h4>
-                <p>{val.toatl_number_of_bidders || 'N/A'}</p>
+                <p className="text-sm font-Poppins text-[#2A2A2A]">{val.toatl_number_of_bidders || 'N/A'}</p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">No of ticket sold:</h4>
-                <p>{val.tickets_sold || 'N/A'}</p>
+                <p className="text-sm font-Poppins text-[#2A2A2A]">{val.tickets_sold || 'N/A'}</p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Ticket Amount:</h4>
-                <p>{val.ticket_price || 'N//A'}</p>
+                <p className="text-sm font-Poppins text-[#2A2A2A]">{val.ticket_price || 'N//A'}</p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Total Amount:</h4>
-                <p className="text-rose-500 font-bold">{val.total_amount || 'N/A'}</p>
+                <p className="text-rose-500 text-sm font-Poppins font-bold">{val.total_amount || 'N/A'}</p>
 
-                <div className="pt-4 ">
-                  <Link
-                    href={`/dashboard/product-details-auction/edit/${val.id}`}
-                    className="bg-[#FCDFD4] flex gap-2 rounded-lg  p-2 font-Poppins text-sm items-center "
-                  >
-                    <MdOutlineEdit className="text-lg" />
-                    Edit product
-                  </Link>
+                <div className="pt-4 flex justify-between col-span-2">
+                  <div>
+                    <Link
+                      href={`/dashboard/product-details-auction/edit/${val.id}`}
+                      className=" bg-[#FCDFD4] transition delay-300 duration-300 ease-in-out hover:bg-[#F25E26] hover:text-white hover:transition-all flex gap-2 rounded-lg  p-2 font-Poppins text-sm items-center "
+                    >
+                      <MdOutlineEdit className="text-sm" />
+                      Edit product
+                    </Link>
+                  </div>
+
+
+                  <div>
+                    <Link
+                      href={`/dashboard/productdetails-auction/${val.id}`}
+                      className="bg-[#FCDFD4] transition delay-300 duration-300 ease-in-out hover:bg-[#F25E26] hover:text-white hover:transition-all flex gap-2 rounded-lg  p-2 font-Poppins text-sm items-center "
+                    >
+
+                      See More
+                      <MdArrowRight className="text-sm" />
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
