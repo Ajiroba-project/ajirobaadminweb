@@ -242,9 +242,9 @@ export const AuctionListCard = ({ object }: cardProps) => {
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Duration:</h4>
                 <p className="text-sm font-Poppins text-[#2A2A2A]">{val.duration}</p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Total number of bidders:</h4>
-                <p className="text-sm font-Poppins text-[#2A2A2A]">{val.toatl_number_of_bidders || 'N/A'}</p>
+                <p className="text-sm font-Poppins text-[#2A2A2A]">{val.total_bidders || 'N/A'}</p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">No of ticket sold:</h4>
-                <p className="text-sm font-Poppins text-[#2A2A2A]">{val.tickets_sold || 'N/A'}</p>
+                <p className="text-sm font-Poppins text-[#2A2A2A]">{val.total_tickets || 'N/A'}</p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Ticket Amount:</h4>
                 <p className="text-sm font-Poppins text-[#2A2A2A]">{val.ticket_price || 'N//A'}</p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Total Amount:</h4>
