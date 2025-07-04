@@ -34,7 +34,6 @@ export const UserDetails = () => {
     userToken || " ",
   );
 
-  // console.log(userInfo?.data?.data?.regular, 'user info')
 
 
   interface UserInfoType {
@@ -144,7 +143,7 @@ export const UserDetails = () => {
 
       <section className="mt-6 px-4">
         <div className="flex gap-4 lg:flex-row flex-col lg:justify-center lg:items-center">
-          {/*       <Card title="Regular" object={userInfo?.data?.data?.regular} /> */}
+
           <Card title="Regular" object={mapUserInfoToDetails} />
           <Card title="Auction" object={auctionDetails} />
         </div>

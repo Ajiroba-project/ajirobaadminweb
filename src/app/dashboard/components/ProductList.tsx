@@ -1,23 +1,19 @@
 "use client"
-import React, {useState, useEffect, useCallback} from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { ListFilter } from "./ListFilter";
 import { ProductListCard } from "./Card";
 import Cookies from "js-cookie";
 import { useGetDatanew } from "@/hooks/useGetData";
 import Loading from "@/app/components/Loading";
 
-
-
 export const ProductList = () => {
   // filter by name
   const [filteredData, setFilteredData] = useState<any>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
 
-
-   const [userToken, setUserToken] = useState(Cookies.get("token"));
+  const [userToken, setUserToken] = useState(Cookies.get("token"));
 
   // Construct URL with dynamic filters
   let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_products/`;
@@ -37,10 +33,12 @@ export const ProductList = () => {
 
   // Filter function (Search + Date)
   const handleSearch = useCallback((searchVal: string, start: string | null, end: string | null) => {
-     setSearchTerm(searchVal);
+    setSearchTerm(searchVal);
     setStartDate(start);
     setEndDate(end);
 
+    // If we have date filters, the API will handle the filtering
+    // We only need to filter by search term on the client side
     let filteredProducts: any[] = Array.isArray(productInfo?.data) ? productInfo.data : [];
 
     if (searchVal) {
@@ -52,8 +50,7 @@ export const ProductList = () => {
     setFilteredData(filteredProducts);
   }, [productInfo]);
 
-
-    if (productLoading){
+  if (productLoading) {
     return <Loading />
   }
 

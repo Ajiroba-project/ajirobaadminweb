@@ -202,7 +202,6 @@ export const Auction = () => {
       return timeString;
     }
 
-    // If the time string doesn't contain ':', it's not a valid time format
     if (!timeString.includes(':')) {
       return '';
     }
