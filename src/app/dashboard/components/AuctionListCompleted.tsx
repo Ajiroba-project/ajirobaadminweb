@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { ListFilter } from "./ListFilter";
-import { AuctionListCard } from "./Card";
-import { AuctionLists } from "@/app/data";
+import { AuctionListCardCompleted } from "./Card";
+
 import Cookies from "js-cookie";
 import { useGetDatanew } from "@/hooks/useGetData";
 import Loading from "@/app/components/Loading";
@@ -32,7 +32,7 @@ export const AuctionListCompleted = (() => {
     );
 
     useEffect(() => {
-        setFilteredData(productInfo?.data || []);
+        setFilteredData(productInfo?.completed || []);
     }, [productInfo]);
 
     // Filter function (Search + Date)
@@ -57,12 +57,14 @@ export const AuctionListCompleted = (() => {
         return <Loading />
     }
 
+
+
     return (
         <section className="flex flex-col">
             <ListFilterAuction data={filteredData} onSearch={handleSearch} />
 
             <div className="my-4">
-                <AuctionListCard object={filteredData} />
+                <AuctionListCardCompleted object={filteredData} />
             </div>
         </section>
     );
