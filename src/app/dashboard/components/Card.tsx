@@ -7,6 +7,7 @@ import Link from "next/link"
 import { MdArrowRight, MdOutlineEdit } from "react-icons/md";
 import { Pagination } from "@/app/components/Pagination";
 import { div } from "framer-motion/m";
+import { useRouter } from "next/navigation";
 
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "900"] });
 type cardProps = {
@@ -74,6 +75,9 @@ export const ProductListCard = ({ object }: cardProps) => {
   const [filteredData, setFilteredData] = useState<any>([]);
   const [itemsPerPage] = useState<number>(5);
 
+  const router = useRouter()
+
+
   // console.log(filteredData, 'filteredData')
 
   useMemo(() => {
@@ -103,12 +107,12 @@ export const ProductListCard = ({ object }: cardProps) => {
             <div className="border rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <p className="font-bold text-lg">{val.name}</p>
-                <Image
+                <Image onClick={() => router.push(`/dashboard/productdetails-product/${val.id}`)}
                   src={`https://staging.ajiroba.ng/media/${val?.images[0]?.image}`}
                   alt={val.category_name}
                   height={50}
                   width={50}
-                  className="rounded-full"
+                  className="rounded-full cursor-pointer"
                 />
               </div>
 
@@ -122,9 +126,24 @@ export const ProductListCard = ({ object }: cardProps) => {
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Sub category:</h4>
                 <p className="text-sm font-Poppins text-[#2A2A2A] ">{val.subcategory_name}</p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Selling Price:</h4>
-                <p className="text-sm font-Poppins text-[#2A2A2A] ">{val.price}</p>
+                <p className="text-sm font-Poppins text-[#2A2A2A] ">
+                  {val.price !== null && val.price !== undefined
+                    ? `₦${Number(val.price).toLocaleString('en-US', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}`
+                    : 'N/A'
+                  }
+
+                </p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Discount Price:</h4>
-                <p className="text-sm font-Poppins text-[#2A2A2A] ">{val.discount}</p>
+                <p className="text-sm font-Poppins text-[#2A2A2A] ">{val.discount !== null && val.discount !== undefined
+                  ? `₦${Number(val.discount).toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  })}`
+                  : 'N/A'
+                }</p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Product Description:</h4>
                 <p className="text-sm font-Poppins text-[#2A2A2A] ">
                   {val.description.length > 100
@@ -194,7 +213,10 @@ export const AuctionListCard = ({ object }: cardProps) => {
   const [filteredData, setFilteredData] = useState<any>([]);
   const [itemsPerPage] = useState<number>(7);
 
-  //  console.log(object, 'objjj');
+  const router = useRouter()
+
+
+  // console.log(object, 'objjj');
 
   useMemo(() => {
     if (object) {
@@ -221,7 +243,7 @@ export const AuctionListCard = ({ object }: cardProps) => {
             <div className="border rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <p className="font-bold text-lg">{val.name}</p>
-                <Image
+                <Image onClick={() => router.push(`/dashboard/productdetails-auction/${val.id}`)}
                   src={`https://staging.ajiroba.ng/media/${val?.images[0]?.image}`}
                   alt={val.category_name}
                   height={50}
@@ -242,13 +264,29 @@ export const AuctionListCard = ({ object }: cardProps) => {
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Duration:</h4>
                 <p className="text-sm font-Poppins text-[#2A2A2A]">{val.duration}</p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Total number of bidders:</h4>
-                <p className="text-sm font-Poppins text-[#2A2A2A]">{val.total_bidders || 'N/A'}</p>
+                <p className="text-sm font-Poppins text-[#2A2A2A]">{val.total_bidders !== null && val.total_bidders !== undefined ? val.total_bidders : 'N/A'}</p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">No of ticket sold:</h4>
-                <p className="text-sm font-Poppins text-[#2A2A2A]">{val.total_tickets || 'N/A'}</p>
+                <p className="text-sm font-Poppins text-[#2A2A2A]">{val.total_tickets !== null && val.total_tickets !== undefined ? val.total_tickets : 'N/A'}</p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Ticket Amount:</h4>
-                <p className="text-sm font-Poppins text-[#2A2A2A]">{val.ticket_price || 'N//A'}</p>
+                <p className="text-rose-500 text-sm font-Poppins font-bold">
+                  {val.ticket_price !== null && val.ticket_price !== undefined
+                    ? `₦${Number(val.ticket_price).toLocaleString('en-US', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}`
+                    : 'N/A'
+                  }
+                </p>
                 <h4 className="text-[#A09F9F] text-base font-Poppins">Total Amount:</h4>
-                <p className="text-rose-500 text-sm font-Poppins font-bold">{val.total_amount || 'N/A'}</p>
+                <p className="text-rose-500 text-sm font-Poppins font-bold">
+                  {val.total_amount !== null && val.total_amount !== undefined
+                    ? `₦${Number(val.total_amount).toLocaleString('en-US', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}`
+                    : 'N/A'
+                  }
+                </p>
 
                 <div className="pt-4 flex justify-between col-span-2">
                   <div>
