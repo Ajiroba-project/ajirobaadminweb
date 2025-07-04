@@ -27,12 +27,14 @@ interface UserData {
   name?: any
   bills_payment?: any
   infromation?: any
+  product_info?: any
 
 }
 
 // Define the interface for the expected response data structure
 interface ResponseData {
   data?: UserData
+  completed?: UserData
   id: number
   title: string
   description: string

@@ -4,6 +4,9 @@ import { useParams, useRouter } from "next/navigation";
 import bgImg from "@/app/asset/analytics.svg"; // Use a local asset as a background image
 import { ProfileHeader } from "@/app/components/Header";
 import rice from '@/app/asset/image/rice3.jpeg'
+import { useState } from "react";
+import Cookies from "js-cookie";
+import { useGetDatanew } from "@/hooks/useGetData";
 
 export default function ProductDetailsAuctionPage() {
     // Mock data (replace with real data fetching logic)
@@ -12,6 +15,30 @@ export default function ProductDetailsAuctionPage() {
     const router = useRouter();
 
     const id = params?.id;
+
+
+
+    const [userToken, setUserToken] = useState(Cookies.get("token"));
+
+    let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/view_admin_product/${id}`;
+
+    const {
+        data: prodInfo,
+        isLoading: prodLoading,
+        error: prodError,
+    } = useGetDatanew(url, "get_prod_details", userToken || " ");
+
+
+
+
+
+    console.log(prodInfo?.data?.product_info, 'product_infooo')
+
+
+
+
+
+
     const product = {
         category: "Fashion",
         subCategory: "Men's Fashion",
@@ -88,62 +115,67 @@ export default function ProductDetailsAuctionPage() {
                             <div className="flex-1 flex flex-col gap-2 min-w-[180px]">
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Category:</span>
-                                    <span className="font-semibold text-[#222]">{product.category}</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info.category}</span>
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Sub category:</span>
-                                    <span className="font-semibold text-[#222]">{product.subCategory}</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info.subcategory}</span>
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Product Name:</span>
-                                    <span className="font-semibold text-[#222]">{product.productName}</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info.product_name}</span>
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Weight:</span>
-                                    <span className="font-semibold text-[#222]">{product.weight}</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info.weight}</span>
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Uploaded By:</span>
-                                    <span className="font-semibold text-[#222]">{product.uploadedBy}</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info.uploaded_by}</span>
                                 </div>
                             </div>
                             {/* Middle Column */}
                             <div className="flex-1 flex flex-col gap-2 min-w-[180px]">
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
-                                    <span className="text-[#7B7B7B] font-medium">Date of Raffle:</span>
-                                    <span className="font-semibold text-[#222]">{product.dateOfRaffle}</span>
+                                    <span className="text-[#7B7B7B] font-medium">Selling Price:</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.selling_price || 'N/A'}</span>
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
-                                    <span className="text-[#7B7B7B] font-medium">Time:</span>
-                                    <span className="font-semibold text-[#222]">{product.time}</span>
+                                    <span className="text-[#7B7B7B] font-medium">Cost Price:</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.cost_price}</span>
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
-                                    <span className="text-[#7B7B7B] font-medium">Duration:</span>
-                                    <span className="font-semibold text-[#222]">{product.duration}</span>
+                                    <span className="text-[#7B7B7B] font-medium">Discount:</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.discount || 'N/A'}</span>
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
-                                    <span className="text-[#7B7B7B] font-medium">Total no of bidders:</span>
-                                    <span className="font-semibold text-[#222]">{product.totalBidders}</span>
+                                    <span className="text-[#7B7B7B] font-medium">Profit:</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.profit || 'N/A'}</span>
                                 </div>
                             </div>
                             {/* Right Column */}
                             <div className="flex-1 flex flex-col gap-2 min-w-[180px]">
                                 <div className="flex items-center gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Product ID:</span>
-                                    <span className="font-semibold text-[#222]">{product.productId}</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.product_no}</span>
                                     <span className="ml-2 w-3 h-3 rounded-full bg-green-500 inline-block" />
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
-                                    <span className="text-[#7B7B7B] font-medium">No of tickets sold:</span>
-                                    <span className="font-semibold text-[#F25E26]">{product.ticketsSold}</span>
+                                    <span className="text-[#7B7B7B] font-medium">Total unit sold:</span>
+                                    <span className="font-semibold text-[#F25E26]">{prodInfo?.data?.product_info?.unit_sold}</span>
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
-                                    <span className="text-[#7B7B7B] font-medium">Ticket amount:</span>
-                                    <span className="font-semibold text-[#222]">{product.ticketAmount}</span>
+                                    <span className="text-[#7B7B7B] font-medium">Total Revenue :</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.total_revenue}</span>
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
-                                    <span className="text-[#7B7B7B] font-medium">Total amount:</span>
-                                    <span className="font-semibold text-[#F25E26]">{product.totalAmount}</span>
+                                    <span className="text-[#7B7B7B] font-medium">Total Profit:</span>
+                                    <span className="font-semibold text-[#F25E26]">{prodInfo?.data?.product_info?.total_profit}</span>
+                                </div>
+
+                                <div className="flex gap-2 text-base md:text-lg flex-wrap">
+                                    <span className="text-[#7B7B7B] font-medium">Unit in Store:</span>
+                                    <span className="font-semibold text-[#F25E26]">{prodInfo?.data?.product_info?.unit_in_store}</span>
                                 </div>
                             </div>
                         </div>
@@ -152,58 +184,93 @@ export default function ProductDetailsAuctionPage() {
             </div>
 
             {/* Auction Summary */}
-            <div className="w-full flex justify-center items-center mt-8 px-2" style={{ width: '100', maxWidth: '75%' }}>
+            {/*   <div className="w-full flex justify-center items-center mt-8 px-2" style={{ width: '100', maxWidth: '75%' }}>
                 <div className="w-full">
                     <h2 className="text-xl font-semibold mb-6 ml-2">Auction Summary</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Revenue */}
+
                         <div className="flex border rounded-lg overflow-hidden bg-white">
                             <div className="bg-[#E5E5E5] flex items-center px-6 py-6 w-1/2 min-w-[120px] text-[#222] font-medium text-base md:text-lg">Revenue</div>
-                            <div className="flex-1 flex items-center px-6 py-6 text-[#F25E26] font-semibold text-lg md:text-xl">{product.revenue}</div>
+                            <div className="flex-1 flex items-center px-6 py-6 text-[#F25E26] font-semibold text-lg md:text-xl">
+                                {prodInfo?.data?.product_info?.total_revenue !== undefined && prodInfo?.data?.product_info?.total_revenue !== null
+                                    ? `₦${Number(prodInfo.data.product_info.total_revenue).toLocaleString('en-NG', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    })}`
+                                    : 'N/A'
+                                }
+                            </div>
                         </div>
-                        {/* RDA */}
+
                         <div className="flex border rounded-lg overflow-hidden bg-white">
                             <div className="bg-[#E5E5E5] flex items-center px-6 py-6 w-1/2 min-w-[120px] text-[#222] font-medium text-base md:text-lg">RDA</div>
-                            <div className="flex-1 flex items-center px-6 py-6 text-[#F25E26] font-semibold text-lg md:text-xl">{product.rda}</div>
+                            <div className="flex-1 flex items-center px-6 py-6 text-[#F25E26] font-semibold text-lg md:text-xl"> {prodInfo?.data?.product_info?.rda !== undefined && prodInfo?.data?.product_info?.rda !== null
+                                ? `₦${Number(prodInfo.data.product_info.rda).toLocaleString('en-NG', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}`
+                                : 'N/A'
+                            }</div>
                         </div>
-                        {/* ECA */}
+
                         <div className="flex border rounded-lg overflow-hidden bg-white">
                             <div className="bg-[#E5E5E5] flex items-center px-6 py-6 w-1/2 min-w-[120px] text-[#222] font-medium text-base md:text-lg">ECA</div>
-                            <div className="flex-1 flex items-center px-6 py-6 text-[#F25E26] font-semibold text-lg md:text-xl">{product.eca}</div>
+                            <div className="flex-1 flex items-center px-6 py-6 text-[#F25E26] font-semibold text-lg md:text-xl">{prodInfo?.data?.product_info?.eca !== undefined && prodInfo?.data?.product_info?.eca !== null
+                                ? `₦${Number(prodInfo.data.product_info.eca).toLocaleString('en-NG', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}`
+                                : 'N/A'
+                            }</div>
                         </div>
-                        {/* No of Winners */}
+
                         <div className="flex border rounded-lg overflow-hidden bg-white">
                             <div className="bg-[#E5E5E5] flex items-center px-6 py-6 w-1/2 min-w-[120px] text-[#222] font-medium text-base md:text-lg">No of Winners</div>
                             <div className="flex-1 flex items-center px-6 py-6 text-[#F25E26] font-semibold text-lg md:text-xl">{product.winners}</div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             {/* Product Summary Section */}
+
+
+            {/*
+            <h2 style={{
+                display: "flex",
+                justifyContent: 'flex-start'
+            }} className="text-black text-xl md:text-2xl font-semibold mb-4">Product Summary</h2> */}
+
             <div className="w-full flex justify-center items-center mt-8 px-2" style={{ width: '100', maxWidth: '75%' }}>
                 <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Left: Product Info Card */}
                     <div className="border rounded-xl p-8 bg-white flex flex-col justify-between h-full">
-                        <h3 className="text-2xl font-semibold mb-2">{product.summary.name}</h3>
-                        <div className="text-3xl font-bold text-[#222] mb-1">₦ 200</div>
+                        <h3 className="text-2xl font-semibold mb-2"> {prodInfo?.data?.product_info.product_name}</h3>
+                        <div className="text-3xl font-bold text-[#222] mb-1"> {prodInfo?.data?.product_info?.ticket_price !== undefined && prodInfo?.data?.product_info?.ticket_price !== null
+                            ? `₦${Number(prodInfo.data.product_info.ticket_price).toLocaleString('en-NG', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            })}`
+                            : 'N/A'
+                        }</div>
                         <div className="text-[#7B7B7B] text-lg mb-4">Ticket Price</div>
                         <hr className="my-4" />
-                        <div className="mb-2 text-base text-[#7B7B7B]">Quantity Available: <span className="text-[#222] font-semibold">{product.summary.quantity}</span></div>
-                        <div className="mb-2 text-base text-[#7B7B7B]">Weight: <span className="text-[#222] font-semibold">{product.summary.weight}</span></div>
+                        <div className="mb-2 text-base text-[#7B7B7B]">Quantity Available: <span className="text-[#222] font-semibold">{prodInfo?.data?.product_info?.quantity}</span></div>
+                        <div className="mb-2 text-base text-[#7B7B7B]">Weight: <span className="text-[#222] font-semibold">{prodInfo?.data?.product_info?.weight}</span></div>
                         <hr className="my-4" />
                         <div className="text-base text-[#7B7B7B] mb-1">Delivery Estimation</div>
-                        <div className="text-lg font-bold text-[#222]">{product.summary.delivery}</div>
+                        <div className="text-lg font-bold text-[#222]">{prodInfo?.data?.product_info?.delivery_estimation}</div>
                     </div>
                     {/* Right: Product Images */}
                     <div className=" rounded-xl flex flex-col  justify-center min-h-[350px] py-8">
+
 
 
                         <div className="flex flex-wrap sm:flex-nowrap ">
                             <div className="relative mt-6 ">
 
                                 <Image
-                                    src={rice}
+                                    src={`https://staging.ajiroba.ng/media/${prodInfo?.data?.product_info.images[0]}`}
                                     alt={`Product Image`}
                                     width={220}
                                     height={220}
@@ -212,7 +279,7 @@ export default function ProductDetailsAuctionPage() {
                             </div>
                             <div className="relative opacity-35 sm:ml-4 mt-4 sm:mt-0">
                                 <Image
-                                    src={rice}
+                                    src={`https://staging.ajiroba.ng/media/${prodInfo?.data?.product_info.images[0]}`}
                                     alt={`Product Image`}
                                     width={220}
                                     height={220}
@@ -229,7 +296,7 @@ export default function ProductDetailsAuctionPage() {
             <div style={{ width: '100', maxWidth: '75%' }} className="py-12">
                 <div className=" ">
                     <h1 className="text-[#363636] font-Poppins font-normal leading-[29px]">
-                        {product.summary.description}
+                        {prodInfo?.data?.product_info?.description}
                     </h1>
                 </div>
             </div>
