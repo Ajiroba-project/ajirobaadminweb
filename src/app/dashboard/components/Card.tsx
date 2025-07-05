@@ -576,7 +576,7 @@ export const AuctionListCardCompleted = ({ object }: cardProps) => {
             <div className="border rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <p className="font-bold text-lg">{val.name}</p>
-                <Image onClick={() => router.push(`/dashboard/productdetails-auction/${val.id}`)}
+                <Image onClick={() => router.push(`/dashboard/productdetails-auction-completed/${val.id}`)}
                   src={`https://staging.ajiroba.ng/media/${val?.images[0]?.image}`}
                   alt={val.category_name}
                   height={50}
@@ -621,7 +621,7 @@ export const AuctionListCardCompleted = ({ object }: cardProps) => {
                   }
                 </p>
 
-                <div className="pt-4 flex justify-between col-span-2">
+                {/*    <div className="pt-4 flex justify-between col-span-2">
                   <div>
                     <Link
                       href={`/dashboard/product-details-auction/edit/${val.id}`}
@@ -635,7 +635,7 @@ export const AuctionListCardCompleted = ({ object }: cardProps) => {
 
                   <div>
                     <Link
-                      href={`/dashboard/productdetails-auction/${val.id}`}
+                      href={`/dashboard/productdetails-auction-completed/${val.id}`}
                       className="bg-[#FCDFD4] transition delay-300 duration-300 ease-in-out hover:bg-[#F25E26] hover:text-white hover:transition-all flex gap-2 rounded-lg  p-2 font-Poppins text-sm items-center "
                     >
 
@@ -643,7 +643,7 @@ export const AuctionListCardCompleted = ({ object }: cardProps) => {
                       <MdArrowRight className="text-sm" />
                     </Link>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </Fragment>

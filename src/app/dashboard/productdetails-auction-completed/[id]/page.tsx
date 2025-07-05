@@ -175,6 +175,9 @@ export default function ProductDetailsAuctionPage() {
                 </div>
             </div>
 
+            <div className="w-full flex justify-end px-6 py-6 text-[#F25E26] font-semibold text-lg md:text-xl underline cursor-pointer underline-offset-1" style={{ width: '100', maxWidth: '75%' }} onClick={() => router.push(`/dashboard/winningdetails/${id}`)} >More Details</div>
+
+
 
 
 
@@ -239,23 +242,7 @@ export default function ProductDetailsAuctionPage() {
                                     {prodInfo?.data?.product_info?.delivery_estimation || "NA"}
                                 </h1>
 
-                                <div className="flex justify-center items-center mt-4">
-                                    {/* <button
-                                        onClick={AddToCart}
-                                        disabled={isAddingToCart}
 
-                                        className="mt-4 px-12 text-sm font-normal font-Poppins rounded-lg bg-[#FCDFD4] py-2 transition delay-300 duration-300 ease-in-out hover:bg-[#E84526] hover:text-white hover:transition-all"
-                                    >
-                                        {isAddingToCart ? (
-                                            <div className="flex items-center justify-center">
-                                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                                                Adding to Cart...
-                                            </div>
-                                        ) : (
-                                            'Add to Cart'
-                                        )}
-                                    </button> */}
-                                </div>
                             </div>
                         </div>
 
