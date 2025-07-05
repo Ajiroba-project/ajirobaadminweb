@@ -30,6 +30,7 @@ import successIcon from '@/app/asset/signout.svg'
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Controller } from "react-hook-form";
+import { FiX } from "react-icons/fi";
 
 
 interface Subcategory {
@@ -141,37 +142,135 @@ export default function Page() {
     target: HTMLInputElement & { files: FileList };
   }
 
+  // --- Media State ---
+  interface MediaFile {
+    id: string;
+    url: string;
+    type: 'image' | 'video';
+    isExisting: boolean;
+    base64?: string;
+  }
+
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
+  const [mainMedia, setMainMedia] = useState<string>('');
+
+  // Load existing product images
+  useEffect(() => {
+    if (productDetails?.images && Array.isArray(productDetails.images)) {
+      const existingMedia: MediaFile[] = productDetails.images.map((img: any, index: number) => ({
+        id: `existing-${index}`,
+        url: `https://staging.ajiroba.ng/media/${img.image}`,
+        type: 'image' as const,
+        isExisting: true
+      }));
+      setMediaFiles(existingMedia);
+      if (existingMedia.length > 0) {
+        setMainMedia(existingMedia[0].url);
+      }
+    }
+  }, [productDetails]);
+
+  // Helper: is video
+  const isVideo = (file: string | File): boolean => {
+    if (typeof file === 'string') {
+      return file.includes('.mp4') || file.includes('.webm') || file.includes('.ogg') ||
+        file.includes('video/') || file.toLowerCase().match(/\.(mp4|webm|ogg|mov|avi)$/) !== null;
+    }
+    return Boolean(file && file.type && file.type.startsWith('video/'));
+  };
+
+  // Remove media file
+  const removeMedia = (mediaId: string) => {
+    setMediaFiles(prevFiles => {
+      const updatedFiles = prevFiles.filter(file => file.id !== mediaId);
+      const fileToRemove = prevFiles.find(file => file.id === mediaId);
+      if (fileToRemove && fileToRemove.url.startsWith('blob:')) {
+        URL.revokeObjectURL(fileToRemove.url);
+      }
+      if (fileToRemove && mainMedia === fileToRemove.url) {
+        setMainMedia(updatedFiles.length > 0 ? updatedFiles[0].url : '');
+      }
+      const newMediaBase64 = updatedFiles.filter(file => !file.isExisting && file.base64).map(file => file.base64!);
+      setValue('regular_media', newMediaBase64);
+      return updatedFiles;
+    });
+  };
+
+  // File upload handler
   const handleFileChange = (e: FileChangeEvent): void => {
     const files: File[] = Array.from(e.target.files);
-
-    const base64Promises = files.map((file) => {
-      return new Promise<string>((resolve, reject) => {
+    const currentNewFiles = mediaFiles.filter(file => !file.isExisting);
+    if (currentNewFiles.length + files.length > 5) {
+      toast.error('You can only upload up to 5 new files');
+      return;
+    }
+    const base64Promises = files.map((file, index) => {
+      return new Promise<MediaFile>((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result as string);
+        reader.onload = () => {
+          const base64 = reader.result as string;
+          const blobUrl = URL.createObjectURL(file);
+          resolve({
+            id: `new-${Date.now()}-${index}`,
+            url: blobUrl,
+            type: isVideo(file) ? 'video' : 'image',
+            isExisting: false,
+            base64: base64
+          });
+        };
         reader.onerror = (error) => reject(error);
       });
     });
-
     Promise.all(base64Promises)
-      .then((base64Files) => {
-        const previousFiles = (watch("regular_media") as string[]) ?? [];
-        setValue("regular_media", [...previousFiles, ...base64Files]);
-        trigger("regular_media");
+      .then((newMediaFiles) => {
+        setMediaFiles(prev => [...prev, ...newMediaFiles]);
+        const allBase64 = [
+          ...mediaFiles.filter(file => !file.isExisting && file.base64).map(file => file.base64!),
+          ...newMediaFiles.map(file => file.base64!)
+        ];
+        setValue('regular_media', allBase64);
+        trigger('regular_media');
+        if (!mainMedia && newMediaFiles.length > 0) {
+          setMainMedia(newMediaFiles[0].url);
+        }
       })
-      .catch((error) =>
-        console.error("Error converting files to base64:", error),
-      );
-
-    const imagePreviews = files.map((file) =>
-      URL.createObjectURL(file as Blob),
-    );
-    setPreviews((prev: string[]) => [...prev, ...imagePreviews]);
+      .catch((error) => {
+        console.error('Error converting files to base64:', error);
+        toast.error('Error processing files');
+      });
   };
+
+  // Clean up object URLs on unmount
+  useEffect(() => {
+    return () => {
+      mediaFiles.forEach(file => {
+        if (file.url.startsWith('blob:')) {
+          URL.revokeObjectURL(file.url);
+        }
+      });
+    };
+  }, []);
 
   useEffect(() => {
     return () => previews.forEach((url) => URL.revokeObjectURL(url));
   }, [previews]);
+
+
+  useEffect(() => {
+    if (productDetails) {
+      setValue("product_name", productDetails.name || "");
+      setValue("auction_category", productDetails.category || "");
+      setValue("sub_category", productDetails.subcategory || "");
+      setValue("description", productDetails.description || "");
+      setValue("ticket_price", productDetails.ticket_price || "");
+      setValue("cost_price", productDetails.cost_price || "");
+      setValue("auction_starttime", productDetails.auction_starttime || "");
+      setValue("auction_endtime", productDetails.auction_endtime || "");
+      setValue("auction_date", productDetails.auction_date || "");
+      // Removed setValue for 'quantity' and 'weight' to fix linter error
+    }
+  }, [productDetails, setValue]);
 
   const handleSuccess = (data: any) => {
     if (data.status === 200 || data.status === 201) {
@@ -315,304 +414,299 @@ export default function Page() {
     return `${hours.padStart(2, '0')}:${minutes}`;
   }
 
+  // --- Layout ---
   return (
-    <section className="flex-col flex justify-center ">
-      <div className="w-full bg-gray-100">
-        <RegistrationHeader />
-        <p
-          className="lg:px-14 px-7  text-[#F25E26] underline cursor-pointer"
-          onClick={() => router.back()}
-        >
-          Back
-        </p>
-        <span className="w-full bg-gray-100">
-          <h1 className="text-2xl text-center py-2 mb-6">
-            Auction Product Upload
-          </h1>
-        </span>
+    <section className="min-h-screen bg-[#FAFAFA] w-full flex flex-col items-center font-poppins">
+      {/* Header */}
+      <div className="w-full bg-[#F6F6F6] border-b border-[#F3F3F3] flex flex-col pb-2">
+        <div className="flex flex-col w-full max-w-6xl mx-auto">
+          <span onClick={() => router.back()} className="text-[#F25E26] underline cursor-pointer text-sm font-medium mt-6 mb-2 text-left">Back</span>
+          <h1 className="text-2xl font-semibold text-center mb-4">Auction Product Upload</h1>
+        </div>
       </div>
 
-
-
-      <div
-        style={{
-          margin: "0 auto",
-          width: "80%",
-          maxWidth: "100%",
-        }}
-        className="flex flex-1 justify-around gap-12 items-center lg:flex-row-reverse flex-col-reverse"
-      >
-        <div>
-          <form id="auction-upload-form" onSubmit={handleSubmit(sumbitForm)}>
-            <div className=" flex flex-col mt-5  ">
-              <div className="flex gap-2 flex-col">
-                <InputField
-                  label="Product name"
-                  type="text"
-                  name="product_name"
-                  register={register}
-                  errors={errors}
-                  classname="px-5 h-12 focus:text-black border rounded "
+      {/* Main Content */}
+      <div className="flex flex-col lg:flex-row gap-12 w-full max-w-6xl px-4 py-10">
+        {/* Left: Main Preview + Thumbnails */}
+        <div className="flex flex-col items-center flex-1">
+          {/* Main Preview */}
+          <div className="w-[340px] h-[420px] rounded-xl shadow bg-gray-100 flex items-center justify-center mb-6">
+            {mainMedia ? (
+              mediaFiles.find(file => file.url === mainMedia)?.type === 'video' ? (
+                <video
+                  src={mainMedia}
+                  controls
+                  className="rounded-xl object-cover w-full h-full"
+                  style={{ maxWidth: '100%', maxHeight: '100%' }}
                 />
-
-                <SelectField
-                  name="auction_category"
-                  label="Category"
-                  register={register}
-                  errors={errors}
-                  options={catnew?.map((cat) => ({
-                    label: cat.label,
-                    value: cat.value,
-                  }))}
-                  classname={" px-5 h-12  focus:text-black border rounded"}
+              ) : (
+                <Image
+                  src={mainMedia}
+                  alt="main preview"
+                  width={340}
+                  height={420}
+                  className="rounded-xl object-cover w-full h-full"
                 />
-
-                <SelectField
-                  name="sub_category"
-                  label="Sub Category"
-                  register={register}
-                  errors={errors}
-                  options={
-                    catnew
-                      ?.find((cat) => cat.id === watch("auction_category"))
-                      ?.subcategories?.map((sub) => ({
-                        label: sub.subcategory,
-                        value: sub.id,
-                      })) || []
-                  }
-                  classname={" px-5 h-12  focus:text-black border rounded"}
-                />
-
-                <TextAreaField
-                  name="description"
-                  label="Product Description"
-                  register={register}
-                  errors={errors}
-                  placeholder={"Describe your product here..."}
-                  classname={" px-5 h-24  focus:text-black border rounded"}
-                />
-
-                <div className="flex flex-col">
-                  <label htmlFor="upload-files">
-                    <p className="py-2">Product Upload:</p>
-                    <span className="bg-gray-50 relative rounded-md shadow hover:bg-[#FCDFD4] h-[20rem] w-auto flex justify-center items-center cursor-pointer flex-col">
-                      <FiUpload className="text-4xl" />
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <p className="mb-2 text-xl text-gray-500 ">
-                          SelectFile to upload
-                        </p>
-                        <p className="mb-2 text-xs text-gray-500 ">
-                          you may upload up to 4 images & video
-                        </p>
+              )
+            ) : (
+              <span className="text-gray-400">No media selected</span>
+            )}
+          </div>
+          {/* Thumbnails */}
+          <div className="flex flex-row gap-3 items-center justify-center flex-wrap">
+            {mediaFiles.map((file) => (
+              <div key={file.id} className="relative group">
+                <button
+                  type="button"
+                  className={`w-20 h-20 rounded-lg border-2 ${mainMedia === file.url ? 'border-[#F25E26]' : 'border-gray-200'} overflow-hidden focus:outline-none hover:border-[#F25E26] transition-colors relative flex items-center justify-center bg-white`}
+                  onClick={() => setMainMedia(file.url)}
+                  tabIndex={0}
+                >
+                  {file.type === 'video' ? (
+                    <>
+                      <video
+                        src={file.url}
+                        className="w-full h-full object-cover"
+                        muted
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                        <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white text-black text-xs">
+                          ▶
+                        </span>
                       </div>
-                    </span>
-
-                    <input
-                      id="upload-files"
-                      type="file"
-                      accept="image/*, video/*"
-                      max="5"
-                      className="pt-6 hidden"
-                      multiple
-                      onChange={handleFileChange}
-                    />
-                  </label>
-                  <div className="text-xs text-rose-500 pt-1">
-                    {errors?.regular_media?.message}
-                  </div>
-                </div>
-
-                <div className="flex gap-2 mt-4 flex-wrap">
-                  {previews.map((src, index) => (
+                    </>
+                  ) : (
                     <Image
-                      key={index}
-                      src={src}
-                      alt={`preview-${index}`}
-                      className="w-20 h-20 object-cover rounded-md shadow"
+                      src={file.url}
+                      alt="Product Thumbnail"
                       width={80}
                       height={80}
-                      priority
+                      className="w-full h-full object-cover"
                     />
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-
-
-
-
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">End Time</label>
-                    <Controller
-                      control={control}
-                      name="auction_endtime"
-
-                      render={({ field }) => (
-                        <DatePicker
-                          selected={
-                            field.value && /^\d{2}:\d{2} (AM|PM)$/.test(field.value)
-                              ? new Date(`1970-01-01T${convertTo24Hour(field.value)}`)
-                              : null
-                          }
-                          onChange={date => {
-                            const formatted = date
-                              ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase()
-                              : "";
-                            field.onChange(formatted);
-                          }}
-                          showTimeSelect
-                          showTimeSelectOnly
-                          timeIntervals={15}
-                          timeCaption="Time"
-                          dateFormat="hh:mm aa"
-                          placeholderText="HH:MM AM/PM"
-                          className="px-5 h-12 focus:text-black border rounded w-full"
-                        />
-                      )}
-                    />
-                    <p className="text-xs text-rose-500 pt-1" >{errors?.auction_endtime?.message}</p>
-                  </div>
-
-
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Start Time</label>
-                    <Controller
-                      control={control}
-                      name="auction_starttime"
-
-                      render={({ field }) => (
-                        <DatePicker
-                          selected={
-                            field.value && /^\d{2}:\d{2} (AM|PM)$/.test(field.value)
-                              ? new Date(`1970-01-01T${convertTo24Hour(field.value)}`)
-                              : null
-                          }
-                          onChange={date => {
-                            const formatted = date
-                              ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase()
-                              : "";
-                            field.onChange(formatted);
-                          }}
-                          showTimeSelect
-                          showTimeSelectOnly
-                          timeIntervals={15}
-                          timeCaption="Time"
-                          dateFormat="hh:mm aa"
-                          placeholderText="HH:MM AM/PM"
-                          className="px-5 h-12 focus:text-black border rounded w-full"
-                        />
-                      )}
-                    />
-                    <p className="text-xs text-rose-500 pt-1" >{errors?.auction_starttime?.message}</p>
-                  </div>
-
-
-                  <div className="">
-                    <label htmlFor="auction_date" className="text-sm font-medium text-gray-700">Start Date</label>
-                    <div>
-                      <Controller
-                        control={control}
-                        name="auction_date"
-                        render={({ field }) => (
-                          <DatePicker
-                            selected={field.value ? new Date(field.value) : null}
-                            onChange={date => {
-                              if (date) {
-                                const day = date.getDate();
-                                const month = date.toLocaleString('default', { month: 'long' });
-                                const year = date.getFullYear();
-                                const formatted = `${day} ${month}, ${year}`;
-                                field.onChange(formatted);
-                              } else {
-                                field.onChange("");
-                              }
-                            }}
-                            dateFormat="d MMMM, yyyy"
-                            placeholderText="22 June, 2025"
-                            className="px-5 h-12 focus:text-black border rounded w-full"
-                          />
-                        )}
-                      />
-                      <p className="text-xs text-rose-500 pt-1" >{errors?.auction_date?.message}</p>
-                    </div>
-                  </div>
-
-                </div>
-
-
-
-                <div className="grid grid-cols-2 gap-4">
-                  <InputField
-                    name="cost_price"
-                    label="Cost Price"
-                    type="text"
-                    placeholder="₦1234"
-                    register={register}
-                    errors={errors}
-                    classname="px-5 h-12 focus:text-black border rounded "
-                  />
-                  <InputField
-                    name="ticket_price"
-                    label="Ticket Price"
-                    type="text"
-                    placeholder="₦1234"
-                    register={register}
-                    errors={errors}
-                    classname="px-5 h-12 focus:text-black border rounded "
-                  />
-                </div>
+                  )}
+                </button>
+                {/* Remove button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeMedia(file.id);
+                  }}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                >
+                  <FiX size={12} />
+                </button>
               </div>
-            </div>
-          </form>
+            ))}
+          </div>
+          {/* File Upload */}
+          <label htmlFor="upload-files" className="bg-gray-50 rounded-md shadow hover:bg-[#FCDFD4] h-40 w-full max-w-xs flex justify-center items-center cursor-pointer flex-col border border-dashed border-gray-300 mt-6 transition-colors">
+            <FiUpload className="text-4xl mb-2 text-[#F25E26]" />
+            <span className="text-gray-500 text-base">Select file to upload</span>
+            <span className="text-xs text-gray-400">You may upload up to 5 images & videos</span>
+            <input
+              id="upload-files"
+              type="file"
+              accept="image/*, video/*"
+              className="hidden"
+              multiple
+              onChange={handleFileChange}
+            />
+          </label>
+          <div className="text-xs text-rose-500 pt-1">{errors?.regular_media?.message}</div>
+        </div>
 
-          <div className="flex justify-center items-center mt-12  mb-10">
+        {/* Right: Form Fields */}
+        <form id="auction-upload-form" onSubmit={handleSubmit(sumbitForm)} className="flex-1 flex flex-col gap-6 max-w-lg w-full">
+          <InputField
+            label="Product Name:"
+            type="text"
+            name="product_name"
+            register={register}
+            errors={errors}
+            classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+          />
+          <SelectField
+            name="auction_category"
+            label="Category:"
+            register={register}
+            errors={errors}
+            options={catnew?.map((cat) => ({ label: cat.label, value: cat.value })) || []}
+            classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+          />
+          <SelectField
+            name="sub_category"
+            label="Sub Category:"
+            register={register}
+            errors={errors}
+            options={catnew?.find((cat) => cat.id === watch("auction_category"))?.subcategories?.map((sub) => ({ label: sub.subcategory, value: sub.id })) || []}
+
+            classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+          />
+          <TextAreaField
+            name="description"
+            label="Description:"
+            register={register}
+            errors={errors}
+            placeholder={"Describe your product here..."}
+            classname="w-full px-5 h-24 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+          />
+          {/* Weight & Quantity */}
+          <div className="flex flex-row gap-4">
+            <InputField
+              name="weight"
+              label="Weight (kg):"
+              type="text"
+              placeholder="20kg"
+              register={register}
+              errors={errors}
+              classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+            />
+            <InputField
+              name="quantity"
+              label="Quantity:"
+              type="number"
+              register={register}
+              errors={errors}
+              classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+            />
+          </div>
+          {/* Last Price & Ticket Price */}
+          <div className="flex flex-row gap-4">
+            <InputField
+              name="cost_price"
+              label="Last Price:"
+              type="text"
+              placeholder="₦5,000"
+              register={register}
+              errors={errors}
+              classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+            />
+            <InputField
+              name="ticket_price"
+              label="Ticket Price:"
+              type="text"
+              placeholder="₦200"
+              register={register}
+              errors={errors}
+              classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+            />
+          </div>
+          {/* Start/End Time */}
+          <div className="flex flex-row gap-4">
+            <div className="w-full">
+              <label className="text-sm font-medium text-gray-700">Start time:</label>
+              <Controller
+                control={control}
+                name="auction_starttime"
+                render={({ field }) => (
+                  <DatePicker
+                    selected={field.value && /^\d{2}:\d{2} (AM|PM)$/.test(field.value)
+                      ? new Date(`1970-01-01T${convertTo24Hour(field.value)}`)
+                      : null}
+                    onChange={date => {
+                      const formatted = date
+                        ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase()
+                        : "";
+                      field.onChange(formatted);
+                    }}
+                    showTimeSelect
+                    showTimeSelectOnly
+                    timeIntervals={15}
+                    timeCaption="Time"
+                    dateFormat="hh:mm aa"
+                    placeholderText="3:00 PM"
+                    className="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+                  />
+                )}
+              />
+              <p className="text-xs text-rose-500 pt-1">{errors?.auction_starttime?.message}</p>
+            </div>
+            <div className="w-full">
+              <label className="text-sm font-medium text-gray-700">End Time:</label>
+              <Controller
+                control={control}
+                name="auction_endtime"
+                render={({ field }) => (
+                  <DatePicker
+                    selected={field.value && /^\d{2}:\d{2} (AM|PM)$/.test(field.value)
+                      ? new Date(`1970-01-01T${convertTo24Hour(field.value)}`)
+                      : null}
+                    onChange={date => {
+                      const formatted = date
+                        ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase()
+                        : "";
+                      field.onChange(formatted);
+                    }}
+                    showTimeSelect
+                    showTimeSelectOnly
+                    timeIntervals={15}
+                    timeCaption="Time"
+                    dateFormat="hh:mm aa"
+                    placeholderText="6:00 PM"
+                    className="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+                  />
+                )}
+              />
+              <p className="text-xs text-rose-500 pt-1">{errors?.auction_endtime?.message}</p>
+            </div>
+          </div>
+          {/* Date & Duration */}
+          <div className="flex flex-row gap-4">
+            <div className="w-full">
+              <label htmlFor="auction_date" className="text-sm font-medium text-gray-700">Date:</label>
+              <Controller
+                control={control}
+                name="auction_date"
+                render={({ field }) => (
+                  <DatePicker
+                    selected={field.value ? new Date(field.value) : null}
+                    onChange={date => {
+                      if (date) {
+                        const day = date.getDate();
+                        const month = date.toLocaleString('default', { month: 'long' });
+                        const year = date.getFullYear();
+                        const formatted = `${day} ${month}, ${year}`;
+                        field.onChange(formatted);
+                      } else {
+                        field.onChange("");
+                      }
+                    }}
+                    dateFormat="d MMMM, yyyy"
+                    placeholderText="4 March, 2024"
+                    className="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+                  />
+                )}
+              />
+              <p className="text-xs text-rose-500 pt-1">{errors?.auction_date?.message}</p>
+            </div>
+            <div className="w-full">
+              <label className="text-sm font-medium text-gray-700">Duration:</label>
+              <input
+                type="text"
+                className="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+                value={productDetails?.duration || '2 hr : 00 mins'}
+                disabled
+              />
+            </div>
+          </div>
+          {/* Update Button */}
+          <div className="flex justify-center items-center mt-8 mb-10 w-full">
             <DefaultButton
               handleClick={() => null}
-              className="text-sm  px-20  justify-center flex font-normal font-Poppins rounded-lg bg-[#FCDFD4]  py-2 transition delay-300 duration-300 ease-in-out hover:bg-[#E84526] hover:text-white hover:transition-all"
+              className="w-full max-w-md text-base font-medium px-20 py-3 rounded-lg bg-[#FCDFD4] text-[#222] transition duration-300 ease-in-out hover:bg-[#E84526] hover:text-white shadow"
               type="submit"
               form="auction-upload-form"
               text={status === "pending" ? "loading..." : "Update"}
             />
           </div>
-        </div>
-
-        <div className="w-3/6">
-          <div className="flex justify-center items-center">
-            <Image
-              src={mainImage}
-              alt="main preview"
-              width={240}
-              height={340}
-              className="w-full h-auto bg-gray-100"
-            /*    className="w-full h-auto bg-gray-100" */
-            />
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 p-4">
-            {selectedImg.map((image: any, index: number) => (
-              <div key={index} className="">
-                <div className="  ">
-                  <Image
-                    src={image}
-                    alt={'auction image'}
-                    width={300}
-                    height={300}
-                    className="object-cover"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div >
-
+        </form>
+      </div>
+      {/* Success Modal */}
       {showModal && (
-        <div className="flex absolute top-0 z-50 left-0">
+        <div className="flex absolute top-0 z-50 left-0 w-full h-full bg-black bg-opacity-30 items-center justify-center">
           <Modal
-            title="Product Updated Successfull!"
+            title="Product Upload Successful!"
             subtitle="Your product has been successfully uploaded"
             buttoncount={1}
             buttontext="Continue"
@@ -622,8 +716,8 @@ export default function Page() {
             icon={successIcon}
           />
         </div>
-      )
-      }
-    </section >
+      )}
+      <ToastContainer />
+    </section>
   );
 }

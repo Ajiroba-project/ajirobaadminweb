@@ -108,19 +108,43 @@ export default function ProductDetailsAuctionPage() {
                             <div className="flex-1 flex flex-col gap-2 min-w-[180px]">
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Selling Price:</span>
-                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.selling_price || 'N/A'}</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.selling_price !== undefined && prodInfo?.data?.product_info?.selling_price !== null
+                                        ? `₦${Number(prodInfo.data.product_info.selling_price).toLocaleString('en-NG', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}`
+                                        : 'N/A'
+                                    }</span>
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Cost Price:</span>
-                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.cost_price}</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.cost_price !== undefined && prodInfo?.data?.product_info?.cost_price !== null
+                                        ? `₦${Number(prodInfo.data.product_info.cost_price).toLocaleString('en-NG', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}`
+                                        : 'N/A'
+                                    }</span>
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Discount:</span>
-                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.discount || 'N/A'}</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.discount !== undefined && prodInfo?.data?.product_info?.discount !== null
+                                        ? `₦${Number(prodInfo.data.product_info.discount).toLocaleString('en-NG', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}`
+                                        : 'N/A'
+                                    }</span>
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Profit:</span>
-                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.profit || 'N/A'}</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.profit !== undefined && prodInfo?.data?.product_info?.profit !== null
+                                        ? `₦${Number(prodInfo.data.product_info.profit).toLocaleString('en-NG', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}`
+                                        : 'N/A'
+                                    }</span>
                                 </div>
                             </div>
                             {/* Right Column */}
@@ -136,11 +160,23 @@ export default function ProductDetailsAuctionPage() {
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Total Revenue :</span>
-                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.total_revenue}</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.total_revenue !== undefined && prodInfo?.data?.product_info?.total_revenue !== null
+                                        ? `₦${Number(prodInfo.data.product_info.total_revenue).toLocaleString('en-NG', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}`
+                                        : 'N/A'
+                                    }</span>
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Total Profit:</span>
-                                    <span className="font-semibold text-[#F25E26]">{prodInfo?.data?.product_info?.total_profit}</span>
+                                    <span className="font-semibold text-[#F25E26]">{prodInfo?.data?.product_info?.total_profit !== undefined && prodInfo?.data?.product_info?.total_profit !== null
+                                        ? `₦${Number(prodInfo.data.product_info.total_profit).toLocaleString('en-NG', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}`
+                                        : 'N/A'
+                                    }</span>
                                 </div>
 
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
