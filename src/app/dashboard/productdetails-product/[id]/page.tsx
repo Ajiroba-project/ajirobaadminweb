@@ -7,6 +7,8 @@ import rice from '@/app/asset/image/rice3.jpeg'
 import { useState } from "react";
 import Cookies from "js-cookie";
 import { useGetDatanew } from "@/hooks/useGetData";
+import { FaStar } from "react-icons/fa6";
+import Loading from "@/app/components/Loading";
 
 export default function ProductDetailsAuctionPage() {
     // Mock data (replace with real data fetching logic)
@@ -31,46 +33,14 @@ export default function ProductDetailsAuctionPage() {
 
 
 
+    if (prodLoading) {
+        return <Loading />;
+    }
+
+
 
     console.log(prodInfo?.data?.product_info, 'product_infooo')
 
-
-
-
-
-
-    const product = {
-        category: "Fashion",
-        subCategory: "Men's Fashion",
-        productName: "T-shirt",
-        weight: "5kg",
-        uploadedBy: "Idowu Shayo",
-        dateOfRaffle: "15-March-2024",
-        time: "12:00PM",
-        duration: "3 Hours",
-        totalBidders: 120,
-        productId: "2367835",
-        ticketsSold: 500,
-        ticketAmount: "₦200",
-        totalAmount: "₦100,000",
-        revenue: "₦400,000",
-        rda: "₦260,000",
-        eca: "₦140,000",
-        winners: 3,
-        summary: {
-            name: "Mama Gold Rice",
-            price: "₦200",
-            ticketPrice: "Ticket Price",
-            quantity: 2,
-            weight: "50kg",
-            delivery: "Nov. 12 - Nov. 22",
-            images: [
-                "/asset/image/rice_sample.jpg",
-                "/asset/image/rice1.jpeg"
-            ],
-            description: `Mama Gold Rice: Premium quality, long-grain rice known for its delicious taste and distinctive aroma. Aged to perfection, it guarantees a fluffy and non-sticky final result. Trusted for superior quality, perfect for both traditional and modern dishes. Elevate your dining experience with Mama Gold Rice.\n\n- 100% safe and trusted\n- Product of Nigeria\n- Origin: Hinotory FootHills\n- A known hit for its slender grains and distinct aroma, our Basmati rice is perfect for biryanis and pilafs.\n- Aged for perfection, for an enhanced flavor and fluffiness.\n- plain and clean with no dirt\n\nNote that we show the EU sizes for Stanley/Stella products. The sizes Elevate your culinary experience with our exquisite range of premium rice varieties, sourced from the finest fields around the world. We understand the importance of quality ingredients in creating memorable meals. Our curated collection of rice is sure to meet the expectations of discerning chefs and home cooks alike.`
-        }
-    };
 
     return (
         <div className="min-h-screen bg-gray-100 w-full flex flex-col items-center font-poppins"  >
@@ -183,108 +153,137 @@ export default function ProductDetailsAuctionPage() {
                 </div>
             </div>
 
-            {/* Auction Summary */}
-            {/*   <div className="w-full flex justify-center items-center mt-8 px-2" style={{ width: '100', maxWidth: '75%' }}>
-                <div className="w-full">
-                    <h2 className="text-xl font-semibold mb-6 ml-2">Auction Summary</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                        <div className="flex border rounded-lg overflow-hidden bg-white">
-                            <div className="bg-[#E5E5E5] flex items-center px-6 py-6 w-1/2 min-w-[120px] text-[#222] font-medium text-base md:text-lg">Revenue</div>
-                            <div className="flex-1 flex items-center px-6 py-6 text-[#F25E26] font-semibold text-lg md:text-xl">
-                                {prodInfo?.data?.product_info?.total_revenue !== undefined && prodInfo?.data?.product_info?.total_revenue !== null
-                                    ? `₦${Number(prodInfo.data.product_info.total_revenue).toLocaleString('en-NG', {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2
-                                    })}`
-                                    : 'N/A'
-                                }
-                            </div>
-                        </div>
-
-                        <div className="flex border rounded-lg overflow-hidden bg-white">
-                            <div className="bg-[#E5E5E5] flex items-center px-6 py-6 w-1/2 min-w-[120px] text-[#222] font-medium text-base md:text-lg">RDA</div>
-                            <div className="flex-1 flex items-center px-6 py-6 text-[#F25E26] font-semibold text-lg md:text-xl"> {prodInfo?.data?.product_info?.rda !== undefined && prodInfo?.data?.product_info?.rda !== null
-                                ? `₦${Number(prodInfo.data.product_info.rda).toLocaleString('en-NG', {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2
-                                })}`
-                                : 'N/A'
-                            }</div>
-                        </div>
-
-                        <div className="flex border rounded-lg overflow-hidden bg-white">
-                            <div className="bg-[#E5E5E5] flex items-center px-6 py-6 w-1/2 min-w-[120px] text-[#222] font-medium text-base md:text-lg">ECA</div>
-                            <div className="flex-1 flex items-center px-6 py-6 text-[#F25E26] font-semibold text-lg md:text-xl">{prodInfo?.data?.product_info?.eca !== undefined && prodInfo?.data?.product_info?.eca !== null
-                                ? `₦${Number(prodInfo.data.product_info.eca).toLocaleString('en-NG', {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2
-                                })}`
-                                : 'N/A'
-                            }</div>
-                        </div>
-
-                        <div className="flex border rounded-lg overflow-hidden bg-white">
-                            <div className="bg-[#E5E5E5] flex items-center px-6 py-6 w-1/2 min-w-[120px] text-[#222] font-medium text-base md:text-lg">No of Winners</div>
-                            <div className="flex-1 flex items-center px-6 py-6 text-[#F25E26] font-semibold text-lg md:text-xl">{product.winners}</div>
-                        </div>
-                    </div>
-                </div>
-            </div> */}
 
             {/* Product Summary Section */}
-
-
-            {/*
-            <h2 style={{
-                display: "flex",
-                justifyContent: 'flex-start'
-            }} className="text-black text-xl md:text-2xl font-semibold mb-4">Product Summary</h2> */}
-
             <div className="w-full flex justify-center items-center mt-8 px-2" style={{ width: '100', maxWidth: '75%' }}>
-                <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {/* Left: Product Info Card */}
-                    <div className="border rounded-xl p-8 bg-white flex flex-col justify-between h-full">
-                        <h3 className="text-2xl font-semibold mb-2"> {prodInfo?.data?.product_info.product_name}</h3>
-                        <div className="text-3xl font-bold text-[#222] mb-1"> {prodInfo?.data?.product_info?.ticket_price !== undefined && prodInfo?.data?.product_info?.ticket_price !== null
-                            ? `₦${Number(prodInfo.data.product_info.ticket_price).toLocaleString('en-NG', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            })}`
-                            : 'N/A'
-                        }</div>
-                        <div className="text-[#7B7B7B] text-lg mb-4">Ticket Price</div>
-                        <hr className="my-4" />
-                        <div className="mb-2 text-base text-[#7B7B7B]">Quantity Available: <span className="text-[#222] font-semibold">{prodInfo?.data?.product_info?.quantity}</span></div>
-                        <div className="mb-2 text-base text-[#7B7B7B]">Weight: <span className="text-[#222] font-semibold">{prodInfo?.data?.product_info?.weight}</span></div>
-                        <hr className="my-4" />
-                        <div className="text-base text-[#7B7B7B] mb-1">Delivery Estimation</div>
-                        <div className="text-lg font-bold text-[#222]">{prodInfo?.data?.product_info?.delivery_estimation}</div>
-                    </div>
-                    {/* Right: Product Images */}
-                    <div className=" rounded-xl flex flex-col  justify-center min-h-[350px] py-8">
+                <div className="w-full">
+                    <h2 className="text-black text-xl md:text-2xl font-semibold mb-6">Product Summary</h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* Left: Product Info Card */}
+                        {/*   <div className="border rounded-xl p-8 bg-white flex flex-col justify-between h-full">
+                            <h3 className="text-2xl font-semibold mb-2"> {prodInfo?.data?.product_info.product_name}</h3>
+                            <div className="text-3xl font-bold text-[#222] mb-1"> {prodInfo?.data?.product_info?.ticket_price !== undefined && prodInfo?.data?.product_info?.ticket_price !== null
+                                ? `₦${Number(prodInfo.data.product_info.ticket_price).toLocaleString('en-NG', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}`
+                                : 'N/A'
+                            }</div>
+                            <div className="text-[#7B7B7B] text-lg mb-4">Ticket Price</div>
+                            <hr className="my-4" />
+                            <div className="mb-2 text-base text-[#7B7B7B]">Quantity Available: <span className="text-[#222] font-semibold">{prodInfo?.data?.product_info?.quantity}</span></div>
+                            <div className="mb-2 text-base text-[#7B7B7B]">Weight: <span className="text-[#222] font-semibold">{prodInfo?.data?.product_info?.weight}</span></div>
+                            <hr className="my-4" />
+                            <div className="text-base text-[#7B7B7B] mb-1">Delivery Estimation</div>
+                            <div className="text-lg font-bold text-[#222]">{prodInfo?.data?.product_info?.delivery_estimation}</div>
+                        </div> */}
 
 
 
-                        <div className="flex flex-wrap sm:flex-nowrap ">
-                            <div className="relative mt-6 ">
+                        <div className=" rounded-lg border p-3 border-[#504D4D]  w-auto mt-8 xl:mt-0 lg:mt-0 md:mt-0 2xl:mt-0 container justify-center flex flex-wrap xl:block md:block lg:block 2xl:block">
+                            <div className="">
+                                <h1 className="text-[#111111] text-[20px]  font-Poppins font-medium ">
+                                    {prodInfo?.data?.product_info?.product_name}
+                                </h1>
+                                <p className="flex mt-4 items-center text-[#111111] text-sm gap-1">
+                                    {Array.from(
+                                        {
+                                            /*  length: prodInfo?.data?.product_info?.average_ratings, */
+                                            length: 4
+                                        },
+                                        (_, index) => (
+                                            <span key={index}>
+                                                <FaStar className="text-[#f3e43a]" />
+                                            </span>
+                                        ),
+                                    )}
+                                    <span className="ml-4 text-[#2A2A2A] font-Poppins text-[8px] font-normal">
+                                        ({prodInfo?.data?.product_info?.total_reviews || 4}) Reviews
+                                    </span>
+                                </p>
+                                <h1 className="text-[#111111] text-2xl mt-2 font-semibold font-Poppins ">
+                                    {prodInfo?.data?.product_info?.discount !== undefined && prodInfo?.data?.product_info?.discount !== null
+                                        ? `₦${Number(prodInfo.data.product_info.discount).toLocaleString('en-NG', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}`
+                                        : 'N/A'
+                                    }
+                                </h1>
+                                <h1 className="text-[#504D4D] font-medium font-Poppins text-lg mt-2 line-through ">
+                                    {prodInfo?.data?.product_info?.selling_price !== undefined && prodInfo?.data?.product_info?.selling_price !== null
+                                        ? `₦${Number(prodInfo.data.product_info.selling_price).toLocaleString('en-NG', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}`
+                                        : 'N/A'
+                                    }
+                                </h1>
 
-                                <Image
-                                    src={`https://staging.ajiroba.ng/media/${prodInfo?.data?.product_info.images[0]}`}
-                                    alt={`Product Image`}
-                                    width={220}
-                                    height={220}
-                                    className="object-contain rounded"
-                                />
+                                <hr className="my-4 border border-gray-300" />
+
+
+                                <div className="mb-2 text-base text-[#7B7B7B]">Quantity Available: <span className="text-[#222] font-semibold">{prodInfo?.data?.product_info?.quantity}</span></div>
+
+                                <p className="text-[#111111] text-base mt-4 ">Weight</p>
+
+                                <h1 className="text-[#111111] font-Poppins text-base mt-2 font-bold">
+                                    {prodInfo?.data?.product_info?.weight || "NA"}
+                                </h1>
+
+                                <hr className="my-4 border border-gray-300" />
+
+                                <p className="text-[#111111] font-Poppins font-medium text-base mt-4 ">
+                                    Delivery Estimation
+                                </p>
+
+                                <h1 className="text-[#111111] font-Poppins text-base mt-2 font-semibold">
+                                    {prodInfo?.data?.product_info?.delivery_estimation || "NA"}
+                                </h1>
+
+                                <div className="flex justify-center items-center mt-4">
+                                    {/* <button
+                                        onClick={AddToCart}
+                                        disabled={isAddingToCart}
+
+                                        className="mt-4 px-12 text-sm font-normal font-Poppins rounded-lg bg-[#FCDFD4] py-2 transition delay-300 duration-300 ease-in-out hover:bg-[#E84526] hover:text-white hover:transition-all"
+                                    >
+                                        {isAddingToCart ? (
+                                            <div className="flex items-center justify-center">
+                                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                                                Adding to Cart...
+                                            </div>
+                                        ) : (
+                                            'Add to Cart'
+                                        )}
+                                    </button> */}
+                                </div>
                             </div>
-                            <div className="relative opacity-35 sm:ml-4 mt-4 sm:mt-0">
-                                <Image
-                                    src={`https://staging.ajiroba.ng/media/${prodInfo?.data?.product_info.images[0]}`}
-                                    alt={`Product Image`}
-                                    width={220}
-                                    height={220}
-                                    className="object-contain rounded"
-                                />
+                        </div>
+
+                        {/* Right: Product Images */}
+                        <div className=" rounded-xl flex flex-col  justify-center min-h-[350px] py-8">
+                            <div className="flex flex-wrap sm:flex-nowrap ">
+                                <div className="relative mt-6 ">
+                                    <Image
+                                        src={`https://staging.ajiroba.ng/media/${prodInfo?.data?.product_info.images[0]}`}
+                                        alt={`Product Image`}
+                                        width={220}
+                                        height={220}
+                                        className="object-contain rounded"
+                                    />
+                                </div>
+                                <div className="relative opacity-35 sm:ml-4 mt-4 sm:mt-0">
+                                    <Image
+                                        src={`https://staging.ajiroba.ng/media/${prodInfo?.data?.product_info.images[0]}`}
+                                        alt={`Product Image`}
+                                        width={220}
+                                        height={220}
+                                        className="object-contain rounded"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -292,12 +291,13 @@ export default function ProductDetailsAuctionPage() {
             </div>
 
             {/* Description */}
-
-            <div style={{ width: '100', maxWidth: '75%' }} className="py-12">
-                <div className=" ">
-                    <h1 className="text-[#363636] font-Poppins font-normal leading-[29px]">
-                        {prodInfo?.data?.product_info?.description}
-                    </h1>
+            <div className="w-full flex justify-center items-center mt-8 px-2" style={{ width: '100', maxWidth: '75%' }}>
+                <div className="w-full py-12">
+                    <div className="">
+                        <h1 className="text-[#363636] font-Poppins font-normal leading-[29px]">
+                            {prodInfo?.data?.product_info?.description}
+                        </h1>
+                    </div>
                 </div>
             </div>
 
