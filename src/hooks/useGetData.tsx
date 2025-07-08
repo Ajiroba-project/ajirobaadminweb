@@ -28,6 +28,7 @@ interface UserData {
   bills_payment?: any
   infromation?: any
   product_info?: any
+  winners_info?: any
 
 }
 

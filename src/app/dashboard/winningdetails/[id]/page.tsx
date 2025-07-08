@@ -15,12 +15,15 @@ import "react-datepicker/dist/react-datepicker.css";
 import { FaBell } from "react-icons/fa6";
 import { Pagination } from "@/app/components/Pagination";
 import { FaSearch } from "react-icons/fa";
+import ModalComponent from "@/app/components/ModalComponent";
 
 export default function ProductDetailsAuctionPage() {
     const params = useParams();
     const router = useRouter();
     const id = params?.id;
     const [userToken, setUserToken] = useState(Cookies.get("token"));
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalUser, setModalUser] = useState(null); // To know which user triggered the modal (optional for future API)
 
     // Product details API
     let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/view_admin_auction/${id}`;
@@ -31,6 +34,20 @@ export default function ProductDetailsAuctionPage() {
     } = useGetDatanew(url, "get_prod_details", userToken || " ");
 
     // User details API (replace with actual winners API if available)
+
+
+// console.log(prodInfo, 'proddinfooo')
+
+let urla = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/auction_product_winners/${prodInfo?.data?.product_info.product_no}`;
+const {
+    data: winnerInfo,
+    isLoading: winnerLoading,
+    error: winnerError,
+} = useGetDatanew(urla, "get_prod_details", userToken || " ");
+
+    // console.log(winnerInfo?.data?.winners_info, 'winnerinfo')
+
+
     const {
         data: userDetails,
         isLoading: userLoading,
@@ -43,18 +60,18 @@ export default function ProductDetailsAuctionPage() {
     const itemsPerPage = 6;
 
     // Transform user data to match the card structure (mocking ticket/product fields for now)
-    const users = userDetails?.data?.data?.users?.map((user: any, index: number) => ({
-        id: user.id || index + 1,
+    const users = winnerInfo?.data?.winners_info?.map((user: any, index: number) => ({
+        id: user.ticket_id || index + 1,
         first_name: user.first_name || 'N/A',
         surname: user.last_name || 'N/A',
         email: user.email || 'N/A',
         phone: user.phone || 'N/A',
         address: user.address || 'N/A',
-        profile_image: user.profile_image || '/app/asset/user.png',
+        profile_image: user.profile_picture || '/app/asset/user.png',
         ticket_number: user.ticket_number || '43529656', // fallback/mock
-        product_redeemed: user.product_redeemed || 'T-shirt', // fallback/mock
-        redemption_status: user.redemption_status || (index % 3 === 0 ? 'pending' : 'redeemed'), // mock
-        notify: index % 3 === 0, // show notify button for some
+        product_redeemed: user.product || 'N/A', // fallback/mock
+        redemption_status: user.redemption_status , // mock
+        notify: user.redemption_status === 'Pending', // show notify button for some
     })) || [];
 
     // Filter users based on search
@@ -80,8 +97,8 @@ export default function ProductDetailsAuctionPage() {
 
     // Helper for status dot color
     const getStatusDot = (status: string) => {
-        if (status === 'redeemed') return 'bg-green-500';
-        if (status === 'pending') return 'bg-yellow-400';
+        if (status !== 'Pending') return 'bg-green-500';
+        if (status === 'Pending') return 'bg-yellow-400';
         return 'bg-gray-300';
     };
 
@@ -193,33 +210,23 @@ export default function ProductDetailsAuctionPage() {
             </div>
 
             {/* Search Bar */}
-            <div className="w-full flex mt-8 px-2" style={{ width: '100%', maxWidth: '75%' }}>
-                <div className="w-full flex items-center bg-white rounded-lg shadow px-4 py-2">
-                    <CiSearch className="text-xl mx-2 text-gray-400" />
-                    <input
-                        type="text"
-                        placeholder="Search here..."
-                        className="flex-1 border-none outline-none bg-transparent text-base px-2"
-                        value={search}
-                        onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
-                    />
-                </div>
-            </div>
+           
 
-            <div className="relative md:w-80 w-full">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaSearch className="h-5 w-5 text-gray-400" />
+            <div className="w-full flex justify-center items-center mt-8 px-2" style={{ width: '100', maxWidth: '75%' }}>
+                <div className="w-full">
+
+
+                        <div className="w-full sm:w-1/2 md:w-1/3 flex items-center bg-white rounded-lg shadow px-4 py-2 my-4">
+                        <CiSearch className="text-xl mx-2 text-gray-400 flex-shrink-0" />
+                        <input
+                            type="text"
+                            placeholder="Search here..."
+                            className="flex-1 border-none outline-none bg-transparent text-base px-2"
+                            value={search}
+                            onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
+                        />
+                        </div>
                 </div>
-                <input
-                    type="text"
-                    placeholder="Search bidders..."
-                    value={''}
-                    onChange={(e) => {
-                        /*   setSearchTerm(e.target.value); */
-                        setCurrentPage(1); // Reset to first page when searching
-                    }}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-[#F25E26] focus:border-[#F25E26]"
-                />
             </div>
 
             {/* User Cards Grid */}
@@ -262,7 +269,12 @@ export default function ProductDetailsAuctionPage() {
                             </div>
                             {user.notify && (
                                 <>
-                                    <button className="absolute bottom-4 right-4 bg-[#F25E26] text-white text-xs px-4 py-1 rounded font-semibold font-Poppins shadow flex"> <CiBellOn className="mr-1 mt-0.5" />  Notify</button>
+                                    <button
+                                        className="absolute bottom-4 right-4 bg-[#F25E26] text-white text-xs px-4 py-1 rounded font-semibold font-Poppins shadow flex"
+                                        onClick={() => { setIsModalOpen(true); setModalUser(user); }}
+                                    >
+                                        <CiBellOn className="mr-1 mt-0.5" />  Notify
+                                    </button>
                                 </>
                             )}
                         </div>
@@ -307,6 +319,30 @@ export default function ProductDetailsAuctionPage() {
                 className='my-6 flex items-center justify-center gap-4 '
             />
 
+            {/* Modal for confirmation */}
+            <ModalComponent
+                isModalOpen={isModalOpen}
+                handleCancel={() => setIsModalOpen(false)}
+                content={
+                    <div className="flex flex-col items-center justify-center p-6">
+                        <p className="text-center text-lg font-Poppins font-medium mb-8 mt-2">Before you proceed, please confirm if the product has been physically delivered</p>
+                        <div className="flex flex-col gap-4 w-full items-center">
+                            <button
+                                className="w-full bg-[#FDE6DF] text-[#222] font-Poppins font-medium rounded-lg py-3 mb-2 border-none focus:outline-none hover:bg-[#fcd2c2] transition"
+                                onClick={() => setIsModalOpen(false)}
+                            >
+                                Yes
+                            </button>
+                            <button
+                                className="w-full bg-white text-[#222] font-Poppins font-medium rounded-lg py-3 border border-[#F25E26] focus:outline-none hover:bg-[#f9e3db] transition"
+                                onClick={() => setIsModalOpen(false)}
+                            >
+                                No
+                            </button>
+                        </div>
+                    </div>
+                }
+            />
 
 
         </div>
