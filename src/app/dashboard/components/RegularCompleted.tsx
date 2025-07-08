@@ -39,7 +39,7 @@ export const RegularCompleted = () => {
 
         // If we have date filters, the API will handle the filtering
         // We only need to filter by search term on the client side
-        let filteredProducts: any[] = Array.isArray(productInfo?.data) ? productInfo.data : [];
+        let filteredProducts: any[] = Array.isArray(productInfo?.completed) ? productInfo.completed : [];
 
         if (searchVal) {
             filteredProducts = filteredProducts.filter((product: any) =>
@@ -58,8 +58,8 @@ export const RegularCompleted = () => {
         <section className="flex flex-col">
             <ListFilter onSearch={handleSearch} />
             <div className="">
-                <h1 className=" items-center text-center text-lg my-8 text-orange-400 font-Poppins" >No Data Available Yet</h1>
-                {/*  <ProductListCard object={filteredData} /> */}
+                {/* <h1 className=" items-center text-center text-lg my-8 text-orange-400 font-Poppins" >No Data Available Yet</h1> */}
+                 <ProductListCard object={filteredData} /> 
             </div>
         </section>
     );

@@ -9,6 +9,207 @@ import Cookies from "js-cookie";
 import { useGetDatanew } from "@/hooks/useGetData";
 import { FaStar } from "react-icons/fa6";
 import Loading from "@/app/components/Loading";
+import { parseISO, format } from "date-fns";
+
+
+
+const CustomerReview = ({ data }: any) => {
+    // Step 2: Adding state to filter reviews by stars
+    const [selectedStars, setSelectedStars] = useState<number | null>(null);
+
+    // Step 1: Sort stars from highest to lowest
+    const sortedRatings = [...data?.rating_counts].sort(
+      (a: { stars: number }, b: { stars: number }) => b.stars - a.stars
+    );
+
+    // Step 2: Filter reviews based on the selected star count
+    const filteredReviews = selectedStars
+      ? data?.reviews.filter(
+        (review: any) => review.rating === selectedStars
+      )
+      : data?.reviews;
+
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const reviewsPerPage = 2; // Number of reviews per page
+
+    const totalReviews = filteredReviews.length;
+    const totalPages = Math.ceil(totalReviews / reviewsPerPage);
+
+    const indexOfLastReview = currentPage * reviewsPerPage;
+    const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
+    const currentReviews = filteredReviews.slice(indexOfFirstReview, indexOfLastReview);
+
+
+    const handlePageClick = (pageNumber: number) => {
+      setCurrentPage(pageNumber);
+    };
+
+
+
+    return (
+      <div className="">
+        <div>
+          <h1 className="text-[#353131] font-Poppins font-medium text-lg text-center 2xl:text-start xl:text-start lg:text-start md:text-start">
+            Customer Review
+          </h1>
+        </div>
+
+        <div className="flex 2xl:flex-row xl:flex-row lg:flex-row md:flex-row flex-col 2xl:items-start xl:items-start lg:items-start md:items-start items-center gap-12 mt-8">
+          <div className=" 2xl:w-1/2 xl:w-1/2 lg:w-1/2 md:w-1/2 w-auto">
+
+            <p className="flex mt-4 items-center text-[#111111] text-sm gap-1">
+              {Array.from(
+                {
+                  length: data?.product_reviews?.average_ratings,
+                },
+                (_, index) => (
+                  <span key={index}>
+                    <FaStar className="text-[#F25E26]" />
+                  </span>
+                )
+              )}
+              <span className="ml-4 text-[#2A2A2A] font-Poppins text-[8px] font-normal">
+                ({data?.product_reviews?.total_reviews}) Reviews
+              </span>
+            </p>
+
+
+            {sortedRatings.map(
+              (
+                item: { stars: number; customers: number },
+                index: number
+              ) => (
+                <div key={index} className="flex gap-4 items-center py-2">
+                  <div>
+                    <span className="font-Poppins text-[16px] text-[#353131]">
+                      {item.stars} stars
+                    </span>
+                  </div>
+
+                  <div className="flex-1">
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                      <div
+                        className="bg-[#E84526] h-2.5 rounded-full"
+                        style={{
+                          width: `${item.customers}%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <small className="font-Poppins text-[16px] text-[#353131]">
+                      {item.customers}
+                    </small>
+                  </div>
+                </div>
+              )
+            )}
+
+
+            <div className="mt-4">
+              <p>Filter By:</p>
+            </div>
+
+
+            <div className="flex gap-2 flex-wrap">
+
+              {sortedRatings.map((item: { stars: number }) => (
+                <button
+                  key={item.stars}
+                  onClick={() => setSelectedStars(item.stars)}
+                  className={`font-Poppins text-[16px] border border-[#D2D2D2] mt-4 px-4 py-2 text-sm ${selectedStars === item.stars
+                    ? "bg-[#F25E26] text-white font-bold"
+                    : "bg-white text-black font-normal"
+                    } rounded`}
+                >
+                  {item.stars} Star
+                </button>
+              ))}
+
+
+              <button
+                onClick={() => setSelectedStars(null)}
+                className={`font-Poppins text-[16px] border border-[#D2D2D2] mt-4 px-4 py-2 text-sm ${selectedStars === null
+                  ? "bg-[#F25E26] text-white font-bold"
+                  : "bg-white text-black font-normal"
+                  } rounded`}
+              >
+                All Stars
+              </button>
+            </div>
+
+          </div>
+
+          <div className=" 2xl:w-1/2 xl:w-1/2 lg:w-1/2 md:w-1/2 w-auto">
+            {currentReviews.map((item: any, key: number) => {
+              const date = item?.date_created ? parseISO(item.date_created) : null;
+              const formattedDate = date
+                ? format(date, "dd/MM/yyyy")
+                : "Invalid Date";
+
+              return (
+                <div key={key} className="flex gap-2">
+                  <div className="">
+                    <Image
+                      src={`https://staging.ajiroba.ng${item?.user?.profile_image}`}
+                      height={40}
+                      width={40}
+                      alt="Profile Image"
+                      className="rounded-full object-cover"
+                      style={{ borderRadius: "50%" }}
+                    />
+                  </div>
+
+                  <div className="mb-8 flex-1">
+                    <p className="text-[#2A2A2A] text-[16px] font-Poppins font-bold">{`${item.user.first_name}  ${item.user.last_name} `}</p>
+                    <p className="flex mt-4 items-center text-[#2A2A2A] font-Poppins text-sm gap-1">
+                      {Array.from({ length: item?.rating }, (_, index) => (
+                        <span key={index}>
+                          <FaStar className="text-[#F25E26]" />
+                        </span>
+                      ))}
+
+                      {formattedDate}
+                    </p>
+                    <p className="font-Poppins font-normal text-[13px]">
+                      {item.comment}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+
+
+            <div className="flex justify-end mt-4">
+              <h1 className=" text-center 4 text-[#E84526]" >Pages</h1>
+              {Array.from({ length: totalPages }, (_, index) => {
+                const pageNumber = index + 1;
+
+                return (
+                  <div key={index} className="flex " >
+                    <h1
+                      key={pageNumber}
+                      onClick={() => handlePageClick(pageNumber)}
+                      className={` px-2 cursor-pointer ${currentPage === pageNumber
+                        /*   ? "bg-[#F25E26] text-white font-bold"
+                          : "bg-white text-black border border-gray-300" */
+                        ? " text-[#353131] font-bold"
+                        : " text-[#353131]"
+                        }`}
+                    >
+                      {pageNumber}
+                    </h1>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
 export default function ProductDetailsAuctionPage() {
     // Mock data (replace with real data fetching logic)
@@ -30,7 +231,7 @@ export default function ProductDetailsAuctionPage() {
         error: prodError,
     } = useGetDatanew(url, "get_prod_details", userToken || " ");
 
-
+console.log(prodInfo?.data, 'prodInfo')
 
 
     if (prodLoading) {
@@ -336,6 +537,10 @@ export default function ProductDetailsAuctionPage() {
                     </div>
                 </div>
             </div>
+
+        <div style={{ width: '100', maxWidth: '75%' }}>
+        <CustomerReview data={prodInfo?.data} />
+        </div>
 
         </div>
     );
