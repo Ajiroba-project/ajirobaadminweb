@@ -55,6 +55,7 @@ export const UserDetails = () => {
     count: number;
   }
 
+
   const mapUserInfoToDetails = [
     {
       icon: tmg,
@@ -79,7 +80,6 @@ export const UserDetails = () => {
   ];
 
 
-
   const auctionDetails = [
     {
       icon: tmg,
@@ -89,17 +89,17 @@ export const UserDetails = () => {
     {
       icon: ticket,
       name: "TOTAL TICKET PURCHASED",
-      count: 0
+      count: userInfo?.data?.data?.auction?.total_tickets || 0
     },
     {
       icon: bid,
       name: "TOTAL BID MADE",
-      count: 0
+      count: userInfo?.data?.data?.auction?.total_bids || 0
     },
     {
       icon: ag,
       name: "TOTAL AMOUNT GENERATED",
-      count: 0
+      count: userInfo?.data?.data?.auction?.amount_generated || 0
     },
   ]
 

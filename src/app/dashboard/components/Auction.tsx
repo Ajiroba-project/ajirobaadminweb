@@ -246,11 +246,13 @@ export const Auction = () => {
     formData.append("auction_category", data.auction_category);
     formData.append("sub_category", data.sub_category);
     formData.append("cost_price", data.cost_price);
+    formData.append("quantity", data.quantity);
     formData.append("ticket_price", data.ticket_price);
     formData.append("start_date", formatDate(data.auction_date));  // Formatted date
     formData.append("start_time", formatTime(data.auction_starttime));
     formData.append("end_time", formatTime(data.auction_endtime));
     formData.append("description", data.description);
+    formData.append("weight", data.weight);
 
     // Append files if they exist
     const auctionMedia = data.auction_media as File[];
@@ -264,6 +266,8 @@ export const Auction = () => {
       category: data.auction_category,
       subcategory: data.sub_category,
       const_price: data.cost_price,
+      quantity: data.quantity,
+      weight: `${data.weight}KG`,
       ticket_price: data.ticket_price,
       start_date: formatDate(data.auction_date),
       start_time: formatTime(data.auction_starttime),
@@ -272,14 +276,14 @@ export const Auction = () => {
       auction_images: auctionMedia  // Use file names for payload
     };
 
-    // console.log(Payload, "Payload");
+ /*     console.log(Payload, "Payload") */;
 
-    mutate({
-      url: "/api/uploadauction",
-      payload: Payload,
-    });
+     mutate({
+       url: "/api/uploadauction",
+       payload: Payload,
+     });
 
-    localStorage.setItem("auction-details", JSON.stringify(Payload));
+     localStorage.setItem("auction-details", JSON.stringify(Payload));
 
   };
 
@@ -415,7 +419,17 @@ export const Auction = () => {
                   errors={errors}
                   classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
+                <InputField
+                  name="quantity"
+                  label="Quantity"
+                  type="text"
+                  placeholder="100"
+                  register={register}
+                  errors={errors}
+                  classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                />
               </div>
+              
             </div>
 
             <div className="flex items-center">

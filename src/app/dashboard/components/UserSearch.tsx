@@ -138,7 +138,7 @@ export const UserSearch: React.FC = () => {
               {filteredUsers?.map((val: any, index: number) => (
                 <div
                   key={index}
-                  className={`${active === index ? 'bg-[#F6F6F6]' : ''
+                  className={`${active === index ? 'bg-[#D9D9D9]' : ''
                     } flex gap-4 py-2 items-center cursor-pointer hover:bg-[#F6F6F6] p-4`}
                   onClick={() => {
                     setUserInfo(val);

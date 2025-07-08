@@ -1,3 +1,506 @@
+// "use client";
+// import React, { useEffect, useState } from "react";
+// import Image from "next/image";
+// import { useRouter } from "next/navigation";
+// import { RegistrationHeader } from "@/app/components/Header";
+// import { DefaultButton } from "@/app/components/Button";
+// import { useForm } from "react-hook-form";
+// import { yupResolver } from "@hookform/resolvers/yup";
+// import {
+//   ProductEditUploadSchema,
+//   ProductUploadSchema,
+// } from "@/helper/validation";
+// import { categories, subcategories } from "@/app/data";
+// import {
+//   CheckboxField,
+//   InputField,
+//   SelectField,
+//   TextAreaField,
+// } from "@/app/components/FormField";
+// import { FiUpload } from "react-icons/fi";
+// import { useMutateData } from "@/hooks/useMutateData";
+// import { ToastContainer, toast } from "react-toastify";
+// import "react-toastify/dist/ReactToastify.css";
+// import { setLocalStoreData } from "@/hooks/useLocalStorage";
+// import { Modal } from "@/app/dashboard/components/Modal";
+// import successIcon from "@/app/asset/signout.svg";
+// import { useQueryData } from "@/hooks/useQueryDataCat";
+// import { useSearchParams, useParams } from 'next/navigation'
+// import { useGetDatanew } from "@/hooks/useGetData";
+// import Cookies from "js-cookie";
+
+
+// interface Subcategory {
+//   toLowerCase: any;
+//   id: string;
+//   subcategory: any;
+//   name?: string;
+//   category?: string;
+//   data?: any;
+// }
+
+// interface CategoryResponse {
+//   data: Category[];
+// }
+
+// interface Category {
+//   [x: string]: any;
+//   category: string;
+//   subcategories: Subcategory[];
+//   data?: any;
+// }
+
+// interface CategoryResponse {
+//   data: Category[];
+// }
+
+// export default function Page() {
+
+//   const params = useParams();
+//   const productId = params.slug;
+
+//   const [selectedImg, setSelectedImg] = useState<string[]>([]);
+
+
+//   const [userToken, setUserToken] = useState(Cookies.get("token"));
+
+//   let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_products/`;
+
+//   const { data: productInfo, isLoading: productLoading } = useGetDatanew(
+//     url,
+//     "get_product_details",
+//     userToken || " "
+//   );
+
+
+//   const productDetails = Array.isArray(productInfo?.data)
+//     ? productInfo.data.find((product: any) => product.id === productId)
+//     : null;
+
+
+//   useEffect(() => {
+//     if (productDetails?.images) {
+//       const images = productDetails.images.map(
+//         (img: any) => `https://staging.ajiroba.ng/media/${img.image}`
+//       );
+//       setSelectedImg(images);
+//       setMainImage(images[0]);
+//     }
+//   }, [productDetails]);
+
+
+//   const router = useRouter();
+
+//   const [mainImage, setMainImage] = useState<string>(selectedImg[0]);
+
+//   const { data: catInfo, isLoading: catnLoading } =
+//     useQueryData<CategoryResponse>(
+//       `${process.env.NEXT_PUBLIC_BASE_URL}/commerce/categories_and_subcategories/`,
+//       ["get categories_and_subcategories"],
+//       true,
+//     );
+
+//   const catnew = catInfo?.data.map((cat) => ({
+//     label: cat.category,
+//     value: cat.id,
+//     id: cat.id,
+//     subcategories: cat.subcategories,
+//   }));
+
+
+//   const {
+//     reset,
+//     register,
+//     control,
+//     handleSubmit,
+//     formState: { errors },
+//     trigger,
+//     watch,
+//     setValue,
+//   } = useForm({
+//     mode: "all",
+//     resolver: yupResolver(ProductEditUploadSchema),
+//   });
+
+
+//   const RemoveImg = (val: string) => {
+//     setSelectedImg(selectedImg.filter((e: string) => e !== val));
+//     URL.revokeObjectURL(val);
+//   };
+
+//   const [previews, setPreviews] = useState<string[]>([]);
+//   const [showModal, setShowModal] = useState(false);
+
+//   interface FileChangeEvent extends React.ChangeEvent<HTMLInputElement> {
+//     target: HTMLInputElement & { files: FileList };
+//   }
+
+//   const handleFileChange = (e: FileChangeEvent): void => {
+//     const files: File[] = Array.from(e.target.files);
+
+//     const base64Promises = files.map((file) => {
+//       return new Promise<string>((resolve, reject) => {
+//         const reader = new FileReader();
+//         reader.readAsDataURL(file);
+//         reader.onload = () => resolve(reader.result as string);
+//         reader.onerror = (error) => reject(error);
+//       });
+//     });
+
+//     Promise.all(base64Promises)
+//       .then((base64Files) => {
+//         const previousFiles = (watch("regular_media") as string[]) ?? [];
+//         setValue("regular_media", [...previousFiles, ...base64Files]);
+//         trigger("regular_media");
+//       })
+//       .catch((error) =>
+//         console.error("Error converting files to base64:", error),
+//       );
+
+//     const imagePreviews = files.map((file) =>
+//       URL.createObjectURL(file as Blob),
+//     );
+//     setPreviews((prev: string[]) => [...prev, ...imagePreviews]);
+//   };
+
+//   useEffect(() => {
+//     return () => previews.forEach((url) => URL.revokeObjectURL(url));
+//   }, [previews]);
+
+//   const handleSuccess = (data: any) => {
+//     if (data.status === 200 || data.status === 201) {
+//       /* router.push("/dashboard/userdetails"); */
+//       setShowModal(true);
+//       setLocalStoreData(data);
+//       setPreviews([]);
+//       reset();
+//     } else if (data.status === 400 || data.status === 409 || data.status === 405) {
+//       setPreviews([]);
+//       toast.error(`${data?.data?.message}`, {
+//         position: "top-right",
+//         autoClose: 5000,
+//         hideProgressBar: false,
+//         closeOnClick: true,
+//         pauseOnHover: true,
+//         draggable: true,
+//         progress: undefined,
+//         theme: "light",
+//       });
+//       reset();
+//     } else {
+//       setPreviews([]);
+//       toast.error(`${data?.data?.message}`, {
+//         position: "top-right",
+//         autoClose: 5000,
+//         hideProgressBar: false,
+//         closeOnClick: true,
+//         pauseOnHover: true,
+//         draggable: true,
+//         progress: undefined,
+//         theme: "light",
+//       });
+//       reset();
+//     }
+//   };
+//   const handleError = (error: any) => {
+//     setPreviews([]);
+//     toast.error(`${"An Error Occured"}`, {
+//       position: "top-right",
+//       autoClose: 5000,
+//       hideProgressBar: false,
+//       closeOnClick: true,
+//       pauseOnHover: true,
+//       draggable: true,
+//       progress: undefined,
+//       theme: "light",
+//     });
+//     reset();
+//   };
+
+
+//   const { data, error, mutate, status } = useMutateData(
+//     "upload",
+//     handleSuccess,
+//     handleError,
+//   );
+
+
+//   const sumbitForm = (data: any) => {
+//     const regularMedia = watch("regular_media") as string[];
+
+//     const formData = new FormData();
+//     formData.append("product_name", data.product_name);
+//     formData.append("product_category", data.product_category);
+//     formData.append("sub_category", data.sub_category);
+//     formData.append("quantity", data.quantity);
+//     formData.append("weight", data.weight);
+//     formData.append("selling_price", data.selling_price);
+//     formData.append("discount", data.discount);
+//     formData.append("description", data.description);
+//     formData.append("topdeals", data.topdeals);
+//     formData.append("featured", data.featured);
+
+//     regularMedia.forEach((file, index) => {
+//       formData.append(`regular_media[${index}]`, file);
+//     });
+
+//     const Payload = {
+//       name: data.product_name,
+//       category: data.product_category,
+//       subcategory: data.sub_category,
+//       price: data.selling_price,
+//       discount: data.discount,
+//       quantity: data.quantity,
+//       weight: `${data.weight}KG`,
+//       featured: data.featured,
+//       top_deals: data.topdeals,
+//       description: data.description,
+//       product_images: regularMedia,
+
+//     };
+
+
+
+//     mutate({
+//       url: "/api/editproduct",
+//       payload: {
+//         ...Payload,
+//         id: productId,
+//       },
+
+//     });
+
+//   };
+
+
+//   if (productLoading) return <p>Loading product details...</p>;
+
+//   return (
+
+
+
+
+
+//     <section className="min-h-screen bg-[#FAFAFA] w-full flex flex-col items-center font-poppins">
+//       {/* Header */}
+//       <div className="w-full bg-[#F6F6F6] border-b border-[#F3F3F3] flex flex-col">
+//         <nav className="flex items-center justify-between px-6 pt-8 pb-2">
+
+//           <div className="">
+//             <RegistrationHeader />
+
+//             <div className="container pl-14 mt-2 md:block   flex justify-center">
+//               <span onClick={() => router.back()} className="text-[#F25E26] underline cursor-pointer text-sm font-medium">Back</span>
+//             </div>
+//           </div>
+//           <div className="w-24" /> {/* Spacer for symmetry */}
+//         </nav>
+//         <h1 className="text-xl md:text-2xl font-semibold text-center mb-2">Regular Product Upload</h1>
+//       </div>
+
+//       {/* Main Content */}
+//       <form id="product-upload-form" onSubmit={handleSubmit(sumbitForm)}
+//         className="flex flex-col lg:flex-row gap-12 w-full max-w-6xl px-4 py-10"
+//         style={{ margin: "0 auto" }}
+//       >
+//         {/* Left: Image Gallery */}
+//         <div className="flex flex-col lg:flex-row flex-1 gap-8 items-center justify-center">
+//           <div className="flex flex-row lg:flex-col gap-3 items-center lg:items-start">
+//             {selectedImg.map((val: string, key: number) => (
+//               <button
+//                 type="button"
+//                 key={key}
+//                 className={`w-20 h-20 rounded-lg border-2 ${mainImage === val ? 'border-[#F25E26]' : 'border-gray-200'} overflow-hidden focus:outline-none`}
+//                 onClick={() => setMainImage(val)}
+//                 tabIndex={0}
+//               >
+//                 <Image
+//                   src={val}
+//                   alt="Product Thumbnail"
+//                   width={80}
+//                   height={80}
+//                   className="w-full h-full object-cover"
+//                 />
+//               </button>
+//             ))}
+//             {/* Video Placeholder */}
+//             <div className="w-20 h-20 rounded-lg border-2 border-gray-200 flex items-center justify-center bg-gray-100">
+//               <span className="w-10 h-10 flex items-center justify-center rounded-full bg-black text-white">
+//                 ▶
+//               </span>
+//             </div>
+//           </div>
+//           <div className="flex-1 flex items-center justify-center">
+//             <Image
+//               src={mainImage}
+//               alt="main preview"
+//               width={320}
+//               height={400}
+//               className="rounded-xl shadow bg-gray-100 object-cover w-[320px] h-[400px]"
+//             />
+//           </div>
+//         </div>
+
+//         {/* Right: Form Fields */}
+//         <div className="flex-1 flex flex-col gap-6 max-w-lg w-full">
+//           <InputField
+//             label="Product Name:"
+//             type="text"
+//             name="product_name"
+//             register={register}
+//             errors={errors}
+//             classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+//           />
+//           <SelectField
+//             name="product_category"
+//             label="Category:"
+//             register={register}
+//             errors={errors}
+//             options={catnew?.map((cat) => ({ label: cat.label, value: cat.value }))}
+//             classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+//           />
+//           <SelectField
+//             name="sub_category"
+//             label="Sub Category:"
+//             register={register}
+//             errors={errors}
+//             options={catnew?.find((cat) => cat.id === watch("product_category"))?.subcategories?.map((sub) => ({ label: sub.subcategory, value: sub.id })) || []}
+//             classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+//           />
+//           <TextAreaField
+//             label="Description:"
+//             name="description"
+//             register={register}
+//             errors={errors}
+//             placeholder={""}
+//             classname="w-full px-5 h-24 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+//           />
+//           <div className="flex flex-col gap-2">
+//             <label htmlFor="upload-files" className="text-base font-medium text-[#353131]">Product Upload:</label>
+//             <span className="bg-gray-50 rounded-md shadow hover:bg-[#FCDFD4] h-40 flex justify-center items-center cursor-pointer flex-col border border-dashed border-gray-300">
+//               <FiUpload className="text-4xl mb-2 text-[#F25E26]" />
+//               <span className="text-gray-500 text-base">Select file to upload</span>
+//               <span className="text-xs text-gray-400">You may upload up to 4 images & video</span>
+//             </span>
+//             <input
+//               id="upload-files"
+//               type="file"
+//               accept="image/*, video/*"
+//               max="5"
+//               className="hidden"
+//               multiple
+//               onChange={handleFileChange}
+//             />
+//             <div className="text-xs text-rose-500 pt-1">{errors?.regular_media?.message}</div>
+//             <div className="flex gap-2 mt-2 flex-wrap">
+//               {previews.map((src, index) => (
+//                 <Image
+//                   key={index}
+//                   src={src}
+//                   alt={`preview-${index}`}
+//                   className="w-16 h-16 object-cover rounded-md shadow"
+//                   width={64}
+//                   height={64}
+//                   priority
+//                 />
+//               ))}
+//             </div>
+//           </div>
+//           <div className="flex flex-row gap-4">
+//             <CheckboxField
+//               label=""
+//               name="topdeals"
+//               register={register}
+//               errors={errors}
+//               options={["Top Deals"]}
+//               onChange={(e: { target: { checked: boolean } }) => setValue("topdeals", e.target.checked)}
+//               classname="mt-2"
+//             />
+//             <CheckboxField
+//               label=""
+//               name="featured"
+//               register={register}
+//               errors={errors}
+//               options={["Featured"]}
+//               onChange={(e: { target: { checked: boolean } }) => setValue("featured", e.target.checked)}
+//               classname="mt-2"
+//             />
+//           </div>
+//           <div className="flex flex-row gap-4">
+//             <InputField
+//               name="quantity"
+//               label="Quantity:"
+//               type="number"
+//               register={register}
+//               errors={errors}
+//               classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+//             />
+//             <InputField
+//               name="weight"
+//               label="Weight:"
+//               type="text"
+//               placeholder="20"
+//               register={register}
+//               errors={errors}
+//               classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+//             />
+//           </div>
+//           <div className="flex flex-row gap-4">
+//             <InputField
+//               name="selling_price"
+//               label="₦"
+//               type="text"
+//               placeholder="N 5,000"
+//               register={register}
+//               errors={errors}
+//               classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+//             />
+//             <InputField
+//               name="discount"
+//               label="Discount Price:"
+//               type="text"
+//               placeholder="N 5,000"
+//               register={register}
+//               errors={errors}
+//               classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+//             />
+//           </div>
+//         </div>
+//       </form>
+
+//       {/* Update Button */}
+//       <div className="flex justify-center items-center mt-8 mb-10 w-full">
+//         <DefaultButton
+//           handleClick={() => null}
+//           className="w-full max-w-md text-base font-medium px-20 py-3 rounded-lg bg-[#FCDFD4] text-[#222] transition duration-300 ease-in-out hover:bg-[#E84526] hover:text-white shadow"
+//           type="submit"
+//           form="product-upload-form"
+//           text={status === "pending" ? "loading..." : "Update"}
+//         />
+//       </div>
+
+//       {/* Success Modal */}
+//       {showModal && (
+//         <div className="flex absolute top-0 z-50 left-0 w-full h-full bg-black bg-opacity-30 items-center justify-center">
+//           <Modal
+//             title="Product Upload Successfull!"
+//             subtitle="Your product has been successfully uploaded"
+//             buttoncount={1}
+//             buttontext="Continue"
+//             buttonclass="bg-[#FCDFD4] p-5 rounded-lg text-sm hover:bg-[#F25E26] hover:text-white hover:shadow w-full px-14"
+//             buttontype="button"
+//             handleEvent={() => setShowModal(!showModal)}
+//             icon={successIcon}
+//           />
+//         </div>
+//       )}
+//     </section>
+//   );
+// }
+
+
+
+
 "use client";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
@@ -17,7 +520,7 @@ import {
   SelectField,
   TextAreaField,
 } from "@/app/components/FormField";
-import { FiUpload } from "react-icons/fi";
+import { FiUpload, FiX } from "react-icons/fi";
 import { useMutateData } from "@/hooks/useMutateData";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -29,18 +532,12 @@ import { useSearchParams, useParams } from 'next/navigation'
 import { useGetDatanew } from "@/hooks/useGetData";
 import Cookies from "js-cookie";
 
-
 interface Subcategory {
-  toLowerCase: any;
   id: string;
-  subcategory: any;
+  subcategory: string;
   name?: string;
   category?: string;
   data?: any;
-}
-
-interface CategoryResponse {
-  data: Category[];
 }
 
 interface Category {
@@ -54,15 +551,22 @@ interface CategoryResponse {
   data: Category[];
 }
 
+interface MediaFile {
+  id: string;
+  url: string;
+  type: 'image' | 'video';
+  isExisting: boolean;
+  base64?: string;
+}
+
 export default function Page() {
-
   const params = useParams();
-  const productId = params.slug;
+  const productId = params.slug as string;
 
-  const [selectedImg, setSelectedImg] = useState<string[]>([]);
-
-
-  const [userToken, setUserToken] = useState(Cookies.get("token"));
+  // Single state for all media files
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
+  const [mainImage, setMainImage] = useState<string>('');
+  const [userToken] = useState(Cookies.get("token"));
 
   let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_products/`;
 
@@ -72,26 +576,28 @@ export default function Page() {
     userToken || " "
   );
 
-
   const productDetails = Array.isArray(productInfo?.data)
     ? productInfo.data.find((product: any) => product.id === productId)
     : null;
 
-
+  // Load existing product images
   useEffect(() => {
-    if (productDetails?.images) {
-      const images = productDetails.images.map(
-        (img: any) => `https://staging.ajiroba.ng/media/${img.image}`
-      );
-      setSelectedImg(images);
-      setMainImage(images[0]);
+    if (productDetails?.images && Array.isArray(productDetails.images)) {
+      const existingMedia: MediaFile[] = productDetails.images.map((img: any, index: number) => ({
+        id: `existing-${index}`,
+        url: `https://staging.ajiroba.ng/media/${img.image}`,
+        type: 'image' as const,
+        isExisting: true
+      }));
+
+      setMediaFiles(existingMedia);
+      if (existingMedia.length > 0) {
+        setMainImage(existingMedia[0].url);
+      }
     }
   }, [productDetails]);
 
-
   const router = useRouter();
-
-  const [mainImage, setMainImage] = useState<string>(selectedImg[0]);
 
   const { data: catInfo, isLoading: catnLoading } =
     useQueryData<CategoryResponse>(
@@ -107,7 +613,6 @@ export default function Page() {
     subcategories: cat.subcategories,
   }));
 
-
   const {
     reset,
     register,
@@ -120,16 +625,57 @@ export default function Page() {
   } = useForm({
     mode: "all",
     resolver: yupResolver(ProductEditUploadSchema),
+    defaultValues: {
+      product_name: productDetails?.name || "",
+      product_category: productDetails?.category || "",
+      sub_category: productDetails?.subcategory || "",
+      quantity: productDetails?.quantity || "",
+      weight: productDetails?.weight?.replace('KG', '') || "",
+      selling_price: productDetails?.price || "",
+      discount: productDetails?.discount || "",
+      description: productDetails?.description || "",
+      topdeals: productDetails?.top_deals || false,
+      featured: productDetails?.featured || false,
+      regular_media: []
+    }
   });
 
+  const [showModal, setShowModal] = useState(false);
 
-  const RemoveImg = (val: string) => {
-    setSelectedImg(selectedImg.filter((e: string) => e !== val));
-    URL.revokeObjectURL(val);
+  // Helper function to check if a file is a video
+  const isVideo = (file: string | File): boolean => {
+    if (typeof file === 'string') {
+      return file.includes('.mp4') || file.includes('.webm') || file.includes('.ogg') ||
+        file.includes('video/') || file.toLowerCase().match(/\.(mp4|webm|ogg|mov|avi)$/) !== null;
+    }
+    return Boolean(file && file.type && file.type.startsWith('video/'));
   };
 
-  const [previews, setPreviews] = useState<string[]>([]);
-  const [showModal, setShowModal] = useState(false);
+  // Remove media file
+  const removeMedia = (mediaId: string) => {
+    setMediaFiles(prevFiles => {
+      const updatedFiles = prevFiles.filter(file => file.id !== mediaId);
+
+      // Find the file being removed to clean up blob URL
+      const fileToRemove = prevFiles.find(file => file.id === mediaId);
+      if (fileToRemove && fileToRemove.url.startsWith('blob:')) {
+        URL.revokeObjectURL(fileToRemove.url);
+      }
+
+      // Update main image if it was the removed file
+      if (fileToRemove && mainImage === fileToRemove.url) {
+        setMainImage(updatedFiles.length > 0 ? updatedFiles[0].url : '');
+      }
+
+      // Update form data
+      const newMediaBase64 = updatedFiles
+        .filter(file => !file.isExisting && file.base64)
+        .map(file => file.base64!);
+      setValue("regular_media", newMediaBase64);
+
+      return updatedFiles;
+    });
+  };
 
   interface FileChangeEvent extends React.ChangeEvent<HTMLInputElement> {
     target: HTMLInputElement & { files: FileList };
@@ -137,46 +683,97 @@ export default function Page() {
 
   const handleFileChange = (e: FileChangeEvent): void => {
     const files: File[] = Array.from(e.target.files);
+    const currentNewFiles = mediaFiles.filter(file => !file.isExisting);
 
-    const base64Promises = files.map((file) => {
-      return new Promise<string>((resolve, reject) => {
+    if (currentNewFiles.length + files.length > 5) {
+      toast.error('You can only upload up to 5 new files');
+      return;
+    }
+
+    // Convert files to base64 and create media objects
+    const base64Promises = files.map((file, index) => {
+      return new Promise<MediaFile>((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result as string);
+        reader.onload = () => {
+          const base64 = reader.result as string;
+          const blobUrl = URL.createObjectURL(file);
+          resolve({
+            id: `new-${Date.now()}-${index}`,
+            url: blobUrl,
+            type: isVideo(file) ? 'video' : 'image',
+            isExisting: false,
+            base64: base64
+          });
+        };
         reader.onerror = (error) => reject(error);
       });
     });
 
     Promise.all(base64Promises)
-      .then((base64Files) => {
-        const previousFiles = (watch("regular_media") as string[]) ?? [];
-        setValue("regular_media", [...previousFiles, ...base64Files]);
-        trigger("regular_media");
-      })
-      .catch((error) =>
-        console.error("Error converting files to base64:", error),
-      );
+      .then((newMediaFiles) => {
+        setMediaFiles(prev => [...prev, ...newMediaFiles]);
 
-    const imagePreviews = files.map((file) =>
-      URL.createObjectURL(file as Blob),
-    );
-    setPreviews((prev: string[]) => [...prev, ...imagePreviews]);
+        // Update form data with base64 strings
+        const allBase64 = [
+          ...mediaFiles.filter(file => !file.isExisting && file.base64).map(file => file.base64!),
+          ...newMediaFiles.map(file => file.base64!)
+        ];
+        setValue("regular_media", allBase64);
+        trigger("regular_media");
+
+        // Set first uploaded file as main image if none selected
+        if (!mainImage && newMediaFiles.length > 0) {
+          setMainImage(newMediaFiles[0].url);
+        }
+      })
+      .catch((error) => {
+        console.error("Error converting files to base64:", error);
+        toast.error("Error processing files");
+      });
   };
 
+  // Clean up object URLs on unmount
   useEffect(() => {
-    return () => previews.forEach((url) => URL.revokeObjectURL(url));
-  }, [previews]);
+    return () => {
+      mediaFiles.forEach(file => {
+        if (file.url.startsWith('blob:')) {
+          URL.revokeObjectURL(file.url);
+        }
+      });
+    };
+  }, []);
+
+  // Update form values when product details are loaded
+  useEffect(() => {
+    if (productDetails) {
+      setValue("product_name", productDetails.name || "");
+      setValue("product_category", productDetails.category || "");
+      setValue("sub_category", productDetails.subcategory || "");
+      setValue("quantity", productDetails.quantity || "");
+      setValue("weight", productDetails.weight?.replace('KG', '') || "");
+      setValue("selling_price", productDetails.price || "");
+      setValue("discount", productDetails.discount || "");
+      setValue("description", productDetails.description || "");
+      setValue("topdeals", productDetails.top_deals || false);
+      setValue("featured", productDetails.featured || false);
+    }
+  }, [productDetails, setValue]);
 
   const handleSuccess = (data: any) => {
     if (data.status === 200 || data.status === 201) {
-      /* router.push("/dashboard/userdetails"); */
       setShowModal(true);
       setLocalStoreData(data);
-      setPreviews([]);
+      // Clean up blob URLs
+      mediaFiles.forEach(file => {
+        if (file.url.startsWith('blob:')) {
+          URL.revokeObjectURL(file.url);
+        }
+      });
+      setMediaFiles([]);
       reset();
     } else if (data.status === 400 || data.status === 409 || data.status === 405) {
-      setPreviews([]);
-      toast.error(`${data?.data?.message}`, {
+      toast.error(`${data?.data?.message || 'An error occurred'}`, {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -186,10 +783,8 @@ export default function Page() {
         progress: undefined,
         theme: "light",
       });
-      reset();
     } else {
-      setPreviews([]);
-      toast.error(`${data?.data?.message}`, {
+      toast.error(`${data?.data?.message || 'An error occurred'}`, {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -199,12 +794,11 @@ export default function Page() {
         progress: undefined,
         theme: "light",
       });
-      reset();
     }
   };
+
   const handleError = (error: any) => {
-    setPreviews([]);
-    toast.error(`${"An Error Occured"}`, {
+    toast.error("An Error Occurred", {
       position: "top-right",
       autoClose: 5000,
       hideProgressBar: false,
@@ -214,9 +808,7 @@ export default function Page() {
       progress: undefined,
       theme: "light",
     });
-    reset();
   };
-
 
   const { data, error, mutate, status } = useMutateData(
     "upload",
@@ -224,27 +816,10 @@ export default function Page() {
     handleError,
   );
 
-
-  const sumbitForm = (data: any) => {
+  const submitForm = (data: any) => {
     const regularMedia = watch("regular_media") as string[];
 
-    const formData = new FormData();
-    formData.append("product_name", data.product_name);
-    formData.append("product_category", data.product_category);
-    formData.append("sub_category", data.sub_category);
-    formData.append("quantity", data.quantity);
-    formData.append("weight", data.weight);
-    formData.append("selling_price", data.selling_price);
-    formData.append("discount", data.discount);
-    formData.append("description", data.description);
-    formData.append("topdeals", data.topdeals);
-    formData.append("featured", data.featured);
-
-    regularMedia.forEach((file, index) => {
-      formData.append(`regular_media[${index}]`, file);
-    });
-
-    const Payload = {
+    const payload = {
       name: data.product_name,
       category: data.product_category,
       subcategory: data.sub_category,
@@ -256,267 +831,249 @@ export default function Page() {
       top_deals: data.topdeals,
       description: data.description,
       product_images: regularMedia,
-
+      id: productId,
     };
-
-
 
     mutate({
       url: "/api/editproduct",
-      payload: {
-        ...Payload,
-        id: productId,
-      },
-
+      payload,
     });
-
   };
-
 
   if (productLoading) return <p>Loading product details...</p>;
 
   return (
-    <section className="flex-col flex justify-center">
-      <div className="w-full bg-gray-100">
-        <RegistrationHeader />
-        <p
-          className="lg:px-14 px-7  text-[#F25E26] underline cursor-pointer"
-          onClick={() => router.back()}
-        >
-          Back
-        </p>
-        <span className="w-full bg-gray-100">
-          <h1 className="text-2xl text-center py-2 mb-6">
-            Regular Product Upload
-          </h1>
-        </span>
+    <section className="min-h-screen bg-[#FAFAFA] w-full flex flex-col items-center font-poppins">
+      {/* Header */}
+      <div className="w-full bg-[#F6F6F6] border-b border-[#F3F3F3] flex flex-col">
+        <nav className="flex items-center justify-between px-6 pt-8 pb-2">
+          <div className="">
+            <RegistrationHeader />
+            <div className="container pl-14 mt-2 md:block flex justify-center">
+              <span onClick={() => router.back()} className="text-[#F25E26] underline cursor-pointer text-sm font-medium">Back</span>
+            </div>
+          </div>
+          <div className="w-24" />
+        </nav>
+        <h1 className="text-xl md:text-2xl font-semibold text-center mb-2">Regular Product Upload</h1>
       </div>
 
-      <form id="product-upload-form" onSubmit={handleSubmit(sumbitForm)}
-        className="flex justify-around gap-20 items-center lg:flex-row flex-col-reverse"
-        style={{
-          margin: "0 auto",
-          width: "90%",
-          maxWidth: "100%",
-        }}
+      {/* Main Content */}
+      <form id="product-upload-form" onSubmit={handleSubmit(submitForm)}
+        className="flex flex-col lg:flex-row gap-12 w-full max-w-6xl px-4 py-10"
+        style={{ margin: "0 auto" }}
       >
-        <div className="flex-1 mt-12 ">
-          <div className="w-12/12 flex flex-col md:flex-row gap-6 p-6 ">
-            <div className="flex md:flex-col gap-2 flex-wrap  ">
-              {selectedImg.map((val: string, key: number) => (
-                <div
-                  key={key}
-                  className="w-20 md:w-24 h-20 md:h-24 object-cover "
-                  onClick={() => setMainImage(val)}
+        {/* Left: Image Gallery */}
+        <div className="flex flex-col lg:flex-row flex-1 gap-8 items-center justify-center">
+          <div className="flex flex-row lg:flex-col gap-3 items-center lg:items-start">
+            {/* Media thumbnails */}
+            {mediaFiles.map((file) => (
+              <div key={file.id} className="relative group">
+                <button
+                  type="button"
+                  className={`w-20 h-20 rounded-lg border-2 ${mainImage === file.url ? 'border-[#F25E26]' : 'border-gray-200'} overflow-hidden focus:outline-none hover:border-[#F25E26] transition-colors relative`}
+                  onClick={() => setMainImage(file.url)}
+                  tabIndex={0}
                 >
-                  <Image
-                    src={val}
-                    alt="Product Thumbnail"
-                    width={100}
-                    height={100}
-                    className="w-20 md:w-24 h-20 md:h-24 object-cover "
-                  />
-                </div>
-              ))}
-
-              <div className="w-20 md:w-24 h-20 md:h-24 flex items-center justify-center border border-gray-300 bg-gray-200">
-                <button className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center">
-                  ▶
+                  {file.type === 'video' ? (
+                    <>
+                      <video
+                        src={file.url}
+                        className="w-full h-full object-cover"
+                        muted
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                        <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white text-black text-xs">
+                          ▶
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <Image
+                      src={file.url}
+                      alt="Product Thumbnail"
+                      width={80}
+                      height={80}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                </button>
+                {/* Remove button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeMedia(file.id);
+                  }}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                >
+                  <FiX size={12} />
                 </button>
               </div>
-            </div>
-
-            <div className="flex-1">
-              <Image
-                src={mainImage}
-                alt="main preview"
-                width={240}
-                height={340}
-                className="w-full h-auto bg-gray-100"
-              />
-            </div>
+            ))}
           </div>
-        </div>
 
-        <div className=" flex flex-col mt-5  ">
-          <div className="flex gap-2 flex-col">
-            <InputField
-              label="Product name"
-              type="text"
-              name="product_name"
-              register={register}
-              errors={errors}
-              classname={"w-full px-5 h-12 focus:text-black border rounded "}
-            />
-
-            <SelectField
-              name="product_category"
-              label="Category"
-              register={register}
-              errors={errors}
-              options={catnew?.map((cat) => ({
-                label: cat.label,
-                value: cat.value,
-              }))}
-              classname={"w-full px-5 h-12 focus:text-black border rounded "}
-            />
-
-            <SelectField
-              name="sub_category"
-              label="Sub Category"
-              register={register}
-              errors={errors}
-              options={
-                catnew
-                  ?.find((cat) => cat.id === watch("product_category"))
-                  ?.subcategories?.map((sub) => ({
-                    label: sub.subcategory,
-                    value: sub.id,
-                  })) || []
-              }
-              classname={"w-full px-5 h-12 focus:text-black border rounded "}
-            />
-            <TextAreaField
-              label="description"
-              name="description"
-              register={register}
-              errors={errors}
-              placeholder={""}
-              classname={"w-full px-5 h-24 focus:text-black border rounded "}
-            />
-
-            <div className="">
-              <div className="flex flex-col">
-                <label htmlFor="upload-files">
-                  <p className="py-2">Product Upload:</p>
-                  <span className="bg-gray-50 relative rounded-md shadow hover:bg-[#FCDFD4] h-[20rem] w-auto flex justify-center items-center cursor-pointer flex-col">
-                    <FiUpload className="text-4xl" />
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <p className="mb-2 text-xl text-gray-500 ">
-                        SelectFile to upload
-                      </p>
-                      <p className="mb-2 text-xs text-gray-500 ">
-                        you may upload up to 4 images & video
-                      </p>
-                    </div>
-                  </span>
-
-                  <input
-                    id="upload-files"
-                    type="file"
-                    accept="image/*, video/*"
-                    max="5"
-                    className="pt-6 hidden"
-                    multiple
-                    onChange={handleFileChange}
+          {/* Main Preview */}
+          <div className="flex-1 flex items-center justify-center">
+            {mainImage ? (
+              <>
+                {mediaFiles.find(file => file.url === mainImage)?.type === 'video' ? (
+                  <video
+                    src={mainImage}
+                    controls
+                    className="rounded-xl shadow bg-gray-100 object-cover w-[320px] h-[400px]"
+                    style={{ maxWidth: '100%', maxHeight: '100%' }}
                   />
-                </label>
-                <div className="text-xs text-rose-500 pt-1">
-                  {errors?.regular_media?.message}
-                </div>
-              </div>
-
-              <div className="flex gap-2 mt-4 flex-wrap">
-                {previews.map((src, index) => (
+                ) : (
                   <Image
-                    key={index}
-                    src={src}
-                    alt={`preview-${index}`}
-                    className="w-20 h-20 object-cover rounded-md shadow"
-                    width={80}
-                    height={80}
-                    priority
+                    src={mainImage}
+                    alt="main preview"
+                    width={320}
+                    height={400}
+                    className="rounded-xl shadow bg-gray-100 object-cover w-[320px] h-[400px]"
                   />
-                ))}
+                )}
+              </>
+            ) : (
+              <div className="w-[320px] h-[400px] rounded-xl shadow bg-gray-100 flex items-center justify-center">
+                <span className="text-gray-400">No media selected</span>
               </div>
-
-              <div className="flex gap-12 mb-4 flex-col lg:flex-row md:flex-row ">
-                <CheckboxField
-                  label=""
-                  name="topdeals"
-                  register={register}
-                  errors={errors}
-                  options={["Top Deals"]}
-                  onChange={(e: { target: { checked: boolean } }) =>
-                    setValue("topdeals", e.target.checked)
-                  }
-                  classname="mt-4"
-                />
-
-                <CheckboxField
-                  label=""
-                  name="featured"
-                  register={register}
-                  errors={errors}
-                  options={["Featured"]}
-                  onChange={(e: { target: { checked: boolean } }) =>
-                    setValue("featured", e.target.checked)
-                  }
-                  classname="mt-4"
-                />
-              </div>
-
-              <div className="flex gap-2  flex-col lg:flex-row md:flex-row ">
-                <InputField
-                  name="quantity"
-                  label="Quantity"
-                  type="number"
-                  register={register}
-                  errors={errors}
-                  classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
-                />
-                <InputField
-                  name="weight"
-                  label="Weight"
-                  type="text"
-                  placeholder="50kg"
-                  register={register}
-                  errors={errors}
-                  classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
-                />
-              </div>
-              <div className="flex gap-2 py-8 flex-col lg:flex-row md:flex-row ">
-                <InputField
-                  name="selling_price"
-                  label="Selling Price"
-                  type="text"
-                  placeholder="₦1234"
-                  register={register}
-                  errors={errors}
-                  classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
-                />
-                <InputField
-                  name="discount"
-                  label="Discount"
-                  type="text"
-                  placeholder="₦100"
-                  register={register}
-                  errors={errors}
-                  classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
-                />
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
+        {/* Right: Form Fields */}
+        <div className="flex-1 flex flex-col gap-6 max-w-lg w-full">
+          <InputField
+            label="Product Name:"
+            type="text"
+            name="product_name"
+            register={register}
+            errors={errors}
+            classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+          />
+          <SelectField
+            name="product_category"
+            label="Category:"
+            register={register}
+            errors={errors}
+            options={catnew?.map((cat) => ({ label: cat.label, value: cat.value })) || []}
+            classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+          />
+          <SelectField
+            name="sub_category"
+            label="Sub Category:"
+            register={register}
+            errors={errors}
+            options={catnew?.find((cat) => cat.id === watch("product_category"))?.subcategories?.map((sub) => ({ label: sub.subcategory, value: sub.id })) || []}
+            classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+          />
+          <TextAreaField
+            label="Description:"
+            name="description"
+            register={register}
+            errors={errors}
+            placeholder={""}
+            classname="w-full px-5 h-24 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+          />
+
+          {/* File Upload */}
+          <div className="flex flex-col gap-2">
+            <label htmlFor="upload-files" className="text-base font-medium text-[#353131]">Product Upload:</label>
+            <label htmlFor="upload-files" className="bg-gray-50 rounded-md shadow hover:bg-[#FCDFD4] h-40 flex justify-center items-center cursor-pointer flex-col border border-dashed border-gray-300 transition-colors">
+              <FiUpload className="text-4xl mb-2 text-[#F25E26]" />
+              <span className="text-gray-500 text-base">Select file to upload</span>
+              <span className="text-xs text-gray-400">You may upload up to 5 images & videos</span>
+            </label>
+            <input
+              id="upload-files"
+              type="file"
+              accept="image/*, video/*"
+              className="hidden"
+              multiple
+              onChange={handleFileChange}
+            />
+            <div className="text-xs text-rose-500 pt-1">{errors?.regular_media?.message}</div>
+          </div>
+
+          <div className="flex flex-row gap-4">
+            <CheckboxField
+              label=""
+              name="topdeals"
+              register={register}
+              errors={errors}
+              options={["Top Deals"]}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue("topdeals", e.target.checked)}
+              classname="mt-2"
+            />
+            <CheckboxField
+              label=""
+              name="featured"
+              register={register}
+              errors={errors}
+              options={["Featured"]}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue("featured", e.target.checked)}
+              classname="mt-2"
+            />
+          </div>
+          <div className="flex flex-row gap-4">
+            <InputField
+              name="quantity"
+              label="Quantity:"
+              type="number"
+              register={register}
+              errors={errors}
+              classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+            />
+            <InputField
+              name="weight"
+              label="Weight:"
+              type="text"
+              placeholder="20"
+              register={register}
+              errors={errors}
+              classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+            />
+          </div>
+          <div className="flex flex-row gap-4">
+            <InputField
+              name="selling_price"
+              label="₦"
+              type="text"
+              placeholder="N 5,000"
+              register={register}
+              errors={errors}
+              classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+            />
+            <InputField
+              name="discount"
+              label="Discount Price:"
+              type="text"
+              placeholder="N 5,000"
+              register={register}
+              errors={errors}
+              classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
+            />
+          </div>
+        </div>
       </form>
 
-
-      <div className="flex justify-center items-center mt-12  mb-10">
+      {/* Update Button */}
+      <div className="flex justify-center items-center mt-8 mb-10 w-full">
         <DefaultButton
           handleClick={() => null}
-          className="text-sm  px-20  justify-center flex font-normal font-Poppins rounded-lg bg-[#FCDFD4]  py-2 transition delay-300 duration-300 ease-in-out hover:bg-[#E84526] hover:text-white hover:transition-all"
+          className="w-full max-w-md text-base font-medium px-20 py-3 rounded-lg bg-[#FCDFD4] text-[#222] transition duration-300 ease-in-out hover:bg-[#E84526] hover:text-white shadow"
           type="submit"
           form="product-upload-form"
           text={status === "pending" ? "loading..." : "Update"}
         />
       </div>
 
-
+      {/* Success Modal */}
       {showModal && (
-        <div className="flex absolute top-0 z-50 left-0">
+        <div className="flex absolute top-0 z-50 left-0 w-full h-full bg-black bg-opacity-30 items-center justify-center">
           <Modal
-            title="Product Upload Successfull!"
+            title="Product Upload Successful!"
             subtitle="Your product has been successfully uploaded"
             buttoncount={1}
             buttontext="Continue"
@@ -528,6 +1085,7 @@ export default function Page() {
         </div>
       )}
 
+      <ToastContainer />
     </section>
   );
 }
