@@ -185,6 +185,7 @@ export const Regular = () => {
     formData.append("quantity", data.quantity);
     formData.append("weight", data.weight);
     formData.append("selling_price", data.selling_price);
+    formData.append("cost_price", data.cost_price);
     formData.append("discount", data.discount);
     formData.append("description", data.description);
     formData.append("topdeals", data.topdeals);
@@ -199,6 +200,7 @@ export const Regular = () => {
       category: data.product_category,
       subcategory: data.sub_category,
       price: data.selling_price,
+      cost_price: data.cost_price,
       discount: data.discount,
       quantity: data.quantity,
       weight: `${data.weight}KG`,
@@ -341,6 +343,19 @@ export const Regular = () => {
                   errors={errors}
                   classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
+                <InputField
+                  name="cost_price"
+                  label="Cost Price"
+                  type="text"
+                  placeholder="₦100"
+                  register={register}
+                  errors={errors}
+                  classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                />
+              </div>
+
+              <div className="flex gap-2 py-8 flex-col lg:flex-row md:flex-row ">
+               
                 <InputField
                   name="discount"
                   label="Discount"

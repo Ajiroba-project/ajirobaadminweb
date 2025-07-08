@@ -231,7 +231,7 @@ export default function ProductDetailsAuctionPage() {
         error: prodError,
     } = useGetDatanew(url, "get_prod_details", userToken || " ");
 
-console.log(prodInfo?.data, 'prodInfo')
+
 
 
     if (prodLoading) {
@@ -240,7 +240,7 @@ console.log(prodInfo?.data, 'prodInfo')
 
 
 
-    console.log(prodInfo?.data?.product_info, 'product_infooo')
+    // console.log(prodInfo?.data?.product_info, 'product_infooo')
 
 
     return (
