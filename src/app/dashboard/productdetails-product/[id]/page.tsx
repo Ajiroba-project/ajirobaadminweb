@@ -46,14 +46,24 @@ const CustomerReview = ({ data }: any) => {
     };
 
 
+    {
+      console.log(data)
+    }
+
 
     return (
+
+
+      <>
+      
       <div className="">
         <div>
           <h1 className="text-[#353131] font-Poppins font-medium text-lg text-center 2xl:text-start xl:text-start lg:text-start md:text-start">
             Customer Review
           </h1>
         </div>
+
+    
 
         <div className="flex 2xl:flex-row xl:flex-row lg:flex-row md:flex-row flex-col 2xl:items-start xl:items-start lg:items-start md:items-start items-center gap-12 mt-8">
           <div className=" 2xl:w-1/2 xl:w-1/2 lg:w-1/2 md:w-1/2 w-auto">
@@ -208,6 +218,8 @@ const CustomerReview = ({ data }: any) => {
           </div>
         </div>
       </div>
+      </>
+     
     );
   };
 
@@ -231,7 +243,7 @@ export default function ProductDetailsAuctionPage() {
         error: prodError,
     } = useGetDatanew(url, "get_prod_details", userToken || " ");
 
-
+    // console.log(prodInfo?.data?.product_reviews?.total_reviews, 'prodInfo?.data?.product_reviews?.total_reviews')
 
 
     if (prodLoading) {
@@ -538,8 +550,12 @@ export default function ProductDetailsAuctionPage() {
                 </div>
             </div>
 
+       
+
         <div style={{ width: '100', maxWidth: '75%' }}>
-        <CustomerReview data={prodInfo?.data} />
+        {Number(prodInfo?.data?.product_reviews?.total_reviews) >= 1 && (
+    <CustomerReview data={prodInfo?.data} />
+  )}
         </div>
 
         </div>
