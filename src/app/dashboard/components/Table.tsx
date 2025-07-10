@@ -610,7 +610,7 @@ export default function App() {
         </div>
       </div>
     );
-  }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
+  }, [selectedKeys, filteredItems.length, page, pages, onNextPage, onPreviousPage]);
 
   return (
     <Table
