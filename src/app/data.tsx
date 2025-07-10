@@ -11,6 +11,7 @@ import bid from "@/app/asset/bid.svg"
 import ticket from "@/app/asset/ticket.svg"
 import user_img from "@/app/asset/user.png"
 import analytics from "@/app/asset/analytics.svg"
+import redemption from "@/app/asset/redemption.svg"
 
 export const SideNavMenu = [
     {
@@ -38,6 +39,13 @@ export const SideNavMenu = [
         path: "/dashboard/category",
         icon: category,
         url: 'category'
+    },
+
+    {
+        name: "Product Redemption",
+        path: "/dashboard/redemption",
+        icon: redemption,
+        url: 'redemption'
     },
     {
         name: "Transaction",

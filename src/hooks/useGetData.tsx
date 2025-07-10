@@ -29,6 +29,7 @@ interface UserData {
   infromation?: any
   product_info?: any
   winners_info?: any
+  product_reviews?: any
 
 }
 
