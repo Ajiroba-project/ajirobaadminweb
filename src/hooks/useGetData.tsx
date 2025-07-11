@@ -30,6 +30,9 @@ interface UserData {
   product_info?: any
   winners_info?: any
   product_reviews?: any
+  current_datetime?: any
+  delivery_estimation?: any
+  flatMap?: any
 
 }
 
@@ -46,6 +49,9 @@ interface ResponseData {
   filter?: any
   slice?: any
   length?: any
+  results?: any
+  flatMap?: any
+  winners_info?: any
 }
 
 // interface ApiResponse {

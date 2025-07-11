@@ -21,11 +21,11 @@ function Analytics() {
 
 
       </div>
-
+   {/*    margin: '0 auto',
+      width: '85%', */}
 
       <section className='pt-8' style={{
-        margin: '0 auto',
-        width: '85%',
+       
       }}  >
 
         <AnalyticsTable />
