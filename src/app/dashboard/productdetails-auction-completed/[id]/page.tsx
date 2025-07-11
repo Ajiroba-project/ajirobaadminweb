@@ -239,7 +239,7 @@ export default function ProductDetailsAuctionPage() {
                                 </p>
 
                                 <h1 className="text-[#111111] font-Poppins text-base mt-2 font-semibold">
-                                    {prodInfo?.data?.product_info?.delivery_estimation || "NA"}
+                                    {prodInfo?.data?.delivery_estimation || "NA"}
                                 </h1>
 
 

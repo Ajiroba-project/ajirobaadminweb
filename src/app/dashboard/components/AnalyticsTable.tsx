@@ -346,27 +346,6 @@ function AnalyticsTable() {
 
 
 
-      {/*   <ModalComponent
-        content={
-          <div className="flex flex-col justify-center">
-            <div className="flex justify-center items-center flex-col">
-
-            </div>
-
-
-            <UpdateSubCategory func={handleUpdateSubCategory} />
-
-
-          </div>
-        }
-        isModalOpen={updateCategory}
-        showModal={handleUpdateSubCategory}
-        handleOk={() => { }}
-        handleCancel={() => setUpdateCategory(false)}
-      /> */}
-
-
-
       <ModalComponent
         content={
           <div className="flex flex-col gap-6 p-4">

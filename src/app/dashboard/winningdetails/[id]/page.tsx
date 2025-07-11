@@ -45,7 +45,7 @@ const {
     error: winnerError,
 } = useGetDatanew(urla, "get_prod_details", userToken || " ");
 
-    // console.log(winnerInfo?.data?.winners_info, 'winnerinfo')
+    //  console.log(winnerInfo?.data, 'winnerinfo')
 
 
     const {
@@ -60,19 +60,28 @@ const {
     const itemsPerPage = 6;
 
     // Transform user data to match the card structure (mocking ticket/product fields for now)
-    const users = winnerInfo?.data?.winners_info?.map((user: any, index: number) => ({
-        id: user.ticket_id || index + 1,
-        first_name: user.first_name || 'N/A',
-        surname: user.last_name || 'N/A',
-        email: user.email || 'N/A',
-        phone: user.phone || 'N/A',
-        address: user.address || 'N/A',
-        profile_image: user.profile_picture || '/app/asset/user.png',
-        ticket_number: user.ticket_number || '43529656', // fallback/mock
-        product_redeemed: user.product || 'N/A', // fallback/mock
-        redemption_status: user.redemption_status , // mock
-        notify: user.redemption_status === 'Pending', // show notify button for some
-    })) || [];
+    const users =
+    winnerInfo?.data
+      ?.flatMap((group: any, index: number) =>
+        group.winners_info.map((user: any, i: number) => ({
+          id: user.ticket_id || `${index}-${i}`,
+          first_name: user.first_name || 'N/A',
+          surname: user.last_name || 'N/A',
+          email: user.email || 'N/A',
+          phone: user.phone || 'N/A',
+          address: user.address || 'N/A',
+          profile_image: user.profile_picture || '/app/asset/user.png',
+          ticket_number: user.ticket_id || '43529656',
+          product_redeemed: user.product || 'N/A',
+          redemption_status: user.redemption_status || 'Pending',
+          notify: user.redemption_status === 'Pending',
+        }))
+      ).filter(
+        (user: any, index: number, self: any) =>
+          index === self.findIndex((u: any) => u.ticket_number === user.ticket_number)
+      ) || [];
+  
+  
 
     // Filter users based on search
     const filteredUsers = users.filter((user: any) => {

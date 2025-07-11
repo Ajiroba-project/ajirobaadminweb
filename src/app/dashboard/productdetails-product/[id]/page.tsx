@@ -231,6 +231,8 @@ export default function ProductDetailsAuctionPage() {
 
     const id = params?.id;
 
+    console.log(id, 'id')
+
 
 
     const [userToken, setUserToken] = useState(Cookies.get("token"));
@@ -245,7 +247,7 @@ export default function ProductDetailsAuctionPage() {
 
     // console.log(prodInfo?.data?.product_reviews?.total_reviews, 'prodInfo?.data?.product_reviews?.total_reviews')
 
-
+    console.log(prodInfo, 'prodii')
     if (prodLoading) {
         return <Loading />;
     }
@@ -298,23 +300,23 @@ export default function ProductDetailsAuctionPage() {
                             <div className="flex-1 flex flex-col gap-2 min-w-[180px]">
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Category:</span>
-                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info.category}</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.category}</span>
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Sub category:</span>
-                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info.subcategory}</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.subcategory}</span>
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Product Name:</span>
-                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info.product_name}</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.product_name}</span>
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Weight:</span>
-                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info.weight}</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.weight}</span>
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Uploaded By:</span>
-                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info.uploaded_by}</span>
+                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info?.uploaded_by}</span>
                                 </div>
                             </div>
                             {/* Middle Column */}
@@ -517,7 +519,7 @@ export default function ProductDetailsAuctionPage() {
                             <div className="flex flex-wrap sm:flex-nowrap ">
                                 <div className="relative mt-6 ">
                                     <Image
-                                        src={`https://staging.ajiroba.ng/media/${prodInfo?.data?.product_info.images[0]}`}
+                                        src={`https://staging.ajiroba.ng/media/${prodInfo?.data?.product_info?.images[0]}`}
                                         alt={`Product Image`}
                                         width={220}
                                         height={220}
@@ -526,7 +528,7 @@ export default function ProductDetailsAuctionPage() {
                                 </div>
                                 <div className="relative opacity-35 sm:ml-4 mt-4 sm:mt-0">
                                     <Image
-                                        src={`https://staging.ajiroba.ng/media/${prodInfo?.data?.product_info.images[0]}`}
+                                        src={`https://staging.ajiroba.ng/media/${prodInfo?.data?.product_info?.images[0]}`}
                                         alt={`Product Image`}
                                         width={220}
                                         height={220}

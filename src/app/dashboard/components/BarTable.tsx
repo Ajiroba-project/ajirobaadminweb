@@ -17,6 +17,11 @@ import GeoGrapghy from './GeoData'
 import ReactTooltip from "react-tooltip";
 import { useGetDatanew } from '@/hooks/useGetData';
 import Cookies from 'js-cookie';
+import customerImg from '@/app/asset/image/customer.svg';
+import revenueImg from '@/app/asset/image/revenue.svg';
+import customerHoverImg from '@/app/asset/image/customerhover.svg';
+import revenueHoverImg from '@/app/asset/image/revenuehover.svg';
+import Image from 'next/image';
 
 
 // Register the necessary components
@@ -163,6 +168,8 @@ const CustomerByAge = () => {
 
 const BarChart: React.FC = () => {
   const [content, setContent] = useState("");
+  const [isRevenueHovered, setIsRevenueHovered] = useState(false);
+  const [isCustomerHovered, setIsCustomerHovered] = useState(false);
 
 
   const [userToken, setUserToken] = useState(Cookies.get("token"));
@@ -178,26 +185,48 @@ const BarChart: React.FC = () => {
     return <div>Loading...</div>;
   }
 
-  const datatouse = [
-    { state: 'OgunState', count: 1 },
-    { state: 'Edo', count: 1 },
-    { state: 'Osun', count: 1 },
-    { state: 'kwara', count: 3 },
-    { state: 'Abia', count: 2 },
-    { state: 'Adamawa', count: 2 },
-    { state: 'Ekiti', count: 2 },
-    { state: 'Lagos', count: 13 },
-    { state: 'AkwaIbom', count: 1 },
-    { state: 'Ogun', count: 3 }
-  ]
+
 
   // <GeoGrapghy setTooltipContent={setContent} />
   //     <div>{content}</div>
   // <ReactTooltip>{content}</ReactTooltip>
 
   return (
-    <div className="p-8 bg-[#F6F6F6]  flex flex-col items-center">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-5xl">
+    <div className="p-8 bg-[#F6F6F6]  flex flex-col ">
+
+    <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 w-full  mb-8'>
+      <div className='bg-white p-6 rounded-lg shadow-lg flex flex-col '>
+      <h2 className="text-lg font-semibold mb-4">Revenue Summary Report</h2>
+        <Image
+          src={isRevenueHovered ? revenueHoverImg : revenueImg}
+          alt="Revenue Summary Report"
+          className=" object-contain mb-2 cursor-pointer"
+          onMouseEnter={() => setIsRevenueHovered(true)}
+          onMouseLeave={() => setIsRevenueHovered(false)}
+        />
+        
+       
+      </div>
+      <div className='bg-white p-6 rounded-lg shadow-lg flex flex-col '>
+      <h2 className="text-lg font-semibold mb-4">Customer Statistics</h2>
+      <Image
+        src={isCustomerHovered ? customerHoverImg : customerImg}
+        alt="Customer Statistics"
+        className=" object-contain mb-2 cursor-pointer"
+        onMouseEnter={() => setIsCustomerHovered(true)}
+        onMouseLeave={() => setIsCustomerHovered(false)}
+      />
+      
+      </div>
+    </div>
+
+
+
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full ">
+
+
+        
         <CustomerByGender />
         <CustomerByAge />
         {/*   <MapChart setTooltipContent={setContent} /> */}
