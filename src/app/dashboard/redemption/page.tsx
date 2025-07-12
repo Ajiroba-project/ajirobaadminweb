@@ -445,7 +445,7 @@ const Page = () => {
     
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/admin/confirm_redeemed_ticket/${selectedRow.ticket}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/admin/confirm_redeemed_ticket/${selectedRow.ticket}/`,
         {
           method: 'PUT',
           headers: {

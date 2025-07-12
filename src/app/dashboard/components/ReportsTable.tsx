@@ -16,6 +16,7 @@ interface Column<T extends RowData> {
   render?: (row: T, index: number) => React.ReactNode; // Optional render function
   cellClassName?: string;
   headerClassName?: string;
+  sum?: boolean; // <-- Add this
 }
 
 // Define ScrollableTableProps with generics
@@ -36,7 +37,7 @@ interface ScrollableTableProps<T extends RowData> {
 
 
 // Use generics in the component
-export const RedeemedTable = <T extends RowData>({
+export const ReportsTable = <T extends RowData>({
     columns,
     data,
     onRowAction,
@@ -59,6 +60,13 @@ export const RedeemedTable = <T extends RowData>({
           setModalOpen(false);
           setSelectedRow(null);
         };
+  
+    const getColumnSum = (key: string) => {
+      return data.reduce((acc, row) => {
+        const value = Number(row[key]);
+        return !isNaN(value) ? acc + value : acc;
+      }, 0);
+    };
   
     return (
       <div className={`overflow-x-auto ${className}`}>
@@ -110,6 +118,21 @@ export const RedeemedTable = <T extends RowData>({
                   ))}
                 </tr>
               ))}
+  
+            <tr className="font-semibold">
+              {columns.map((col, idx) => (
+                <td
+                  key={col.key}
+                  className={`px-3 py-8 ${idx !== columns.length - 1 ? 'border-r border-[#E9E9E9]' : ''} whitespace-nowrap`}
+                >
+                  {idx === 0
+                    ? 'TOTAL'
+                    : col.sum
+                    ? getColumnSum(col.key)
+                    : ''}
+                </td>
+              ))}
+            </tr>
           </tbody>
         </table>
   

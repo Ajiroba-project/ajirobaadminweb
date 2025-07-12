@@ -12,6 +12,7 @@ import ticket from "@/app/asset/ticket.svg"
 import user_img from "@/app/asset/user.png"
 import analytics from "@/app/asset/analytics.svg"
 import redemption from "@/app/asset/redemption.svg"
+import reportsicon from "@/app/asset/reportsicon.svg"
 
 export const SideNavMenu = [
     {
@@ -59,6 +60,12 @@ export const SideNavMenu = [
         path: "#",
         icon: analytics,
         url: 'analytics'
+    },
+    {
+        name: "Reports",
+        path: "/dashboard/reports",
+        icon: reportsicon,
+        url: 'reports'
     },
 ]
 
