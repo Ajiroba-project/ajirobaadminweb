@@ -223,9 +223,8 @@ export default function RaffleTicket({
 
 
     return (
-        <div className="toCenterOfPage font-['Inter',_sans-serif]">
-            {/* Main Container */}
-            <div className="w-full max-w-5xl rounded-2xl md:rounded-3xl shadow-2xl relative flex flex-col md:flex-row bg-gradient-to-r from-[#d33f00] to-[rgba(211,63,0,255)] overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-start md:items-center justify-center p-2 md:p-4 bg-black bg-opacity-50 overflow-y-auto">
+            <div className="w-full max-w-5xl rounded-2xl md:rounded-3xl shadow-2xl relative flex flex-col md:flex-row bg-gradient-to-r from-[#d33f00] to-[rgba(211,63,0,255)] overflow-hidden my-4 md:my-8">
                 {/* Close Button */}
                 {onClose && (
                     <button
