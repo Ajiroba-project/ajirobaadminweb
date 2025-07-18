@@ -51,12 +51,14 @@ const Page = () => {
   };
 
   // Modal state
-  const [openReport, setOpenReport] = useState<null | "auction" | "regular">(null);
+  const [openReport, setOpenReport] = useState<null | "auction" | "regular">(
+    null
+  );
 
   // Modal content: two large, centered buttons
   const modalButtons = (
     <div className="flex flex-col sm:flex-row gap-6 justify-center items-center p-6">
-     {/*  <button
+      {/*  <button
         className="bg-white hover:bg-[#E84526] hover:text-[#FCFCFC] rounded-xl shadow font-semibold text-base px-2 py-2 text-gray-900  transition border border-gray-200  text-center"
         style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
       >
@@ -64,17 +66,22 @@ const Page = () => {
       </button> */}
 
       <Link
-          href={`/auctioncustomersmaster`}
-         className="bg-white hover:bg-[#E84526] hover:text-[#FCFCFC] rounded-xl shadow font-semibold text-base px-2 py-2 text-gray-900  transition border border-gray-200  text-center"
-        >
-       Auction Customers<br />Master Report
-        </Link>
-      <button
+        href={`/auctioncustomersmaster`}
+        className="bg-white hover:bg-[#E84526] hover:text-[#FCFCFC] rounded-xl shadow font-semibold text-base px-2 py-2 text-gray-900  transition border border-gray-200  text-center"
+      >
+        Auction Customers
+        <br />
+        Master Report
+      </Link>
+      <Link
+        href={`/regularcustomersmaster`}
         className="bg-white rounded-xl hover:bg-[#E84526] hover:text-[#FCFCFC] shadow font-semibold text-base px-2 py-2 text-gray-900 transition border border-gray-200  text-center"
         style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
       >
-        Regular Customers<br />Master Report
-      </button>
+        Regular Customers
+        <br />
+        Master Report
+      </Link>
     </div>
   );
 
@@ -105,7 +112,6 @@ const Page = () => {
 
             {/* Main Dashboard Content */}
             <div className="p-6 bg-gray-50">
-
               <div className="grid grid-cols-1  lg:grid-cols-2 gap-6 mb-6">
                 <div
                   className="bg-teal-50 border-2 border-teal-300 rounded-lg p-6 hover:bg-teal-500 hover:text-white transition-all duration-300 cursor-pointer group"
@@ -171,128 +177,62 @@ const Page = () => {
                   </div>
                 </div>
 
-                {/* Regular Customers Master Report */}
-               {/*  <div
-                  className="bg-white border-2 border-gray-300 rounded-lg p-6 hover:bg-teal-500 hover:text-white transition-all duration-300 cursor-pointer group"
-               
-                >
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center group-hover:bg-teal-600">
-                      <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        className="text-gray-700 group-hover:text-white"
-                      >
-                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-                        <path d="M12 11h4" />
-                        <path d="M12 16h4" />
-                        <path d="M8 11h.01" />
-                        <path d="M8 16h.01" />
-                      </svg>
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-white">
-                      Regular Customers Master Report
-                    </h3>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="flex flex-wrap ">
-                      <p className="text-xs text-gray-600 mb-1 group-hover:text-teal-100">
-                        Auction Customers GTV.
-                      </p>
-                      <p className="text-lg font-bold text-gray-900 group-hover:text-white">
-                        ₦13,000,000
-                      </p>
-                    </div>
-                    <div className="flex gap-1 flex-wrap">
-                      <p className="text-xs text-gray-600 mb-1 group-hover:text-teal-100">
-                        Regular Customer GTV
-                      </p>
-                      <p className="text-lg font-bold text-gray-900 group-hover:text-white">
-                        ₦19,000,000
-                      </p>
-                    </div>
-                    <div className="flex gap-1 flex-wrap">
-                      <p className="text-xs text-gray-600 mb-1 group-hover:text-teal-100">
-                        No of Auction Customer.
-                      </p>
-                      <p className="text-base font-semibold text-gray-900 group-hover:text-white">
-                        1,500,000
-                      </p>
-                    </div>
-                    <div className="flex gap-1 flex-wrap">
-                      <p className="text-xs text-gray-600 mb-1 group-hover:text-teal-100">
-                        Regular Customer GTV
-                      </p>
-                      <p className="text-base font-semibold text-gray-900 group-hover:text-white">
-                        1,500,000
-                      </p>
-                    </div>
-                  </div>
-                </div> */}
-
-
                 {/* Service Uptime Report */}
-<div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6 hover:bg-blue-600 hover:text-white transition-all duration-300 cursor-pointer group">
-  <div className="flex items-center gap-3 mb-6">
-    <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center group-hover:bg-blue-700">
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        className="text-gray-700 group-hover:text-white"
-      >
-        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-      </svg>
-    </div>
-    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-white">
-      Service Uptime Report
-    </h3>
-  </div>
+                <Link href="/serviceuptimereport" className="block">
+                  <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6 hover:bg-blue-600 hover:text-white transition-all duration-300 cursor-pointer group">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center group-hover:bg-blue-700">
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          className="text-gray-700 group-hover:text-white"
+                        >
+                          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 group-hover:text-white">
+                        Service Uptime Report
+                      </h3>
+                    </div>
 
-  <div className="flex items-center justify-center">
-    <div className="relative w-24 h-24">
-      <Doughnut data={uptimeData} options={uptimeOptions} />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-xs text-gray-600 group-hover:text-blue-100">
-            Summary
-          </div>
-        </div>
-      </div>
-    </div>
-    <div className="ml-8">
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-        <span className="text-sm text-gray-700 group-hover:text-blue-100">
-          Success Rate
-        </span>
-      </div>
-      <div className="text-2xl font-bold text-gray-900 group-hover:text-white mb-4">
-        70%
-      </div>
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-        <span className="text-sm text-gray-700 group-hover:text-blue-100">
-          Failure Rate
-        </span>
-      </div>
-      <div className="text-2xl font-bold text-gray-900 group-hover:text-white">
-        30%
-      </div>
-    </div>
-  </div>
-</div>
-
-                
+                    <div className="flex items-center justify-center">
+                      <div className="relative w-24 h-24">
+                        <Doughnut data={uptimeData} options={uptimeOptions} />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="text-xs text-gray-600 group-hover:text-blue-100">
+                              Summary
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="ml-8">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span className="text-sm text-gray-700 group-hover:text-blue-100">
+                            Success Rate
+                          </span>
+                        </div>
+                        <div className="text-2xl font-bold text-gray-900 group-hover:text-white mb-4">
+                          70%
+                        </div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                          <span className="text-sm text-gray-700 group-hover:text-blue-100">
+                            Failure Rate
+                          </span>
+                        </div>
+                        <div className="text-2xl font-bold text-gray-900 group-hover:text-white">
+                          30%
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
               </div>
 
               {/* Middle Row - Transaction Reports */}
@@ -391,14 +331,14 @@ const Page = () => {
                       Recharge Transaction Report
                     </h4>
                   </div>
-                <div className="flex flex-col items-center justify-center flex-wrap">
-                <div className="text-sm text-gray-600 mb-2 group-hover:text-yellow-100">
-                    Recharge GTV
+                  <div className="flex flex-col items-center justify-center flex-wrap">
+                    <div className="text-sm text-gray-600 mb-2 group-hover:text-yellow-100">
+                      Recharge GTV
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 group-hover:text-white">
+                      ₦450,476,823
+                    </div>
                   </div>
-                  <div className="text-2xl font-bold text-gray-900 group-hover:text-white">
-                    ₦450,476,823
-                  </div>
-                </div>
                 </div>
               </div>
 
@@ -428,7 +368,7 @@ const Page = () => {
                     </h4>
                   </div>
                   <div className="space-y-3">
-                    <div className="flex gap-2 flex-wrap" >
+                    <div className="flex gap-2 flex-wrap">
                       <div className="text-sm text-gray-600 group-hover:text-teal-100">
                         Customer Wallet Bal
                       </div>

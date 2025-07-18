@@ -6,9 +6,7 @@ import Cookies from "js-cookie";
 import Link from "next/link";
 import Image from "next/image";
 import Brand from "@/app/asset/logo.svg";
-import { RedeemedTable } from "../dashboard/components/RedeemedTable";
 import { ReportsTable } from "../dashboard/components/ReportsTable";
-import RaffleTicket from "../dashboard/components/RaffleTicket";
 import { DownloadModal } from "@/app/components/DownloadModal";
 import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
 
@@ -18,7 +16,6 @@ export default function Page() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("");
   const [dateFilter, setDateFilter] = useState("");
-  const [dateFilterrd, setDateFilterrd] = useState("");
   const [filterBy, setFilterBy] = useState<string[]>([]);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
@@ -28,8 +25,6 @@ export default function Page() {
   const [userToken] = useState(Cookies.get("token"));
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10);
-  const [showticket, setShowTicket] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState<any>(null);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [currentTime, setCurrentTime] = useState<string>("");
 
@@ -45,7 +40,6 @@ export default function Page() {
         hour12: true,
       })
     );
-    // Removed the setInterval to prevent page refresh every second
   }, []);
 
   // Close dropdowns when clicking outside
@@ -65,7 +59,7 @@ export default function Page() {
 
   // Download handlers
   const handleDownloadPDF = async () => {
-    const exportData: ExportData[] = filteredWinnersA.map((item) => ({
+    const exportData: ExportData[] = filteredRegularCustomers.map((item) => ({
       customername: item.customername,
       email: item.email,
       phone: item.phone,
@@ -73,24 +67,25 @@ export default function Page() {
       userid: item.userid,
       productId: item.productId,
       productname: item.productname,
-      nooftickets: item.nooftickets,
-      ticketunit: item.ticketunit,
-      quantity: item.quantity,
-      ticketprice: item.ticketprice,
-      ticketpurdate: item.ticketpurdate,
-      raffledrawdate: item.raffledrawdate,
-      raffledrawtime: item.raffledrawtime,
+      costprice: item.costprice,
+      sellingprice: item.sellingprice,
+      discountprice: item.discountprice,
+      profit: item.profit,
+      vat: item.vat,
+      purchasetime: item.purchasetime,
+      modeofpayment: item.modeofpayment,
+      status: item.status,
     }));
 
     setShowDownloadModal(false);
     await exportToPDF(exportData, {
-      title: "Auction Transaction Report",
-      fileName: "Auction_Transaction_Report"
+      title: "Regular Customers Master Report",
+      fileName: "Regular_Customers_Master_Report"
     });
   };
 
   const handleDownloadXLS = () => {
-    const exportData: ExportData[] = filteredWinnersA.map((item) => ({
+    const exportData: ExportData[] = filteredRegularCustomers.map((item) => ({
       customername: item.customername,
       email: item.email,
       phone: item.phone,
@@ -98,18 +93,19 @@ export default function Page() {
       userid: item.userid,
       productId: item.productId,
       productname: item.productname,
-      nooftickets: item.nooftickets,
-      ticketunit: item.ticketunit,
-      quantity: item.quantity,
-      ticketprice: item.ticketprice,
-      ticketpurdate: item.ticketpurdate,
-      raffledrawdate: item.raffledrawdate,
-      raffledrawtime: item.raffledrawtime,
+      costprice: item.costprice,
+      sellingprice: item.sellingprice,
+      discountprice: item.discountprice,
+      profit: item.profit,
+      vat: item.vat,
+      purchasetime: item.purchasetime,
+      modeofpayment: item.modeofpayment,
+      status: item.status,
     }));
 
     exportToXLS(exportData, {
-      title: "Auction Transaction Report",
-      fileName: "Auction_Transaction_Report",
+      title: "Regular Customers Master Report",
+      fileName: "Regular_Customers_Master_Report",
       columns: [
         { key: 'customername', header: 'Customer Name', width: 20 },
         { key: 'email', header: 'Email Address', width: 25 },
@@ -118,24 +114,25 @@ export default function Page() {
         { key: 'userid', header: 'User ID', width: 12 },
         { key: 'productId', header: 'Product ID', width: 12 },
         { key: 'productname', header: 'Product Name', width: 25 },
-        { key: 'nooftickets', header: 'Number of Tickets', width: 20, formatter: (value: string[]) => value.join(', ') },
-        { key: 'ticketunit', header: 'Unit Ticket Rate (NGN)', width: 15 },
-        { key: 'quantity', header: 'Quantity', width: 10 },
-        { key: 'ticketprice', header: 'Ticket Price (NGN)', width: 15 },
-        { key: 'ticketpurdate', header: 'Ticket Purchase Date', width: 18, formatter: (value: string) => new Date(value).toLocaleDateString() },
-        { key: 'raffledrawdate', header: 'Raffle Draw Date', width: 15, formatter: (value: string) => new Date(value).toLocaleDateString() },
-        { key: 'raffledrawtime', header: 'Raffle Draw Time', width: 12 },
+        { key: 'costprice', header: 'Cost Price (NGN)', width: 15 },
+        { key: 'sellingprice', header: 'Selling Price (NGN)', width: 15 },
+        { key: 'discountprice', header: 'Discount Price (NGN)', width: 15 },
+        { key: 'profit', header: 'Profit (NGN)', width: 15 },
+        { key: 'vat', header: 'VAT', width: 10 },
+        { key: 'purchasetime', header: 'Purchase Time', width: 18 },
+        { key: 'modeofpayment', header: 'Mode of Payment', width: 15 },
+        { key: 'status', header: 'Status', width: 12 },
       ],
       summaryRows: [
         { label: 'Total Records', value: exportData.length },
-        { label: 'Total Amount', value: `₦${exportData.reduce((sum, item) => sum + item.ticketprice, 0).toLocaleString()}` },
+        { label: 'Total Profit', value: `₦${exportData.reduce((sum, item) => sum + item.profit, 0).toLocaleString()}` },
         { label: 'Generated', value: new Date().toLocaleString() },
       ]
     });
     setShowDownloadModal(false);
   };
 
-  const columnsA = [
+  const columnsRegular = [
     {
       key: "index",
       label: "S/N",
@@ -144,7 +141,6 @@ export default function Page() {
     { key: "customername", label: "CUSTOMER NAME" },
     { key: "email", label: "EMAIL ADDRESS" },
     { key: "phone", label: "PHONE NUMBER" },
-
     { key: "gender", label: "GENDER" },
     { key: "userid", label: "USER ID" },
     {
@@ -153,7 +149,7 @@ export default function Page() {
       cellClassName: "text-[#F25E26] underline cursor-pointer",
       render: (row: any) => (
         <Link
-          href={`/dashboard/productdetails-auction-completed/${row.id}`}
+          href={`/dashboard/productdetails-product/${row.id}`}
           className="bg-[#FFFFFF] text-[#F25E26] transition delay-300 duration-300 ease-in-out hover:bg-[#F25E26] hover:text-white hover:transition-all flex gap-2 rounded-lg p-2 font-Poppins text-sm items-center"
         >
           {row.productId}
@@ -161,134 +157,102 @@ export default function Page() {
       ),
     },
     { key: "productname", label: "PRODUCT NAME" },
+    { key: "costprice", label: "COST PRICE (NGN)" },
+    { key: "sellingprice", label: "SELLING PRICE (NGN)" },
+    { key: "discountprice", label: "DISCOUNT PRICE (NGN)" },
+    { key: "profit", label: "PROFIT (NGN)", sum: true },
+    { key: "vat", label: "VAT" },
+    { key: "purchasetime", label: "PURCHASE TIME/TIME" },
+    { key: "modeofpayment", label: "MODE OF PAYMENT" },
     {
-      key: "nooftickets",
-      label: "NUMBER OF TICKETS",
-      cellClassName: "min-w-[120px]",
+      key: "status",
+      label: "STATUS",
       render: (row: any) => (
-        <div className="flex flex-col gap-1">
-          {row.nooftickets.map((ticket: string, idx: number) => (
-            <span
-              key={idx}
-              onClick={() => {
-                setSelectedTicket({
-                  ticket_number: ticket,
-                  ticket_amount: row.ticketunit,
-                  date: row.ticketpurdate,
-                  item_purchased: row.productname,
-                  raffle_date: row.raffledrawdate,
-                  raffle_time: row.raffledrawtime,
-                });
-                setShowTicket(true);
-              }}
-              className={
-                " text-[#F25E26] underline transition delay-300 duration-300 ease-in-out cursor-pointer flex gap-2 rounded-lg p-2 font-Poppins text-sm items-center"
-              }
-            >
-              {ticket}
-            </span>
-          ))}
-        </div>
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${
+            row.status === "Successful"
+              ? "bg-green-100 text-green-800"
+              : "bg-yellow-100 text-yellow-800"
+          }`}
+        >
+          {row.status}
+        </span>
       ),
     },
-    { key: "ticketunit", label: "UNIT TICKET RATE (NGN)" },
-    { key: "quantity", label: "QUANTITY" },
-    { key: "ticketprice", label: "TICKET PRICE (NGN)", sum: true },
-    { key: "ticketpurdate", label: "TICKET PURCHASE DATE" },
-    { key: "raffledrawdate", label: "RAFFLE DRAW DATE" },
-    { key: "raffledrawtime", label: "RAFFLE DRAW TIME" },
   ];
 
-  const filteredWinnersA = [
+  const filteredRegularCustomers = [
     {
-      customername: "Amaka Okafor",
-      email: "amaka.okafor@example.com",
+      customername: "Bolu Davies",
+      email: "bolu.davies@example.com",
       phone: "08012345678",
-      gender: "Female",
+      gender: "Male",
       userid: "USR001",
-      productId: "PRD001",
-      productname: 'Samsung TV 55"',
-      nooftickets: ["WS23E", "FR45FD", "ZX89K"],
-      ticketunit: 1000,
-      quantity: 1,
-      ticketprice: 3000,
-      ticketpurdate: "2024-07-05T10:30:00Z",
-      raffledrawdate: "2024-07-10T00:00:00Z",
-      raffledrawtime: "4:30 PM",
-      status: "Delivered",
+      productId: "5648T53",
+      productname: "T-Shirt",
+      costprice: 5000,
+      sellingprice: 6000,
+      discountprice: 0,
+      profit: 1000,
+      vat: "7.5%",
+      purchasetime: "21-MAY-2024",
+      modeofpayment: "21-MAY-2024",
+      status: "Successful",
       id: "001",
     },
     {
-      customername: "John Doe",
-      email: "john.doe@example.com",
-      phone: "07098765432",
-      gender: "Male",
+      customername: "Bolu Davies",
+      email: "bolu.davies@example.com",
+      phone: "08012345678",
+      gender: "Female",
       userid: "USR002",
-      productId: "PRD002",
-      productname: "iPhone 15 Pro",
-      nooftickets: ["GH78JK", "MN56PO"],
-      ticketunit: 2000,
-      quantity: 1,
-      ticketprice: 4000,
-      ticketpurdate: "2024-07-01T14:00:00Z",
-      raffledrawdate: "2024-07-07T00:00:00Z",
-      raffledrawtime: "3:00 PM",
+      productId: "7892R45",
+      productname: "Rice",
+      costprice: 8000,
+      sellingprice: 10000,
+      discountprice: 0,
+      profit: 2000,
+      vat: "7.5%",
+      purchasetime: "21-MAY-2024",
+      modeofpayment: "21-MAY-2024",
       status: "Pending",
       id: "002",
     },
     {
-      customername: "Fatima Abubakar",
-      email: "fatima.a@example.com",
-      phone: "08123456789",
-      gender: "Female",
+      customername: "Bolu Davies",
+      email: "bolu.davies@example.com",
+      phone: "08012345678",
+      gender: "Male",
       userid: "USR003",
-      productId: "PRD003",
-      productname: 'HP Laptop 14"',
-      nooftickets: ["RT45YU", "LK98HJ", "PO12CV", "UY78NB", "QA34FD"],
-      ticketunit: 1500,
-      quantity: 1,
-      ticketprice: 7500,
-      ticketpurdate: "2025-06-25T12:20:00Z",
-      raffledrawdate: "2025-06-28T00:00:00Z",
-      raffledrawtime: "2:15 PM",
-      status: "Delivered",
+      productId: "3456H78",
+      productname: "Human Hair",
+      costprice: 15000,
+      sellingprice: 16000,
+      discountprice: 0,
+      profit: 1000,
+      vat: "7.5%",
+      purchasetime: "21-MAY-2024",
+      modeofpayment: "21-MAY-2024",
+      status: "Successful",
       id: "003",
     },
     {
-      customername: "Emeka Nwosu",
-      email: "emeka.n@example.com",
-      phone: "09034567890",
-      gender: "Male",
-      userid: "USR004",
-      productId: "PRD004",
-      productname: "LG Home Theater",
-      nooftickets: ["TY67UI"],
-      ticketunit: 1000,
-      quantity: 1,
-      ticketprice: 1000,
-      ticketpurdate: "2025-07-02T16:00:00Z",
-      raffledrawdate: "2025-07-03T00:00:00Z",
-      raffledrawtime: "12:00 PM",
-      status: "Pending",
-      id: "004",
-    },
-    {
-      customername: "Bola Adeniyi",
-      email: "bola.adeniyi@example.com",
-      phone: "08111222333",
+      customername: "Bolu Davies",
+      email: "bolu.davies@example.com",
+      phone: "08012345678",
       gender: "Female",
-      userid: "USR005",
-      productId: "PRD005",
-      productname: "Generator 3.5KVA",
-      nooftickets: ["PL56RT", "WE23XZ", "BN45GH", "KL89OP"],
-      ticketunit: 2500,
-      quantity: 1,
-      ticketprice: 10000,
-      ticketpurdate: "2025-06-26T09:45:00Z",
-      raffledrawdate: "2025-06-30T00:00:00Z",
-      raffledrawtime: "10:00 AM",
-      status: "Delivered",
-      id: "005",
+      userid: "USR004",
+      productId: "9012M34",
+      productname: "Mango",
+      costprice: 2000,
+      sellingprice: 3000,
+      discountprice: 0,
+      profit: 1000,
+      vat: "7.5%",
+      purchasetime: "N/A",
+      modeofpayment: "N/A",
+      status: "Successful",
+      id: "004",
     },
   ];
 
@@ -305,7 +269,7 @@ export default function Page() {
 
   // Filter and sort the data
   const getFilteredAndSortedData = () => {
-    let filteredData = [...filteredWinnersA];
+    let filteredData = [...filteredRegularCustomers];
 
     // Apply search filter
     if (search) {
@@ -318,7 +282,7 @@ export default function Page() {
       );
     }
 
-    // Apply filter by checkboxes - Fixed logic
+    // Apply filter by checkboxes
     if (filterBy.length > 0) {
       filteredData = filteredData.filter(item => {
         return filterBy.every(filter => {
@@ -354,17 +318,15 @@ export default function Page() {
           endDate = now;
           break;
         case 'last_year':
-          // Last year means previous calendar year (not rolling 12 months)
           const currentYear = now.getFullYear();
           const previousYear = currentYear - 1;
-          startDate = new Date(previousYear, 0, 1); // January 1 of previous year
-          endDate = new Date(previousYear, 11, 31, 23, 59, 59, 999); // December 31 of previous year
+          startDate = new Date(previousYear, 0, 1);
+          endDate = new Date(previousYear, 11, 31, 23, 59, 59, 999);
           break;
         case 'custom':
           if (customDateRange.start && customDateRange.end) {
             startDate = new Date(customDateRange.start);
             endDate = new Date(customDateRange.end);
-            // Set end date to end of day
             endDate.setHours(23, 59, 59, 999);
           }
           break;
@@ -373,30 +335,11 @@ export default function Page() {
       }
       
       if (startDate && endDate) {
-        console.log('Date filter applied:', {
-          filter: dateFilter,
-          startDate: startDate.toISOString(),
-          endDate: endDate.toISOString(),
-          currentYear: now.getFullYear(),
-          totalRecords: filteredData.length
-        });
-        
         filteredData = filteredData.filter(item => {
-          const itemDate = new Date(item.ticketpurdate);
-          const isInRange = itemDate >= startDate! && itemDate <= endDate!;
-          
-        /*   console.log('Checking item:', {
-            itemDate: itemDate.toISOString(),
-            itemYear: itemDate.getFullYear(),
-            isInRange,
-            customername: item.customername,
-            filter: dateFilter
-          }); */
-          
-          return isInRange;
+          if (item.purchasetime === "N/A") return false;
+          const itemDate = new Date(item.purchasetime);
+          return itemDate >= startDate! && itemDate <= endDate!;
         });
-        
-       /*  console.log('Records after date filter:', filteredData.length); */
       }
     }
 
@@ -407,9 +350,12 @@ export default function Page() {
           case 'name':
             return a.customername.localeCompare(b.customername);
           case 'date':
-            return new Date(b.ticketpurdate).getTime() - new Date(a.ticketpurdate).getTime();
+            if (a.purchasetime === "N/A" && b.purchasetime === "N/A") return 0;
+            if (a.purchasetime === "N/A") return 1;
+            if (b.purchasetime === "N/A") return -1;
+            return new Date(b.purchasetime).getTime() - new Date(a.purchasetime).getTime();
           case 'price':
-            return b.ticketprice - a.ticketprice;
+            return b.profit - a.profit;
           default:
             return 0;
         }
@@ -436,7 +382,7 @@ export default function Page() {
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 md:px-14 py-4 gap-2">
           <h1 className="text-[#111111] text-lg font-Poppins font-semibold">
-            Auction Transaction Report
+            Regular Customers Master Report
           </h1>
           <button
             onClick={() => setShowDownloadModal(true)}
@@ -596,7 +542,7 @@ export default function Page() {
               </div>
             )}
 
-            {/* Custom Date Picker - Positioned relative to the sort dropdown */}
+            {/* Custom Date Picker */}
             {showCustomDatePicker && (
               <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-20 p-4">
                 <div className="space-y-3">
@@ -654,13 +600,13 @@ export default function Page() {
           <AjirobaLogo />
         </div>
         <div className="bg-[#F25E26] text-white font-Poppins font-medium px-4 md:px-8 py-2 flex items-center text-sm rounded-t">
-          REDEEMED PRODUCTS{" "}
+          REGULAR CUSTOMERS MASTER REPORT{" "}
           <span className="ml-4 text-xs font-normal">
             {currentTime}
           </span>
         </div>
         <div className="overflow-x-auto">
-          <ReportsTable data={displayData} columns={columnsA} />
+          <ReportsTable data={displayData} columns={columnsRegular} />
         </div>
         {displayData && displayData.length > 0 && (
           <div className="flex flex-col items-center py-4">
@@ -685,18 +631,6 @@ export default function Page() {
         )}
       </div>
 
-      {showticket && selectedTicket && (
-        <RaffleTicket
-          onClose={() => setShowTicket(false)}
-          ticket_number={selectedTicket.ticket_number || "N/A"}
-          ticket_price={selectedTicket.ticket_amount || "N/A"}
-          purchase_date={selectedTicket.date || "N/A"}
-          product={selectedTicket.item_purchased || "N/A"}
-          raffle_date={selectedTicket.raffle_date || "N/A"} // Data not available in ticket_list
-          raffle_time={selectedTicket.raffle_time || "N/A"} // Data not available in ticket_list
-        />
-      )}
-
       <DownloadModal
         isOpen={showDownloadModal}
         onClose={() => setShowDownloadModal(false)}
@@ -705,4 +639,4 @@ export default function Page() {
       />
     </section>
   );
-}
+} 
