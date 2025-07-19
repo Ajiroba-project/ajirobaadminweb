@@ -16,12 +16,23 @@ import {
 } from "chart.js";
 import ModalComponent from "@/app/components/ModalComponent";
 import Link from "next/link";
+import Image from "next/image";
+import mtn from "@/app/asset/mtn.png"
+import glo from "@/app/asset/glo.svg"
+import airtel from "@/app/asset/airtel.svg"
+import ninemobile from "@/app/asset/9mobile.svg"
+import startimes from "@/app/asset/startimes.svg"
+import dstv from "@/app/asset/dstv.svg"
+import showmax from "@/app/asset/showmax.svg"
+import gotv from "@/app/asset/gotv.svg"
+
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale);
 
 const Page = () => {
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
+  const router = useRouter();
 
   // Chart data for Service Uptime Report
   const uptimeData = {
@@ -61,6 +72,7 @@ const Page = () => {
     useState(false);
   const [showRechargeTransactionReport, setShowRechargeTransactionReport] =
     useState(false);
+  const [showCustomerStatistics, setShowCustomerStatistics] = useState(false);
 
   // Modal content: two large, centered buttons
   const modalButtons = (
@@ -261,6 +273,102 @@ const Page = () => {
   const RechargeTransactionReport = () => {
     const [activeTab, setActiveTab] = useState("Airtime");
 
+    // Data-driven configuration for each tab
+    const tabData: Record<string, {
+      summary: { title: string; value: string }[];
+      billersTitle: string;
+      serviceProviders: { name: string; img: any }[];
+      dataColumns: string[][];
+      dataColumnTitle: string;
+    }> = {
+      Airtime: {
+        summary: [
+          { title: "Airtime GTV", value: "₦10,000,000" },
+          { title: "Total Commission Earned", value: "₦300,000" },
+          { title: "Counts", value: "10,500" },
+        ],
+        billersTitle: "Billers share of Airtime GTV",
+        serviceProviders: [
+          { name: "MTN", img: mtn },
+          { name: "Airtel", img: airtel },
+          { name: "9mobile", img: ninemobile },
+          { name: "Glo", img: glo },
+        ],
+        dataColumns: [
+          ["₦ 7,000,000", "₦ 210,000", "5,000", "2%"],
+          ["₦ 2,000,000", "₦ 60,000", "2,500", "3%"],
+          ["₦ 500,000", "₦ 20,000", "2,000", "4%"],
+          ["₦ 500,000", "₦ 20,000", "1,000", "4%"],
+        ],
+        dataColumnTitle: "Airtime GTV",
+      },
+      Data: {
+        summary: [
+          { title: "Data GTV", value: "₦5,000,000" },
+          { title: "Total Commission Earned", value: "₦150,000" },
+          { title: "Counts", value: "5,500" },
+        ],
+        billersTitle: "Billers share of Data GTV",
+        serviceProviders: [
+          { name: "MTN Data", img: mtn },
+          { name: "Airtel Data", img: airtel },
+          { name: "9mobile Data", img: ninemobile },
+          { name: "Glo Data", img: glo },
+        ],
+        dataColumns: [
+          ["₦ 3,000,000", "₦ 90,000", "2,000", "3%"],
+          ["₦ 1,500,000", "₦ 45,000", "1,000", "3%"],
+          ["₦ 500,000", "₦ 15,000", "500", "3%"],
+          ["₦ 0", "₦ 0", "0", "0%"],
+        ],
+        dataColumnTitle: "Data GTV",
+      },
+      Electricity: {
+        summary: [
+          { title: "Electricity GTV", value: "₦2,000,000" },
+          { title: "Total Commission Earned", value: "₦60,000" },
+          { title: "Counts", value: "1,200" },
+        ],
+        billersTitle: "Billers share of Electricity GTV",
+        serviceProviders: [
+          { name: "Ikeja Electric", img: mtn }, // Placeholder
+          { name: "Eko Electric", img: airtel }, // Placeholder
+          { name: "Abuja Electric", img: ninemobile }, // Placeholder
+          { name: "PHED", img: glo }, // Placeholder
+        ],
+        dataColumns: [
+          ["₦ 1,000,000", "₦ 30,000", "600", "3%"],
+          ["₦ 500,000", "₦ 15,000", "300", "3%"],
+          ["₦ 300,000", "₦ 9,000", "200", "3%"],
+          ["₦ 200,000", "₦ 6,000", "100", "3%"],
+        ],
+        dataColumnTitle: "Electricity GTV",
+      },
+      Cable: {
+        summary: [
+          { title: "Cable GTV", value: "₦1,000,000" },
+          { title: "Total Commission Earned", value: "₦30,000" },
+          { title: "Counts", value: "800" },
+        ],
+        billersTitle: "Billers share of Cable GTV",
+        serviceProviders: [
+          { name: "DSTV", img: dstv }, // Placeholder
+          { name: "GOTV", img: gotv }, // Placeholder
+          { name: "Startimes", img: startimes }, // Placeholder
+          { name: "Showmax", img: showmax }, // Placeholder
+        ],
+        dataColumns: [
+          ["₦ 600,000", "₦ 18,000", "400", "3%"],
+          ["₦ 200,000", "₦ 6,000", "200", "3%"],
+          ["₦ 100,000", "₦ 3,000", "100", "3%"],
+          ["₦ 100,000", "₦ 3,000", "100", "3%"],
+        ],
+        dataColumnTitle: "Cable GTV",
+      },
+    };
+
+    const currentTabData = tabData[activeTab];
+
     return (
       <div className="w-full min-h-screen bg-gray-100">
         {/* White Header Section */}
@@ -286,46 +394,19 @@ const Page = () => {
           {/* Navigation and Sort Section */}
           <div className="mb-6">
             <div className="flex flex-wrap  gap-4">
-              <button
-                onClick={() => setActiveTab("Airtime")}
-                className={`px-10 py-3 rounded-xl font-semibold transition-colors ${
-                  activeTab === "Airtime"
-                    ? "bg-[#F25E26] text-white font-bold"
-                    : "bg-[#EDEDED] text-gray-500"
-                }`}
-              >
-                Airtime
-              </button>
-              <button
-                onClick={() => setActiveTab("Data")}
-                className={`px-10 py-3 rounded-xl font-semibold transition-colors ${
-                  activeTab === "Data"
-                    ? "bg-[#F25E26] text-white font-bold"
-                    : "bg-[#EDEDED] text-gray-500"
-                }`}
-              >
-                Data
-              </button>
-              <button
-                onClick={() => setActiveTab("Electricity")}
-                className={`px-10 py-3 rounded-xl font-semibold transition-colors ${
-                  activeTab === "Electricity"
-                    ? "bg-[#F25E26] text-white font-bold"
-                    : "bg-[#EDEDED] text-gray-500"
-                }`}
-              >
-                Electricity
-              </button>
-              <button
-                onClick={() => setActiveTab("Cable")}
-                className={`px-10 py-3 rounded-xl font-semibold transition-colors ${
-                  activeTab === "Cable"
-                    ? "bg-[#F25E26] text-white font-bold"
-                    : "bg-[#EDEDED] text-gray-500"
-                }`}
-              >
-                Cable Subscription
-              </button>
+              {Object.keys(tabData).map((tab: string) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-10 py-3 rounded-xl font-semibold transition-colors ${
+                    activeTab === tab
+                      ? "bg-[#F25E26] text-white font-bold"
+                      : "bg-[#EDEDED] text-gray-500"
+                  }`}
+                >
+                  {tab === "Cable" ? "Cable Subscription" : tab}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -349,139 +430,37 @@ const Page = () => {
           </div>
 
           {/* Summary Metrics */}
-          {/*     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="bg-white shadow-lg rounded-lg p-6 border-l-4 border-[#F25E26] border border-gray-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                  </svg>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-6">
+            {currentTabData.summary.map((item: { title: string; value: string }, idx: number) => (
+              <div
+                key={item.title}
+                className="bg-white shadow-lg rounded-lg border border-[#FEEAE2] flex flex-col justify-between"
+              >
+                <div className="w-full h-6 bg-[#FEF6F3] rounded-t-lg"></div>
+                <div className="flex flex-col justify-center items-center p-4 md:p-6 flex-1">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex items-center justify-center gap-2">
+                      {/* You can keep your SVG here or use a different icon per card if needed */}
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#EF4444"
+                        strokeWidth="2"
+                      >
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                        <polyline points="3.27,6.96 12,12.01 20.73,6.96" />
+                        <line x1="12" y1="22.08" x2="12" y2="12" />
+                      </svg>
+                      <h3 className="text-sm md:text-base font-medium text-gray-700">{item.title}</h3>
+                    </div>
+                  </div>
+                  <p className="text-xl md:text-2xl font-bold text-gray-900">{item.value}</p>
                 </div>
-                <h3 className="text-sm font-medium text-gray-700">
-                  Airtime GTV
-                </h3>
+                <div className="w-full h-6 bg-[#FEF6F3] rounded-b-lg"></div>
               </div>
-              <p className="text-2xl md:text-3xl font-bold text-gray-900">
-                ₦10,000,000
-              </p>
-            </div>
-            <div className="bg-white shadow-lg rounded-lg p-6 border-l-4 border-[#F25E26] border border-gray-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                  </svg>
-                </div>
-                <h3 className="text-sm font-medium text-gray-700">
-                  Total Commission Earned
-                </h3>
-              </div>
-              <p className="text-2xl md:text-3xl font-bold text-gray-900">
-                ₦300,000
-              </p>
-            </div>
-            <div className="bg-white shadow-lg rounded-lg p-6 border-l-4 border-[#F25E26] border border-gray-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-                  </svg>
-                </div>
-                <h3 className="text-sm font-medium text-gray-700">Counts</h3>
-              </div>
-              <p className="text-2xl md:text-3xl font-bold text-gray-900">
-                10,500
-              </p>
-            </div>
-          </div> */}
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="bg-white shadow-lg rounded-lg p-6 border border-[#FEEAE2]">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-[#FEEAE2] rounded-full flex items-center justify-center">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#F25E26"
-                    strokeWidth="2"
-                  >
-                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
-                    <path d="M6 13h12" />
-                  </svg>
-                </div>
-                <h3 className="text-sm font-medium text-gray-700">Data GTV</h3>
-              </div>
-              <p className="text-2xl md:text-3xl font-bold text-gray-900">
-                ₦10,000,000
-              </p>
-            </div>
-            <div className="bg-white shadow-lg rounded-lg p-6 border border-orange-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-[#FFF5F0] rounded-full flex items-center justify-center">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                  </svg>
-                </div>
-                <h3 className="text-sm font-medium text-gray-700">
-                  Total Commission Earned
-                </h3>
-              </div>
-              <p className="text-2xl md:text-3xl font-bold text-gray-900">
-                ₦300,000
-              </p>
-            </div>
-            <div className="bg-white shadow-lg rounded-lg p-6 border border-orange-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-[#FFF5F0] rounded-full flex items-center justify-center">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-                  </svg>
-                </div>
-                <h3 className="text-sm font-medium text-gray-700">Counts</h3>
-              </div>
-              <p className="text-2xl md:text-3xl font-bold text-gray-900">
-                10,500
-              </p>
-            </div>
+            ))}
           </div>
 
           <div className="flex justify-end mb-6">
@@ -490,213 +469,132 @@ const Page = () => {
             </span>
           </div>
 
-
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-  {[
-    { title: 'Airtime GTV', value: '₦10,000,000' },
-    { title: 'Total Commission Earned', value: '₦300,000' },
-    { title: 'Counts', value: '10,500' }
-  ].map((item, idx) => (
-    <div
-      key={idx}
-      className="bg-white border border-[#FBE9E3] rounded-[10px] shadow-sm overflow-hidden"
-    >
-      <div className="bg-[#FFF5F2] flex flex-col items-center py-4">
-        <div className="w-8 h-8 rounded-full bg-[#FFE4D9] flex items-center justify-center text-[#F25E26] mb-2">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-          </svg>
-        </div>
-        <h3 className="text-sm font-medium text-[#1B1E28]">{item.title}</h3>
-      </div>
-      <div className="bg-[#FFF5F2] text-center py-4">
-        <p className="text-2xl font-bold text-[#1B1E28]">{item.value}</p>
-      </div>
-    </div>
-  ))}
-</div>
-
-<div className="flex justify-end mb-6">
-  <a className="text-[#F25E26] text-sm font-medium hover:underline cursor-pointer">
-    See More &gt;
-  </a>
-</div>
-
-
-
-
-
-
           {/* Billers Share Section */}
-          <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-            <div className="bg-[#F25E26] px-6 py-4">
-              <h2 className="text-white font-semibold text-lg">
-                Billers share of Airtime GTV
+          <div className="bg-white shadow-lg rounded-2xl overflow-hidden mt-8">
+            <div className="bg-[#F25E26] px-6 py-4 flex justify-center rounded-t-2xl">
+              <h2 className="text-white font-semibold text-lg text-center">
+                {currentTabData.billersTitle}
               </h2>
             </div>
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">
-                        Service Provider
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">
-                        Airtime GTV
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">
-                        Commission
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">
-                        Count
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">
-                        Commission Rate
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b border-gray-100">
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-yellow-400 rounded flex items-center justify-center">
-                            <span className="text-black font-bold text-xs">
-                              MTN
-                            </span>
-                          </div>
-                          <span className="font-medium">MTN</span>
+            <div className="p-4 md:p-8">
+              <div className="flex flex-col md:flex-row gap-12 md:gap-0">
+                {/* Service Providers Column */}
+                <div className="md:w-1/4 w-full flex flex-col items-stretch border border-gray-300 rounded-2xl md:rounded-l-2xl md:rounded-r-none overflow-hidden mb-4 md:mb-0">
+                  <div className="py-3 px-4 font-semibold text-lg text-gray-800 border-b border-gray-200 text-center">
+                    Service Provider
+                  </div>
+                  <div className="flex-1 flex flex-col">
+                    {currentTabData.serviceProviders.map((provider: { name: string; img?: any }, idx: number) => (
+                      <div
+                        key={provider.name}
+                        className={`flex items-center justify-center py-6 border-b border-gray-200 bg-white ${idx === currentTabData.serviceProviders.length - 1 ? "border-b-0" : ""}`}
+                      >
+                        {activeTab === "Electricity" ? (
+                          <button
+                            className="bg-orange-500 text-white px-6 py-2 rounded-lg font-semibold text-base"
+                            style={{ minWidth: 100 }}
+                            disabled
+                          >
+                            {provider.name}
+                          </button>
+                        ) : (
+                          <Image src={provider.img} alt={provider.name} className="h-12 w-auto" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Data Columns */}
+                <div className="md:w-3/4 w-full border border-gray-300 rounded-2xl md:rounded-r-2xl md:rounded-l-none overflow-hidden">
+                  <div className="grid grid-cols-4">
+                    <div className="py-3 px-4 font-semibold text-gray-800 border-b border-gray-200 text-center">
+                      {currentTabData.dataColumnTitle}
+                    </div>
+                    <div className="py-3 px-4 font-semibold text-gray-800 border-b border-gray-200 text-center">
+                      Commission
+                    </div>
+                    <div className="py-3 px-4 font-semibold text-gray-800 border-b border-gray-200 text-center">
+                      Count
+                    </div>
+                    <div className="py-3 px-4 font-semibold text-gray-800 border-b border-gray-200 text-center">
+                      Commission Rate
+                    </div>
+                  </div>
+                  {/* Data Rows */}
+                  {currentTabData.dataColumns.map((row: string[], idx: number) => (
+                    <div className="grid grid-cols-4" key={idx}>
+                      {row.map((cell: string, cidx: number) => (
+                        <div
+                          key={cidx}
+                          className="py-6 px-4 text-center bg-gray-100 m-2 rounded-lg font-semibold text-gray-800 flex items-center justify-center"
+                        >
+                          {cell}
                         </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                          ₦ 7,000,000
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                          ₦ 210,000
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                          5,000
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                          2%
-                        </span>
-                      </td>
-                    </tr>
-                    <tr className="border-b border-gray-100">
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold text-xs">
-                              airtel
-                            </span>
-                          </div>
-                          <span className="font-medium">Airtel</span>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                          ₦ 2,000,000
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                          ₦ 60,000
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                          2,500
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                          3%
-                        </span>
-                      </td>
-                    </tr>
-                    <tr className="border-b border-gray-100">
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold text-xs">
-                              9mobile
-                            </span>
-                          </div>
-                          <span className="font-medium">9mobile</span>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                          ₦ 500,000
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                          ₦ 20,000
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                          2,000
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                          4%
-                        </span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold text-xs">
-                              glo
-                            </span>
-                          </div>
-                          <span className="font-medium">Glo</span>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                          ₦ 500,000
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                          ₦ 20,000
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                          1,000
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                          4%
-                        </span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                      ))}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Customer Statistics Report Component
+  const CustomerStatisticsReport = () => {
+    return (
+      <div className="w-full min-h-screen bg-gray-50">
+        <div className="bg-[#F6F6F6] px-8 pt-8 pb-6">
+          <span
+            onClick={() => setShowCustomerStatistics(false)}
+            className="text-[#F25E26] cursor-pointer text-sm block mb-4 ml-1"
+            style={{ marginTop: '4px' }}
+          >
+            Back
+          </span>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">Customer Statistics</h1>
+          <p className="text-lg font-medium text-gray-700">
+            Customer Statistic Summary <span className="text-base font-normal">(23-May-2025; 4:40 PM)</span>
+          </p>
+        </div>
+        <div className="max-w-3xl mx-auto px-8">
+          <div className="flex justify-end items-center mt-8 mb-8">
+            <button className="border border-gray-300 rounded-lg px-4 py-2 text-gray-700 text-sm flex items-center gap-2">
+              Sort by
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6,9 12,15 18,9"></polyline></svg>
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
+            <div className="rounded-xl border-2 border-green-200 bg-green-50 p-8 flex flex-col items-center justify-center min-h-[160px]">
+              <div className="text-lg font-medium text-gray-700 mb-2 text-center">Registered Customers</div>
+              <div className="text-3xl font-bold text-gray-900 text-center">2,000,000</div>
+            </div>
+            <div className="rounded-xl border-2 border-red-200 bg-red-50 p-8 flex flex-col items-center justify-center min-h-[160px]">
+              <div className="text-lg font-medium text-gray-700 mb-2 text-center">Customer Wallet Balance</div>
+              <div className="text-3xl font-bold text-gray-900 text-center">₦ 5,000,000</div>
+            </div>
+            <div className="rounded-xl border-2 border-purple-400 bg-purple-50 p-8 flex flex-col items-center justify-center min-h-[160px]">
+              <div className="text-lg font-medium text-gray-700 mb-2 text-center">Customers With Balance:</div>
+              <div className="flex flex-col items-center justify-center h-full gap-2">
+                <div className="flex items-center gap-2 text-xl font-semibold text-gray-900">
+                  <span>&gt; 0:</span> <span className="font-bold">400,000</span>
+                </div>
+                <div className="flex items-center gap-2 text-xl font-semibold text-gray-900">
+                  <span>&lt; 0:</span> <span className="font-bold">0</span>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-xl border-2 border-yellow-300 bg-yellow-50 p-8 flex flex-col items-center justify-center min-h-[160px]">
+              <div className="text-lg font-medium text-gray-700 mb-2 text-center">Unredeemed Ajiroba Points</div>
+              <div className="text-3xl font-bold text-gray-900 text-center">100,000</div>
+            </div>
+          </div>
+          <div className="flex justify-center mt-8 mb-8">
+            <button className="bg-[#F25E26] hover:bg-[#E84526] text-white font-medium py-3 px-16 rounded-lg transition-colors duration-200 text-base">
+              View Report
+            </button>
           </div>
         </div>
       </div>
@@ -729,6 +627,16 @@ const Page = () => {
       <section>
         <PageLayout>
           <RechargeTransactionReport />
+        </PageLayout>
+      </section>
+    );
+  }
+
+  if (showCustomerStatistics) {
+    return (
+      <section>
+        <PageLayout>
+          <CustomerStatisticsReport />
         </PageLayout>
       </section>
     );
@@ -1003,7 +911,8 @@ const Page = () => {
               {/* Bottom Row - Statistics */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Customer Statistics */}
-                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:bg-teal-500 hover:text-white transition-all duration-300 cursor-pointer group">
+                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:bg-teal-500 hover:text-white transition-all duration-300 cursor-pointer group"
+                  onClick={() => setShowCustomerStatistics(true)}>
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-teal-600">
                       <svg
@@ -1046,7 +955,8 @@ const Page = () => {
                 </div>
 
                 {/* Revenue Summary Report */}
-                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:bg-blue-500 hover:text-white transition-all duration-300 cursor-pointer group">
+                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:bg-blue-500 hover:text-white transition-all duration-300 cursor-pointer group"
+                  onClick={() => router.push('/dashboard/revenuesummaryreport')}>
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-blue-600">
                       <svg

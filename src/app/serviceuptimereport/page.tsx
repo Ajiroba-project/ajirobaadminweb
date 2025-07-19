@@ -19,7 +19,10 @@ export default function Page() {
   const [filterBy, setFilterBy] = useState<string[]>([]);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
-  const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
+  const [customDateRange, setCustomDateRange] = useState({
+    start: "",
+    end: "",
+  });
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
 
   const [userToken] = useState(Cookies.get("token"));
@@ -46,55 +49,54 @@ export default function Page() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (!target.closest('.filter-dropdown') && !target.closest('.sort-dropdown')) {
+      if (
+        !target.closest(".filter-dropdown") &&
+        !target.closest(".sort-dropdown")
+      ) {
         setShowFilterDropdown(false);
         setShowSortDropdown(false);
         setShowCustomDatePicker(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Download handlers
   const handleDownloadPDF = async () => {
     const exportData: ExportData[] = filteredServiceUptime.map((item) => ({
-      service: item.service,
-      successrate: item.successrate,
-      failurerate: item.failurerate,
-      reasonforfailure: item.reasonforfailure,
+      items: item.items,
+      gross: item.gross,
+      profit: item.profit,
     }));
 
     setShowDownloadModal(false);
     await exportToPDF(exportData, {
-      title: "Service Uptime Report",
-      fileName: "Service_Uptime_Report"
+      title: "Revenue Summary Report",
+      fileName: "Service_Uptime_Report",
     });
   };
 
   const handleDownloadXLS = () => {
     const exportData: ExportData[] = filteredServiceUptime.map((item) => ({
-      service: item.service,
-      successrate: item.successrate,
-      failurerate: item.failurerate,
-      reasonforfailure: item.reasonforfailure,
+      items: item.items,
+      gross: item.gross,
+      profit: item.profit,
     }));
 
     exportToXLS(exportData, {
-      title: "Service Uptime Report",
+      title: "Revenue Summary Report",
       fileName: "Service_Uptime_Report",
       columns: [
-        { key: 'service', header: 'Service', width: 25 },
-        { key: 'successrate', header: 'Success Rate (%)', width: 15 },
-        { key: 'failurerate', header: 'Failure Rate (%)', width: 15 },
-        { key: 'reasonforfailure', header: 'Reason for Failure', width: 35 },
+        { key: "items", header: "Items", width: 25 },
+        { key: "gross", header: "Gross (₦)", width: 15 },
+        { key: "profit", header: "Profit (₦)", width: 15 },
       ],
       summaryRows: [
-        { label: 'Total Services', value: exportData.length },
-        { label: 'Average Success Rate', value: `${(exportData.reduce((sum, item) => sum + parseInt(item.successrate), 0) / exportData.length).toFixed(1)}%` },
-        { label: 'Generated', value: new Date().toLocaleString() },
-      ]
+        { label: "Total Services", value: exportData.length },
+        { label: "Generated", value: new Date().toLocaleString() },
+      ],
     });
     setShowDownloadModal(false);
   };
@@ -105,56 +107,53 @@ export default function Page() {
       label: "S/N",
       render: (row: any, idx: number) => (currentPage - 1) * pageSize + idx + 1,
     },
-    { key: "service", label: "SERVICE" },
+    { key: "items", label: "ITEMS" },
     {
-      key: "successrate",
-      label: "SUCCESS RATE",
-      render: (row: any) => (
-        <span className="text-green-600 font-medium">
-          {row.successrate}%
-        </span>
-      ),
+      key: "gross",
+      label: "GROSS TRANSACTION VOLUME (GTV) (₦)",
+      sum: true,
     },
-    {
-      key: "failurerate",
-      label: "FAILURE RATE",
-      render: (row: any) => (
-        <span className="text-red-600 font-medium">
-          {row.failurerate}%
-        </span>
-      ),
-    },
-    { key: "reasonforfailure", label: "REASON FOR FAILURE" },
+
+    { key: "profit", label: "Profit", sum: true },
+    { key: "date", label: "Date" },
   ];
 
   const filteredServiceUptime = [
     {
-      service: "Wallet Funding",
-      successrate: "97",
-      failurerate: "3",
-      reasonforfailure: "Lorem Ipsum",
-      id: "001",
+      items: "Regular Deals",
+      gross: 1000,
+      profit: 5000,
+      date: new Date().toISOString().slice(0, 10), // today
     },
     {
-      service: "Auction Bidding",
-      successrate: "97",
-      failurerate: "3",
-      reasonforfailure: "Lorem Ipsum",
-      id: "002",
+      items: "Auction Deals",
+      gross: 1000,
+      profit: 9000,
+      date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10), // yesterday
     },
     {
-      service: "Cashout Redemption",
-      successrate: "97",
-      failurerate: "3",
-      reasonforfailure: "Lorem Ipsum",
-      id: "003",
+      items: "Special Promo",
+      gross: 2000,
+      profit: 1500,
+      date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), // last week
     },
     {
-      service: "Gift Voucher Redemption",
-      successrate: "97",
-      failurerate: "3",
-      reasonforfailure: "Lorem Ipsum",
-      id: "004",
+      items: "Flash Sale",
+      gross: 3000,
+      profit: 2500,
+      date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), // last month
+    },
+    {
+      items: "Year End Bonus",
+      gross: 5000,
+      profit: 3500,
+      date: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), // last year
+    },
+    {
+      items: "Custom Test",
+      gross: 4000,
+      profit: 2000,
+      date: "2023-12-15", // custom test date
     },
   ];
 
@@ -173,23 +172,26 @@ export default function Page() {
   const getFilteredAndSortedData = () => {
     let filteredData = [...filteredServiceUptime];
 
-    // Apply search filter
+    // Apply search filter (search all columns)
     if (search) {
-      filteredData = filteredData.filter(item =>
-        item.service.toLowerCase().includes(search.toLowerCase()) ||
-        item.reasonforfailure.toLowerCase().includes(search.toLowerCase())
+      filteredData = filteredData.filter(
+        (item) =>
+          item.items.toLowerCase().includes(search.toLowerCase()) ||
+          item.gross.toString().includes(search) ||
+          item.profit.toString().includes(search) ||
+          (item.date && item.date.includes(search))
       );
     }
 
-    // Apply filter by checkboxes
+    // Apply filter by checkboxes (only 'items' for now)
     if (filterBy.length > 0) {
-      filteredData = filteredData.filter(item => {
-        return filterBy.every(filter => {
+      filteredData = filteredData.filter((item) => {
+        return filterBy.every((filter) => {
           switch (filter) {
-            case 'service':
-              return search ? item.service.toLowerCase().includes(search.toLowerCase()) : true;
-            case 'reason':
-              return search ? item.reasonforfailure.toLowerCase().includes(search.toLowerCase()) : true;
+            case "items":
+              return search
+                ? item.items.toLowerCase().includes(search.toLowerCase())
+                : true;
             default:
               return true;
           }
@@ -197,20 +199,56 @@ export default function Page() {
       });
     }
 
-    // Apply sorting
+    // Apply date range filter
     if (sort) {
-      filteredData.sort((a, b) => {
-        switch (sort) {
-          case 'service':
-            return a.service.localeCompare(b.service);
-          case 'successrate':
-            return parseInt(b.successrate) - parseInt(a.successrate);
-          case 'failurerate':
-            return parseInt(b.failurerate) - parseInt(a.failurerate);
-          default:
-            return 0;
-        }
-      });
+      const today = new Date();
+      let startDate: Date | null = null;
+      let endDate: Date | null = null;
+      switch (sort) {
+        case "yesterday":
+          startDate = new Date(today);
+          startDate.setDate(today.getDate() - 1);
+          endDate = new Date(startDate);
+          break;
+        case "lastweek":
+          startDate = new Date(today);
+          startDate.setDate(today.getDate() - 7);
+          endDate = today;
+          break;
+        case "lastmonth":
+          startDate = new Date(today);
+          startDate.setMonth(today.getMonth() - 1);
+          endDate = today;
+          break;
+        case "lastyear":
+          startDate = new Date(today);
+          startDate.setFullYear(today.getFullYear() - 1);
+          endDate = today;
+          break;
+        case "custom":
+          if (customDateRange.start && customDateRange.end) {
+            startDate = new Date(customDateRange.start);
+            endDate = new Date(customDateRange.end);
+          }
+          break;
+        default:
+          break;
+      }
+      if (startDate && endDate) {
+        filteredData = filteredData.filter((item) => {
+          const itemDate = new Date(item.date);
+          // For 'yesterday', match only that day
+          if (sort === "yesterday") {
+            return (
+              itemDate.getFullYear() === startDate.getFullYear() &&
+              itemDate.getMonth() === startDate.getMonth() &&
+              itemDate.getDate() === startDate.getDate()
+            );
+          }
+          // For ranges, inclusive
+          return itemDate >= startDate && itemDate <= endDate;
+        });
+      }
     }
 
     return filteredData;
@@ -233,7 +271,7 @@ export default function Page() {
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 md:px-14 py-4 gap-2">
           <h1 className="text-[#111111] text-lg font-Poppins font-semibold">
-            Service Uptime Report
+            Revenue Summary Report
           </h1>
           <button
             onClick={() => setShowDownloadModal(true)}
@@ -282,23 +320,32 @@ export default function Page() {
             >
               Filter by {filterBy.length > 0 && `(${filterBy.length})`}
               <svg
-                className={`ml-2 h-4 w-4 transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`}
+                className={`ml-2 h-4 w-4 transition-transform ${
+                  showFilterDropdown ? "rotate-180" : ""
+                }`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
               </svg>
             </button>
-            
+
             {showFilterDropdown && (
               <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-10">
                 <div className="p-2 space-y-2">
                   {[
-                    { key: 'service', label: 'Service' },
-                    { key: 'reason', label: 'Reason for Failure' }
+                    { key: "items", label: "Items" },
                   ].map((filter) => (
-                    <label key={filter.key} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                    <label
+                      key={filter.key}
+                      className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                    >
                       <input
                         type="checkbox"
                         checked={filterBy.includes(filter.key)}
@@ -306,12 +353,16 @@ export default function Page() {
                           if (e.target.checked) {
                             setFilterBy([...filterBy, filter.key]);
                           } else {
-                            setFilterBy(filterBy.filter(f => f !== filter.key));
+                            setFilterBy(
+                              filterBy.filter((f) => f !== filter.key)
+                            );
                           }
                         }}
                         className="rounded border-gray-300 text-[#F25E26] focus:ring-[#F25E26]"
                       />
-                      <span className="text-sm text-[#353131]">{filter.label}</span>
+                      <span className="text-sm text-[#353131]">
+                        {filter.label}
+                      </span>
                     </label>
                   ))}
                   {filterBy.length > 0 && (
@@ -335,33 +386,46 @@ export default function Page() {
               onClick={() => setShowSortDropdown(!showSortDropdown)}
               className="w-full md:w-auto px-4 py-2 border border-[#E9E9E9] rounded-md bg-white text-[#353131] text-sm font-Poppins focus:outline-none focus:ring-2 focus:ring-[#F25E26] flex items-center justify-between min-w-[120px]"
             >
-              Sort by
+              Date Range
               <svg
-                className={`ml-2 h-4 w-4 transition-transform ${showSortDropdown ? 'rotate-180' : ''}`}
+                className={`ml-2 h-4 w-4 transition-transform ${
+                  showSortDropdown ? "rotate-180" : ""
+                }`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
               </svg>
             </button>
-            
+
             {showSortDropdown && (
               <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-10">
                 <div className="p-2 space-y-1">
                   {[
-                    { value: 'service', label: 'Service Name' },
-                    { value: 'successrate', label: 'Success Rate (High to Low)' },
-                    { value: 'failurerate', label: 'Failure Rate (High to Low)' }
+                    { value: "yesterday", label: "Yesterday" },
+                    { value: "lastweek", label: "Last Week" },
+                    { value: "lastmonth", label: "Last Month" },
+                    { value: "lastyear", label: "Last Year" },
+                    { value: "custom", label: "Custom" },
                   ].map((option) => (
                     <button
                       key={option.value}
                       onClick={() => {
                         setSort(option.value);
                         setShowSortDropdown(false);
+                        if (option.value !== "custom") setShowCustomDatePicker(false);
+                        if (option.value === "custom") setShowCustomDatePicker(true);
                       }}
                       className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-50 ${
-                        sort === option.value ? 'bg-[#F25E26] text-white' : 'text-[#353131]'
+                        sort === option.value
+                          ? "bg-[#F25E26] text-white"
+                          : "text-[#353131]"
                       }`}
                     >
                       {option.label}
@@ -371,12 +435,14 @@ export default function Page() {
                     <div className="pt-2 border-t border-gray-200">
                       <button
                         onClick={() => {
-                          setSort('');
+                          setSort("");
                           setShowSortDropdown(false);
+                          setShowCustomDatePicker(false);
+                          setCustomDateRange({ start: "", end: "" });
                         }}
                         className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded"
                       >
-                        Clear sort
+                        Clear date range
                       </button>
                     </div>
                   )}
@@ -384,43 +450,62 @@ export default function Page() {
               </div>
             )}
           </div>
+          {showCustomDatePicker && (
+            <div className="flex gap-2 items-center mt-2">
+              <input
+                type="date"
+                value={customDateRange.start}
+                onChange={(e) => setCustomDateRange({ ...customDateRange, start: e.target.value })}
+                className="border rounded px-2 py-1 text-sm"
+              />
+              <span>to</span>
+              <input
+                type="date"
+                value={customDateRange.end}
+                onChange={(e) => setCustomDateRange({ ...customDateRange, end: e.target.value })}
+                className="border rounded px-2 py-1 text-sm"
+              />
+            </div>
+          )}
         </div>
       </div>
 
-      <div className=" bg-white rounded-lg shadow border mt-6 mb-12 overflow-x-scroll overflow-y-scroll px-4 md:px-14 py-4">
-        <div className="flex flex-row items-center gap-4 px-4 md:px-8 pt-8 pb-2">
-          <AjirobaLogo />
-        </div>
-        <div className="bg-[#F25E26] text-white font-Poppins font-medium px-4 md:px-8 py-2 flex items-center justify-between text-sm rounded-t">
-          <span>SERVICE UPTIME REPORT</span>
-          <span className="text-xs font-normal">
-            {currentTime}
-          </span>
-        </div>
-        <div className="overflow-x-auto">
-          <ReportsTable data={displayData} columns={columnsServiceUptime} />
-        </div>
-        {displayData && displayData.length > 0 && (
-          <div className="flex flex-col items-center py-4">
-            <div className="text-sm text-gray-600 mb-2">
-              Total: {displayData.length} services
-              {(search || filterBy.length > 0 || sort) &&
-                ` | Filtered: ${displayData.length} services`}
+      <div className="flex justify-center ">
+        <div className="w-7/12 ">
+          <div className=" bg-white rounded-lg shadow border mt-6 mb-12 overflow-x-scroll overflow-y-scroll  py-4">
+            <div className="flex flex-row items-center gap-4 px-4 md:px-8 pt-8 pb-2">
+              <AjirobaLogo />
             </div>
-            {(search || filterBy.length > 0 || sort) && (
-              <button
-                onClick={() => {
-                  setSearch('');
-                  setFilterBy([]);
-                  setSort('');
-                }}
-                className="text-xs text-[#F25E26] hover:underline"
-              >
-                Clear all filters
-              </button>
+            <div className="bg-[#F25E26] text-white font-Poppins font-medium px-4 md:px-8 py-2 flex items-center justify-between text-sm rounded-t">
+              <span>Revenue Summary Report</span>
+              <span className="text-xs font-normal">{currentTime}</span>
+            </div>
+            <div className="overflow-x-auto">
+              <ReportsTable data={displayData} columns={columnsServiceUptime} />
+            </div>
+            {displayData && displayData.length > 0 && (
+              <div className="flex flex-col items-center py-4">
+                <div className="text-sm text-gray-600 mb-2">
+                  Total: {displayData.length} services
+                  {(search || filterBy.length > 0 || sort) &&
+                    ` | Filtered: ${displayData.length} services`}
+                </div>
+                {(search || filterBy.length > 0 || sort) && (
+                  <button
+                    onClick={() => {
+                      setSearch("");
+                      setFilterBy([]);
+                      setSort("");
+                    }}
+                    className="text-xs text-[#F25E26] hover:underline"
+                  >
+                    Clear all filters
+                  </button>
+                )}
+              </div>
             )}
           </div>
-        )}
+        </div>
       </div>
 
       <DownloadModal
@@ -431,4 +516,4 @@ export default function Page() {
       />
     </section>
   );
-} 
+}
