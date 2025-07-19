@@ -184,25 +184,7 @@ export default function ProductDetailsAuctionPage() {
                     <h2 className="text-black text-xl md:text-2xl font-semibold mb-6">Product Summary</h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Left: Product Info Card */}
-                        {/*   <div className="border rounded-xl p-8 bg-white flex flex-col justify-between h-full">
-                            <h3 className="text-2xl font-semibold mb-2"> {prodInfo?.data?.product_info.product_name}</h3>
-                            <div className="text-3xl font-bold text-[#222] mb-1"> {prodInfo?.data?.product_info?.ticket_price !== undefined && prodInfo?.data?.product_info?.ticket_price !== null
-                                ? `₦${Number(prodInfo.data.product_info.ticket_price).toLocaleString('en-NG', {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2
-                                })}`
-                                : 'N/A'
-                            }</div>
-                            <div className="text-[#7B7B7B] text-lg mb-4">Ticket Price</div>
-                            <hr className="my-4" />
-                            <div className="mb-2 text-base text-[#7B7B7B]">Quantity Available: <span className="text-[#222] font-semibold">{prodInfo?.data?.product_info?.quantity}</span></div>
-                            <div className="mb-2 text-base text-[#7B7B7B]">Weight: <span className="text-[#222] font-semibold">{prodInfo?.data?.product_info?.weight}</span></div>
-                            <hr className="my-4" />
-                            <div className="text-base text-[#7B7B7B] mb-1">Delivery Estimation</div>
-                            <div className="text-lg font-bold text-[#222]">{prodInfo?.data?.product_info?.delivery_estimation}</div>
-                        </div> */}
-
+                       
 
 
                         <div className=" rounded-lg border p-3 border-[#504D4D]  w-auto mt-8 xl:mt-0 lg:mt-0 md:mt-0 2xl:mt-0 container justify-center flex flex-wrap xl:block md:block lg:block 2xl:block">

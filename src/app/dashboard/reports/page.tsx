@@ -204,7 +204,10 @@ const Page = () => {
 
             {/* View Report Button */}
             <div className="flex justify-center mt-8 md:mt-12">
-              <button className="bg-[#F25E26] hover:bg-[#E84526] text-white font-medium py-3 md:py-4 px-8 md:px-16 rounded-lg transition-colors duration-200 text-sm md:text-base">
+              <button
+                className="bg-[#F25E26] hover:bg-[#E84526] text-white font-medium py-3 md:py-4 px-8 md:px-16 rounded-lg transition-colors duration-200 text-sm md:text-base"
+                onClick={() => router.push('/dashboard/regulartransactionreport')}
+              >
                 View Report
               </button>
             </div>
@@ -309,7 +312,10 @@ const Page = () => {
 
             {/* View Report Button */}
             <div className="flex justify-center mt-8 md:mt-12">
-              <button className="bg-[#F25E26] hover:bg-[#E84526] text-white font-medium py-3 md:py-4 px-8 md:px-16 rounded-lg transition-colors duration-200 text-sm md:text-base">
+              <button
+                className="bg-[#F25E26] hover:bg-[#E84526] text-white font-medium py-3 md:py-4 px-8 md:px-16 rounded-lg transition-colors duration-200 text-sm md:text-base"
+                onClick={() => router.push('/dashboard/auctiontransactionreport')}
+              >
                 View Report
               </button>
             </div>
