@@ -16,9 +16,25 @@ export const DownloadModal: React.FC<DownloadModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  const handleModalClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-3xl p-12 max-w-lg w-full mx-4 relative">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      onClick={handleBackdropClick}
+    >
+      <div 
+        className="bg-white rounded-3xl p-12 max-w-lg w-full mx-4 relative"
+        onClick={handleModalClick}
+      >
         <h2 className="text-3xl font-semibold text-black mb-12 font-sans">
           Download as:
         </h2>
@@ -70,13 +86,6 @@ export const DownloadModal: React.FC<DownloadModalProps> = ({
             </div>
           </button>
         </div>
-
-        {/* Close button - invisible but clickable overlay */}
-        <button
-          onClick={onClose}
-          className="absolute inset-0 w-full h-full bg-transparent"
-          style={{ zIndex: -1 }}
-        />
       </div>
     </div>
   );

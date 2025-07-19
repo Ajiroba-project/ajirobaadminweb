@@ -693,7 +693,7 @@ const Page = () => {
             </div>
           </div>
           <div className="flex justify-center mt-8 mb-8">
-            <button className="bg-[#F25E26] hover:bg-[#E84526] text-white font-medium py-3 px-16 rounded-lg transition-colors duration-200 text-base">
+            <button  onClick={() => router.push('/dashboard/customersreport')}   className="bg-[#F25E26] hover:bg-[#E84526] text-white font-medium py-3 px-16 rounded-lg transition-colors duration-200 text-base">
               View Report
             </button>
           </div>
@@ -782,7 +782,7 @@ const Page = () => {
             </div>
           </div>
           <div className="flex justify-center mt-8 mb-8">
-            <button className="bg-red-100 hover:bg-red-200 text-gray-900 font-medium py-3 px-16 rounded-lg transition-colors duration-200 text-base border border-red-200">
+            <button onClick={() => router.push('/dashboard/raffletickets')} className="bg-red-100 hover:bg-red-200 text-gray-900 font-medium py-3 px-16 rounded-lg transition-colors duration-200 text-base border border-red-200">
               View Report
             </button>
           </div>

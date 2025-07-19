@@ -1,12 +1,11 @@
 
 import React, { useState } from 'react';
+import { Pagination } from '@/app/components/Pagination';
 
 // Define a generic RowData type to represent the data structure
 interface RowData {
   id?: string | number; 
   [key: string]: any; 
-
-
 }
 
 // Define Column interface with stricter types
@@ -30,11 +29,12 @@ interface ScrollableTableProps<T extends RowData> {
   headerClassName?: string;
   rowClassName?: string;
   cellClassName?: string;
+  // Pagination props
+  currentPage?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
+  showPagination?: boolean;
 }
-
-
-
-
 
 // Use generics in the component
 export const ReportsTable = <T extends RowData>({
@@ -47,6 +47,10 @@ export const ReportsTable = <T extends RowData>({
     headerClassName = '',
     rowClassName = '',
     cellClassName = '',
+    currentPage = 1,
+    pageSize = 10,
+    onPageChange,
+    showPagination = false,
   }: ScrollableTableProps<T>) => {
   
       const [modalOpen, setModalOpen] = useState(false);
@@ -60,12 +64,24 @@ export const ReportsTable = <T extends RowData>({
           setModalOpen(false);
           setSelectedRow(null);
         };
-  
+
     const getColumnSum = (key: string) => {
       return data.reduce((acc, row) => {
         const value = Number(row[key]);
         return !isNaN(value) ? acc + value : acc;
       }, 0);
+    };
+
+    // Pagination logic
+    const totalPages = Math.ceil(data.length / pageSize);
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedData = data.slice(startIndex, endIndex);
+
+    const handlePageChange = (selectedItem: { selected: number }) => {
+      if (onPageChange) {
+        onPageChange(selectedItem.selected + 1);
+      }
     };
   
     return (
@@ -84,7 +100,7 @@ export const ReportsTable = <T extends RowData>({
             </tr>
           </thead>
           <tbody>
-            {data.map((row, idx) => (
+            {paginatedData.map((row, idx) => (
               <tr
                 key={row.id ?? idx} // Fallback to index if id is undefined
                 className={`border-b border-[#E9E9E9] hover:bg-[#F6F6F6] ${rowClassName}`}
@@ -106,7 +122,7 @@ export const ReportsTable = <T extends RowData>({
   
             {/* Empty rows for consistent height */}
             {emptyRowCount > 0 &&
-              Array.from({ length: Math.max(0, emptyRowCount - data.length) }).map((_, i) => (
+              Array.from({ length: Math.max(0, emptyRowCount - paginatedData.length) }).map((_, i) => (
                 <tr key={`empty-${i}`} className="h-10 border-b border-[#E9E9E9]">
                   {columns.map((col, j) => (
                     <td
@@ -135,9 +151,18 @@ export const ReportsTable = <T extends RowData>({
             </tr>
           </tbody>
         </table>
-  
-  
-       
+
+        {/* Pagination */}
+        {showPagination && totalPages > 1 && (
+          <div className="flex justify-center mt-4">
+            <Pagination
+              pageCount={totalPages}
+              onPageChange={handlePageChange}
+              currentPage={currentPage - 1}
+              className="flex items-center gap-2"
+            />
+          </div>
+        )}
       </div>
     );
   };
