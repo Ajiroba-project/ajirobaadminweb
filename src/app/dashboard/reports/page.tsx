@@ -34,6 +34,10 @@ const Page = () => {
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
   const router = useRouter();
 
+  const [topSortBy, setTopSortBy] = useState('Yesterday');
+  const [topCustomStart, setTopCustomStart] = useState('');
+  const [topCustomEnd, setTopCustomEnd] = useState('');
+
   // Chart data for Service Uptime Report
   const uptimeData = {
     labels: ["Success Rate", "Failure Rate"],
@@ -73,6 +77,7 @@ const Page = () => {
   const [showRechargeTransactionReport, setShowRechargeTransactionReport] =
     useState(false);
   const [showCustomerStatistics, setShowCustomerStatistics] = useState(false);
+  const [showRaffleDrawReport, setShowRaffleDrawReport] = useState(false);
 
   // Modal content: two large, centered buttons
   const modalButtons = (
@@ -105,6 +110,9 @@ const Page = () => {
   );
 
   const RegularDealsReport = () => {
+    const [sortBy, setSortBy] = useState('Yesterday');
+    const [customStart, setCustomStart] = useState('');
+    const [customEnd, setCustomEnd] = useState('');
     return (
       <div className="w-full min-h-screen bg-gray-50">
         <div className="bg-[#F6F6F6] px-4 sm:px-6 md:px-8 py-4 md:py-6">
@@ -124,16 +132,35 @@ const Page = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
           {/* Sort by section */}
           <div className="py-4 border-t border-gray-100">
-            <div className="flex justify-end items-center">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Sort by</span>
-                <select className="border border-gray-300 rounded px-2 md:px-3 py-1 text-sm bg-white">
-                  <option>Last Week</option>
-                  <option>Last Month</option>
-                  <option>Last Year</option>
-                  <option>Custom</option>
-                </select>
-              </div>
+            <div className="flex justify-end items-center gap-4">
+              <select
+                className="border border-gray-300 rounded px-2 md:px-3 py-1 text-sm bg-white"
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value)}
+              >
+                <option>Yesterday</option>
+                <option>Last Week</option>
+                <option>Last Month</option>
+                <option>Last Year</option>
+                <option>Custom</option>
+              </select>
+              {sortBy === 'Custom' && (
+                <>
+                  <input
+                    type="date"
+                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    value={customStart}
+                    onChange={e => setCustomStart(e.target.value)}
+                  />
+                  <span className="mx-1">to</span>
+                  <input
+                    type="date"
+                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    value={customEnd}
+                    onChange={e => setCustomEnd(e.target.value)}
+                  />
+                </>
+              )}
             </div>
           </div>
 
@@ -188,6 +215,9 @@ const Page = () => {
   };
 
   const AuctionCustomersReport = () => {
+    const [sortBy, setSortBy] = useState('Yesterday');
+    const [customStart, setCustomStart] = useState('');
+    const [customEnd, setCustomEnd] = useState('');
     return (
       <div className="w-full min-h-screen bg-gray-50">
         <div className="bg-[#F6F6F6] px-4 sm:px-6 md:px-8 py-4 md:py-6">
@@ -207,16 +237,35 @@ const Page = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
           {/* Sort by section */}
           <div className="py-4 border-t border-gray-100">
-            <div className="flex justify-end items-center">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Sort by</span>
-                <select className="border border-gray-300 rounded px-2 md:px-3 py-1 text-sm bg-white">
-                  <option>Last Week</option>
-                  <option>Last Month</option>
-                  <option>Last Year</option>
-                  <option>Custom</option>
-                </select>
-              </div>
+            <div className="flex justify-end items-center gap-4">
+              <select
+                className="border border-gray-300 rounded px-2 md:px-3 py-1 text-sm bg-white"
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value)}
+              >
+                <option>Yesterday</option>
+                <option>Last Week</option>
+                <option>Last Month</option>
+                <option>Last Year</option>
+                <option>Custom</option>
+              </select>
+              {sortBy === 'Custom' && (
+                <>
+                  <input
+                    type="date"
+                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    value={customStart}
+                    onChange={e => setCustomStart(e.target.value)}
+                  />
+                  <span className="mx-1">to</span>
+                  <input
+                    type="date"
+                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    value={customEnd}
+                    onChange={e => setCustomEnd(e.target.value)}
+                  />
+                </>
+              )}
             </div>
           </div>
 
@@ -271,6 +320,9 @@ const Page = () => {
   };
 
   const RechargeTransactionReport = () => {
+    const [sortBy, setSortBy] = useState('Yesterday');
+    const [customStart, setCustomStart] = useState('');
+    const [customEnd, setCustomEnd] = useState('');
     const [activeTab, setActiveTab] = useState("Airtime");
 
     // Data-driven configuration for each tab
@@ -411,21 +463,35 @@ const Page = () => {
           </div>
 
           <div className="flex justify-end items-center mb-6">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Sort by</span>
-              <div className="bg-gray-200 rounded px-3 py-1 text-sm flex items-center gap-2 cursor-pointer">
-                <span>Sort by</span>
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <polyline points="6,9 12,15 18,9"></polyline>
-                </svg>
-              </div>
+            <div className="flex items-center gap-4">
+              <select
+                className="border border-gray-300 rounded px-2 md:px-3 py-1 text-sm bg-white"
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value)}
+              >
+                <option>Yesterday</option>
+                <option>Last Week</option>
+                <option>Last Month</option>
+                <option>Last Year</option>
+                <option>Custom</option>
+              </select>
+              {sortBy === 'Custom' && (
+                <>
+                  <input
+                    type="date"
+                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    value={customStart}
+                    onChange={e => setCustomStart(e.target.value)}
+                  />
+                  <span className="mx-1">to</span>
+                  <input
+                    type="date"
+                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    value={customEnd}
+                    onChange={e => setCustomEnd(e.target.value)}
+                  />
+                </>
+              )}
             </div>
           </div>
 
@@ -544,6 +610,9 @@ const Page = () => {
 
   // Customer Statistics Report Component
   const CustomerStatisticsReport = () => {
+    const [sortBy, setSortBy] = useState('Yesterday');
+    const [customStart, setCustomStart] = useState('');
+    const [customEnd, setCustomEnd] = useState('');
     return (
       <div className="w-full min-h-screen bg-gray-50">
         <div className="bg-[#F6F6F6] px-8 pt-8 pb-6">
@@ -560,11 +629,37 @@ const Page = () => {
           </p>
         </div>
         <div className="max-w-3xl mx-auto px-8">
-          <div className="flex justify-end items-center mt-8 mb-8">
-            <button className="border border-gray-300 rounded-lg px-4 py-2 text-gray-700 text-sm flex items-center gap-2">
-              Sort by
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6,9 12,15 18,9"></polyline></svg>
-            </button>
+          <div className="flex justify-end items-center mt-8 mb-8 gap-4">
+            <select
+              className="border border-gray-300 rounded-lg px-4 py-2 text-gray-700 text-sm"
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value)}
+            >
+              <option>Yesterday</option>
+              <option>Last Week</option>
+              <option>Last Month</option>
+              <option>Last Year</option>
+              <option>Custom</option>
+            </select>
+            {sortBy === 'Custom' && (
+              <>
+                <input
+                  type="date"
+                  className="border border-gray-300 rounded-lg px-2 py-2 text-gray-700 text-sm"
+                  value={customStart}
+                  onChange={e => setCustomStart(e.target.value)}
+                  placeholder="Start date"
+                />
+                <span className="mx-1">to</span>
+                <input
+                  type="date"
+                  className="border border-gray-300 rounded-lg px-2 py-2 text-gray-700 text-sm"
+                  value={customEnd}
+                  onChange={e => setCustomEnd(e.target.value)}
+                  placeholder="End date"
+                />
+              </>
+            )}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
             <div className="rounded-xl border-2 border-green-200 bg-green-50 p-8 flex flex-col items-center justify-center min-h-[160px]">
@@ -593,6 +688,95 @@ const Page = () => {
           </div>
           <div className="flex justify-center mt-8 mb-8">
             <button className="bg-[#F25E26] hover:bg-[#E84526] text-white font-medium py-3 px-16 rounded-lg transition-colors duration-200 text-base">
+              View Report
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Raffle Draw Winning Report Component
+  const RaffleDrawReport = () => {
+    const [sortBy, setSortBy] = useState('Yesterday');
+    const [customStart, setCustomStart] = useState('');
+    const [customEnd, setCustomEnd] = useState('');
+    return (
+      <div className="w-full min-h-screen bg-gray-50">
+        <div className="bg-[#F6F6F6] px-8 pt-8 pb-6">
+          <span
+            onClick={() => setShowRaffleDrawReport(false)}
+            className="text-[#F25E26] cursor-pointer text-sm block mb-4 ml-1"
+            style={{ marginTop: '4px' }}
+          >
+            Back
+          </span>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">Reports</h1>
+          <p className="text-lg font-medium text-gray-700">
+            Raffle Draw Winning Report <span className="text-base font-normal">(23-May-2025; 4:40 PM)</span>
+          </p>
+        </div>
+        <div className="max-w-5xl mx-auto px-8">
+          <div className="flex justify-end items-center mt-8 mb-8 gap-4">
+            <select
+              className="border border-gray-300 rounded-lg px-4 py-2 text-gray-700 text-sm"
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value)}
+            >
+              <option>Yesterday</option>
+              <option>Last Week</option>
+              <option>Last Month</option>
+              <option>Last Year</option>
+              <option>Custom</option>
+            </select>
+            {sortBy === 'Custom' && (
+              <>
+                <input
+                  type="date"
+                  className="border border-gray-300 rounded-lg px-2 py-2 text-gray-700 text-sm"
+                  value={customStart}
+                  onChange={e => setCustomStart(e.target.value)}
+                  placeholder="Start date"
+                />
+                <span className="mx-1">to</span>
+                <input
+                  type="date"
+                  className="border border-gray-300 rounded-lg px-2 py-2 text-gray-700 text-sm"
+                  value={customEnd}
+                  onChange={e => setCustomEnd(e.target.value)}
+                  placeholder="End date"
+                />
+              </>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+            <div className="rounded-xl border-2 border-red-200 bg-red-50 p-8 flex flex-col items-center justify-center min-h-[120px]">
+              <div className="text-base font-medium text-gray-700 mb-2 text-center">Gross Winning Value</div>
+              <div className="text-2xl font-bold text-gray-900 text-center">₦ 2,000,000</div>
+            </div>
+            <div className="rounded-xl border-2 border-purple-200 bg-purple-50 p-8 flex flex-col items-center justify-center min-h-[120px]">
+              <div className="text-base font-medium text-gray-700 mb-2 text-center">Total Number of Winners</div>
+              <div className="text-2xl font-bold text-gray-900 text-center">5,000,000</div>
+            </div>
+            <div className="rounded-xl border-2 border-yellow-200 bg-yellow-50 p-8 flex flex-col items-center justify-center min-h-[120px]">
+              <div className="text-base font-medium text-gray-700 mb-2 text-center">Number of Redemption</div>
+              <div className="text-2xl font-bold text-gray-900 text-center">500,000</div>
+            </div>
+            <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-8 flex flex-col items-center justify-center min-h-[120px]">
+              <div className="text-base font-medium text-gray-700 mb-2 text-center">Value of Redemption</div>
+              <div className="text-2xl font-bold text-gray-900 text-center">₦ 3,000,000</div>
+            </div>
+            <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-8 flex flex-col items-center justify-center min-h-[120px]">
+              <div className="text-base font-medium text-gray-700 mb-2 text-center">Number of Pending Redemption</div>
+              <div className="text-2xl font-bold text-gray-900 text-center">100,000</div>
+            </div>
+            <div className="rounded-xl border-2 border-green-200 bg-green-50 p-8 flex flex-col items-center justify-center min-h-[120px]">
+              <div className="text-base font-medium text-gray-700 mb-2 text-center">Value of Pending Redemption</div>
+              <div className="text-2xl font-bold text-gray-900 text-center">₦ 400,000,000</div>
+            </div>
+          </div>
+          <div className="flex justify-center mt-8 mb-8">
+            <button className="bg-red-100 hover:bg-red-200 text-gray-900 font-medium py-3 px-16 rounded-lg transition-colors duration-200 text-base border border-red-200">
               View Report
             </button>
           </div>
@@ -642,6 +826,16 @@ const Page = () => {
     );
   }
 
+  if (showRaffleDrawReport) {
+    return (
+      <section>
+        <PageLayout>
+          <RaffleDrawReport />
+        </PageLayout>
+      </section>
+    );
+  }
+
   return (
     <section>
       <PageLayout>
@@ -659,12 +853,36 @@ const Page = () => {
                 </h1>
                 <p className="text-sm text-gray-600">(23-May-2025; 4:40 PM)</p>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Sort by</span>
-                <select className="border border-gray-300 rounded px-2 py-1 text-sm">
-                  <option>Default</option>
-                </select>
-              </div>
+              <div className="flex items-center gap-4">
+                  <select
+                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    value={topSortBy}
+                    onChange={e => setTopSortBy(e.target.value)}
+                  >
+                    <option>Yesterday</option>
+                    <option>Last Week</option>
+                    <option>Last Month</option>
+                    <option>Last Year</option>
+                    <option>Custom</option>
+                  </select>
+                  {topSortBy === 'Custom' && (
+                    <>
+                      <input
+                        type="date"
+                        className="border border-gray-300 rounded px-2 py-1 text-sm"
+                        value={topCustomStart}
+                        onChange={e => setTopCustomStart(e.target.value)}
+                      />
+                      <span className="mx-1">to</span>
+                      <input
+                        type="date"
+                        className="border border-gray-300 rounded px-2 py-1 text-sm"
+                        value={topCustomEnd}
+                        onChange={e => setTopCustomEnd(e.target.value)}
+                      />
+                    </>
+                  )}
+                </div>
             </div>
 
             {/* Main Dashboard Content */}
@@ -986,7 +1204,8 @@ const Page = () => {
                 </div>
 
                 {/* Raffle Draw Winning Report */}
-                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:bg-green-500 hover:text-white transition-all duration-300 cursor-pointer group">
+                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:bg-green-500 hover:text-white transition-all duration-300 cursor-pointer group"
+                  onClick={() => setShowRaffleDrawReport(true)}>
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-green-600">
                       <svg

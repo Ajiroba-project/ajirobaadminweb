@@ -70,13 +70,13 @@ export const ReportsTable = <T extends RowData>({
   
     return (
       <div className={`overflow-x-auto ${className}`}>
-        <table className={`min-w-full border-collapse font-Poppins text-xs ${tableClassName}`}>
+        <table className={`min-w-full border-collapse font-Poppins text-sm ${tableClassName}`}>
           <thead>
             <tr className={`bg-[#fff] border-b border-[#E9E9E9] ${headerClassName}`}>
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className={`px-3 py-3 text-left font-semibold whitespace-nowrap border-r border-[#E9E9E9] last:border-r-0 ${col.headerClassName || ''}`}
+                  className={`px-3 py-3 text-left font-semibold whitespace-nowrap border-r border-[#E9E9E9] last:border-r-0 ${col.headerClassName || ''} text-sm`}
                 >
                   {col.label}
                 </th>
@@ -95,7 +95,7 @@ export const ReportsTable = <T extends RowData>({
                   return (
                     <td
                       key={col.key}
-                      className={`px-3 py-2 ${!isLastColumn ? 'border-r border-[#E9E9E9]' : ''} whitespace-nowrap ${cellClassName} ${col.cellClassName || ''}`}
+                      className={`px-3 py-2 ${!isLastColumn ? 'border-r border-[#E9E9E9]' : ''} whitespace-nowrap ${cellClassName} ${col.cellClassName || ''} text-sm`}
                     >
                       {col.render ? col.render(row, idx) : row[col.key] ?? 'N/A'}
                     </td>
@@ -111,7 +111,7 @@ export const ReportsTable = <T extends RowData>({
                   {columns.map((col, j) => (
                     <td
                       key={`${col.key}-${j}`}
-                      className={`px-3 py-2 ${j !== columns.length - 1 ? 'border-r border-[#E9E9E9]' : ''} whitespace-nowrap`}
+                      className={`px-3 py-2 ${j !== columns.length - 1 ? 'border-r border-[#E9E9E9]' : ''} whitespace-nowrap text-sm`}
                     >
                       &nbsp;
                     </td>
@@ -123,7 +123,7 @@ export const ReportsTable = <T extends RowData>({
               {columns.map((col, idx) => (
                 <td
                   key={col.key}
-                  className={`px-3 py-8 ${idx !== columns.length - 1 ? 'border-r border-[#E9E9E9]' : ''} whitespace-nowrap`}
+                  className={`px-3 py-8 ${idx !== columns.length - 1 ? 'border-r border-[#E9E9E9]' : ''} whitespace-nowrap text-sm`}
                 >
                   {idx === 0
                     ? 'TOTAL'
