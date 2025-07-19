@@ -536,7 +536,10 @@ const Page = () => {
           </div>
 
           <div className="flex justify-end mb-6">
-            <span className="text-[#F25E26] text-sm cursor-pointer">
+            <span 
+              className="text-[#F25E26] text-sm cursor-pointer"
+              onClick={() => router.push('/dashboard/rechargetransactionreport')}
+            >
               See More &gt;
             </span>
           </div>
