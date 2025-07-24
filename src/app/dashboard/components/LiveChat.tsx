@@ -57,53 +57,6 @@ export const LiveChat = () => {
     count: number;
   }
 
-  const mapUserInfoToDetails = [
-    {
-      icon: tmg,
-      name: "TOTAL REGISTERED USER",
-      count: userInfo?.data?.data?.regular.users_count || 0,
-    },
-    {
-      icon: tns,
-      name: "TOTAL NUMBER OF SALES",
-      count: userInfo?.data?.data?.regular.total_sales || 0,
-    },
-    {
-      icon: ag,
-      name: "AMOUNT GENERATED",
-      count: userInfo?.data?.data?.regular.amount_generated || 0,
-    },
-    {
-      icon: ps,
-      name: "PENDING SALES",
-      count: userInfo?.data?.data?.regular.pending_sales || 0,
-    },
-  ];
-
-
-
-  const auctionDetails = [
-    {
-      icon: tmg,
-      name: "TOTAL REGISTERED USER",
-      count: userInfo?.data?.data?.auction?.users_count || 0,
-    },
-    {
-      icon: ticket,
-      name: "TOTAL TICKET PURCHASED",
-      count: 0
-    },
-    {
-      icon: bid,
-      name: "TOTAL BID MADE",
-      count: 0
-    },
-    {
-      icon: ag,
-      name: "TOTAL AMOUNT GENERATED",
-      count: 0
-    },
-  ]
 
 
 
