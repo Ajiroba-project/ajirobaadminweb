@@ -9,6 +9,49 @@ import Brand from "@/app/asset/logo.svg";
 import { ReportsTable } from "../dashboard/components/ReportsTable";
 import { DownloadModal } from "@/app/components/DownloadModal";
 import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
+import { useGetDatanew } from "@/hooks/useGetData";
+
+// TypeScript interfaces for API response
+interface ProductInfo {
+  product_id: string;
+  product_no: string;
+  product_name: string;
+  selling_price: number;
+  discount_price: number;
+  cost_price: number;
+  profit: number;
+  number_in_stock: number;
+  payment_method: string;
+}
+
+interface RegularCustomerData {
+  id: string;
+  order_id: string;
+  product_info: ProductInfo[];
+  date_created: string;
+}
+
+interface RegularCustomerTotals {
+  total_price: number;
+  selling_price: number;
+  items_cost_price: number;
+}
+
+interface RegularCustomerResults {
+  status: string;
+  message: string;
+  current_datetime: string;
+  totals: RegularCustomerTotals;
+  total_profit: number;
+  data: RegularCustomerData[];
+}
+
+interface RegularCustomerApiResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: RegularCustomerResults;
+}
 
 export default function Page() {
   const router = useRouter();
@@ -27,6 +70,11 @@ export default function Page() {
   const [pageSize] = useState(10);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [currentTime, setCurrentTime] = useState<string>("");
+
+  // Pagination state
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasPreviousPage, setHasPreviousPage] = useState(false);
 
   useEffect(() => {
     setCurrentTime(
@@ -57,9 +105,112 @@ export default function Page() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Construct filter parameters for API
+  const getFilterParams = () => {
+    const params = new URLSearchParams();
+    
+    if (currentPage > 1) {
+      params.append('page', currentPage.toString());
+    }
+    
+    if (dateFilter) {
+      params.append('filter', dateFilter);
+    }
+    
+    if (customDateRange.start && customDateRange.end) {
+      params.append('start_date', customDateRange.start);
+      params.append('end_date', customDateRange.end);
+    }
+    
+    return params.toString();
+  };
+
+  // API integration
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/regular_transaction_report/?${getFilterParams()}`;
+  const {
+    data: regularCustomerData,
+    isLoading: regularCustomerLoading,
+    error: regularCustomerError,
+  } = useGetDatanew(url, "get_regular_customer_master", userToken || " ");
+
+  // Transform API data to match component structure
+  const transformApiData = (apiData: any): any[] => {
+
+
+
+    if (!apiData) {
+      return [];
+    }
+    
+    return apiData?.map((item: any) => {
+      const productInfo = item.product_info?.[0] || {};
+      return {
+        customername: "N/A", // API doesn't provide customer info
+        email: "N/A",
+        phone: "N/A",
+        gender: "N/A",
+        userid: item.order_id || 'N/A',
+        productId: productInfo.product_no || 'N/A',
+        productno: productInfo.product_id || 'N/A',
+        productname: productInfo.product_name || 'N/A',
+        costprice: productInfo.cost_price || 0,
+        sellingprice: productInfo.selling_price || 0,
+        discountprice: productInfo.discount_price || 0,
+        profit: productInfo.profit || 0,
+        vat: "7.5%",
+        purchasetime: item.date_created ? new Date(item.date_created).toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        }).toUpperCase() : 'N/A',
+        modeofpayment: productInfo.payment_method || 'N/A',
+        status: productInfo.status ||  "N/A",
+        id: item.id || 'N/A',
+      };
+    });
+  };
+
+  // Update pagination state when data changes
+  useEffect(() => {
+    if (regularCustomerData) {
+      const apiResponse = regularCustomerData as unknown as RegularCustomerApiResponse;
+      setTotalPages(Math.ceil(apiResponse.count / pageSize));
+      setHasNextPage(!!apiResponse.next);
+      setHasPreviousPage(!!apiResponse.previous);
+    }
+  }, [regularCustomerData, pageSize]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [dateFilter, search, filterBy]);
+
+
+  const transformedData = transformApiData((regularCustomerData as unknown as RegularCustomerApiResponse)?.results?.data);
+
+
+
+
+  // Pagination handlers
+  const handleNextPage = () => {
+    if (hasNextPage) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (hasPreviousPage) {
+      setCurrentPage(prev => prev - 1);
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   // Download handlers
   const handleDownloadPDF = async () => {
-    const exportData: ExportData[] = filteredRegularCustomers.map((item) => ({
+    const exportData: ExportData[] = transformedData.map((item) => ({
       customername: item.customername,
       email: item.email,
       phone: item.phone,
@@ -85,7 +236,7 @@ export default function Page() {
   };
 
   const handleDownloadXLS = () => {
-    const exportData: ExportData[] = filteredRegularCustomers.map((item) => ({
+    const exportData: ExportData[] = transformedData.map((item) => ({
       customername: item.customername,
       email: item.email,
       phone: item.phone,
@@ -144,12 +295,12 @@ export default function Page() {
     { key: "gender", label: "GENDER" },
     { key: "userid", label: "USER ID" },
     {
-      key: "productId",
+      key: "productno",
       label: "PRODUCT ID",
       cellClassName: "text-[#F25E26] underline cursor-pointer",
       render: (row: any) => (
         <Link
-          href={`/dashboard/productdetails-product/${row.id}`}
+          href={`/dashboard/productdetails-product/${row.productno}`}
           className="bg-[#FFFFFF] text-[#F25E26] transition delay-300 duration-300 ease-in-out hover:bg-[#F25E26] hover:text-white hover:transition-all flex gap-2 rounded-lg p-2 font-Poppins text-sm items-center"
         >
           {row.productId}
@@ -181,81 +332,6 @@ export default function Page() {
     },
   ];
 
-  const filteredRegularCustomers = [
-    {
-      customername: "Bolu Davies",
-      email: "bolu.davies@example.com",
-      phone: "08012345678",
-      gender: "Male",
-      userid: "USR001",
-      productId: "5648T53",
-      productname: "T-Shirt",
-      costprice: 5000,
-      sellingprice: 6000,
-      discountprice: 0,
-      profit: 1000,
-      vat: "7.5%",
-      purchasetime: "21-MAY-2024",
-      modeofpayment: "21-MAY-2024",
-      status: "Successful",
-      id: "001",
-    },
-    {
-      customername: "Bolu Davies",
-      email: "bolu.davies@example.com",
-      phone: "08012345678",
-      gender: "Female",
-      userid: "USR002",
-      productId: "7892R45",
-      productname: "Rice",
-      costprice: 8000,
-      sellingprice: 10000,
-      discountprice: 0,
-      profit: 2000,
-      vat: "7.5%",
-      purchasetime: "21-MAY-2024",
-      modeofpayment: "21-MAY-2024",
-      status: "Pending",
-      id: "002",
-    },
-    {
-      customername: "Bolu Davies",
-      email: "bolu.davies@example.com",
-      phone: "08012345678",
-      gender: "Male",
-      userid: "USR003",
-      productId: "3456H78",
-      productname: "Human Hair",
-      costprice: 15000,
-      sellingprice: 16000,
-      discountprice: 0,
-      profit: 1000,
-      vat: "7.5%",
-      purchasetime: "21-MAY-2024",
-      modeofpayment: "21-MAY-2024",
-      status: "Successful",
-      id: "003",
-    },
-    {
-      customername: "Bolu Davies",
-      email: "bolu.davies@example.com",
-      phone: "08012345678",
-      gender: "Female",
-      userid: "USR004",
-      productId: "9012M34",
-      productname: "Mango",
-      costprice: 2000,
-      sellingprice: 3000,
-      discountprice: 0,
-      profit: 1000,
-      vat: "7.5%",
-      purchasetime: "N/A",
-      modeofpayment: "N/A",
-      status: "Successful",
-      id: "004",
-    },
-  ];
-
   const AjirobaLogo = ({
     className = "h-4 w-4 sm:h-6 sm:w-6 md:h-8 md:w-8",
     textClassName = "text-base sm:text-lg md:text-xl",
@@ -269,7 +345,7 @@ export default function Page() {
 
   // Filter and sort the data
   const getFilteredAndSortedData = () => {
-    let filteredData = [...filteredRegularCustomers];
+    let filteredData = [...transformedData];
 
     // Apply search filter
     if (search) {
@@ -302,47 +378,6 @@ export default function Page() {
       });
     }
 
-    // Apply date filtering
-    if (dateFilter) {
-      const now = new Date();
-      let startDate: Date | null = null;
-      let endDate: Date | null = null;
-      
-      switch (dateFilter) {
-        case 'last_week':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          endDate = now;
-          break;
-        case 'last_month':
-          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-          endDate = now;
-          break;
-        case 'last_year':
-          const currentYear = now.getFullYear();
-          const previousYear = currentYear - 1;
-          startDate = new Date(previousYear, 0, 1);
-          endDate = new Date(previousYear, 11, 31, 23, 59, 59, 999);
-          break;
-        case 'custom':
-          if (customDateRange.start && customDateRange.end) {
-            startDate = new Date(customDateRange.start);
-            endDate = new Date(customDateRange.end);
-            endDate.setHours(23, 59, 59, 999);
-          }
-          break;
-        default:
-          return filteredData;
-      }
-      
-      if (startDate && endDate) {
-        filteredData = filteredData.filter(item => {
-          if (item.purchasetime === "N/A") return false;
-          const itemDate = new Date(item.purchasetime);
-          return itemDate >= startDate! && itemDate <= endDate!;
-        });
-      }
-    }
-
     // Apply sorting
     if (sort) {
       filteredData.sort((a, b) => {
@@ -366,6 +401,61 @@ export default function Page() {
   };
 
   const displayData = getFilteredAndSortedData();
+
+  // Loading state
+  if (regularCustomerLoading) {
+    return (
+      <section className="flex flex-col">
+        <div className="w-full bg-gray-100">
+          <ProfileHeader />
+          <div className="px-4 md:px-14 py-4">
+            <p
+              className="text-[#F25E26] underline cursor-pointer"
+              onClick={() => router.back()}
+            >
+              Back
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F25E26] mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading regular customers data...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Error state
+  if (regularCustomerError) {
+    return (
+      <section className="flex flex-col">
+        <div className="w-full bg-gray-100">
+          <ProfileHeader />
+          <div className="px-4 md:px-14 py-4">
+            <p
+              className="text-[#F25E26] underline cursor-pointer"
+              onClick={() => router.back()}
+            >
+              Back
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <p className="text-red-600">Error loading data. Please try again.</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-[#F25E26] text-white rounded-md hover:bg-[#d63918]"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="flex flex-col">
@@ -607,14 +697,48 @@ export default function Page() {
         </div>
         <div className="overflow-x-auto">
           <ReportsTable data={displayData} columns={columnsRegular} />
-        </div>
+                </div>
+        
+        {/* Pagination */}
         {displayData && displayData.length > 0 && (
           <div className="flex flex-col items-center py-4">
             <div className="text-sm text-gray-600 mb-2">
-              Total: {displayData.length} records
+              Total: {((regularCustomerData as unknown as RegularCustomerApiResponse)?.count) || 0} records
               {(search || filterBy.length > 0 || dateFilter) &&
                 ` | Filtered: ${displayData.length} records`}
             </div>
+            
+            {/* Pagination Controls */}
+            <div className="flex items-center gap-2 mt-4">
+              <button
+                onClick={handlePreviousPage}
+                disabled={!hasPreviousPage}
+                className={`px-3 py-1 text-sm rounded ${
+                  hasPreviousPage
+                    ? 'bg-[#F25E26] text-white hover:bg-[#d63918]'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                Previous
+              </button>
+              
+              <span className="text-sm text-gray-600">
+                Page {currentPage} of {totalPages}
+              </span>
+              
+              <button
+                onClick={handleNextPage}
+                disabled={!hasNextPage}
+                className={`px-3 py-1 text-sm rounded ${
+                  hasNextPage
+                    ? 'bg-[#F25E26] text-white hover:bg-[#d63918]'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+            
             {(search || filterBy.length > 0 || dateFilter) && (
               <button
                 onClick={() => {
@@ -622,7 +746,7 @@ export default function Page() {
                   setFilterBy([]);
                   setDateFilter('');
                 }}
-                className="text-xs text-[#F25E26] hover:underline"
+                className="text-xs text-[#F25E26] hover:underline mt-2"
               >
                 Clear all filters
               </button>

@@ -11,6 +11,58 @@ import { ReportsTable } from "../dashboard/components/ReportsTable";
 import RaffleTicket from "../dashboard/components/RaffleTicket";
 import { DownloadModal } from "@/app/components/DownloadModal";
 import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
+import { useGetDatanew } from "@/hooks/useGetData";
+import Loading from "@/app/components/Loading";
+
+// Define the API response types
+interface Ticket {
+  ticket_number: string;
+  ticket_price: number;
+  ticket_quantity: number;
+  product: string;
+  date_created: string;
+}
+
+interface UserInfo {
+  customer_name: string;
+  email: string;
+  phone: string;
+  gender: boolean;
+  user_id: string;
+}
+
+interface ProductInfo {
+  product_id: string;
+  product_no: string;
+  product_name: string;
+}
+
+interface TicketDetails {
+  ticket_price: number;
+  ticket_quantity: number;
+  ticket_date: string;
+  auction_start_date: string;
+  auction_start_time: string;
+}
+
+interface AuctionCustomerData {
+  id: string;
+  user_info: UserInfo;
+  product_info: ProductInfo;
+  tickets: Ticket[];
+  ticket_details: TicketDetails;
+  date_modified: string;
+}
+
+interface ApiResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: {
+    current_datetime: string;
+    data: AuctionCustomerData[];
+  };
+}
 
 export default function Page() {
   const router = useRouter();
@@ -28,6 +80,9 @@ export default function Page() {
   const [userToken] = useState(Cookies.get("token"));
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasPreviousPage, setHasPreviousPage] = useState(false);
   const [showticket, setShowTicket] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<any>(null);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
@@ -45,7 +100,6 @@ export default function Page() {
         hour12: true,
       })
     );
-    // Removed the setInterval to prevent page refresh every second
   }, []);
 
   // Close dropdowns when clicking outside
@@ -63,9 +117,117 @@ export default function Page() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Construct URL with query parameters based on filter selection
+  const getFilterParams = () => {
+    const params = new URLSearchParams();
+    params.append('page', currentPage.toString());
+
+    switch (dateFilter) {
+      case 'last_week':
+        params.append('filter', 'last_week');
+        break;
+      case 'last_month':
+        params.append('filter', 'last_month');
+        break;
+      case 'last_year':
+        params.append('filter', 'last_year');
+        break;
+      case 'custom':
+        // Only add custom filter if both start and end dates are provided
+        if (customDateRange.start && customDateRange.end) {
+          params.append('filter', 'custom');
+          params.append('start_date', customDateRange.start);
+          params.append('end_date', customDateRange.end);
+        }
+        break;
+      default:
+        // No filter applied
+        break;
+    }
+
+    return params.toString();
+  };
+
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/auction_customer_master_report/?${getFilterParams()}`;
+
+  const {
+    data: auctionCustomerData,
+    isLoading: auctionCustomerLoading,
+    error: auctionCustomerError,
+  } = useGetDatanew(url, "get_auction_customer_master", userToken || " ");
+
+
+  // console.log('Full auctionCustomerData:', auctionCustomerData);
+  // console.log('auctionCustomerData?.data:', auctionCustomerData?.data);
+  const apiData = auctionCustomerData?.data as any;
+  // console.log('apiData?.results:', apiData?.results);
+
+  // Transform API data to match the expected format
+  const transformApiData = (apiData: any): any[] => {
+
+    
+    // Check if the data structure matches what we expect
+    if (!apiData || !apiData.results || !apiData.results.data) {
+  
+      return [];
+    }
+
+  
+
+    return apiData.results.data.map((item: any) => {
+    
+      
+      return {
+        customername: item.user_info?.customer_name || 'N/A',
+        email: item.user_info?.email || 'N/A',
+        phone: item.user_info?.phone || 'N/A',
+        gender: item.user_info?.gender ? "Male" : "Female",
+        userid: item.user_info?.user_id || 'N/A',
+        productId: item.product_info?.product_no || 'N/A',
+        productno: item.product_info?.product_id || 'N/A',
+        productname: item.product_info?.product_name || 'N/A',
+        nooftickets: item.tickets?.map((ticket: any) => ticket.ticket_number) || [],
+        ticketunit: item.ticket_details?.ticket_price || 0,
+        quantity: item.ticket_details?.ticket_quantity || 0,
+        ticketprice: (item.ticket_details?.ticket_price || 0) * (item.ticket_details?.ticket_quantity || 0),
+        ticketpurdate: item.ticket_details?.ticket_date || 'N/A',
+        raffledrawdate: item.ticket_details?.auction_start_date || 'N/A',
+        raffledrawtime: item.ticket_details?.auction_start_time || 'N/A',
+        status: "Active",
+        id: item.id || 'N/A',
+      };
+    });
+  };
+
+
+
+  const transformedData = transformApiData(auctionCustomerData || { count: 0, next: null, previous: null, results: { current_datetime: "", data: [] } });
+
+  // Update pagination state when data changes
+  useEffect(() => {
+    if (auctionCustomerData) {
+      const apiData = auctionCustomerData as any;
+      const totalCount = apiData.count || 0;
+      const calculatedTotalPages = Math.ceil(totalCount / pageSize);
+      setTotalPages(calculatedTotalPages);
+      setHasNextPage(!!apiData.next);
+      setHasPreviousPage(!!apiData.previous);
+    }
+  }, [auctionCustomerData, pageSize]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [dateFilter, search, filterBy]);
+
+
+  // console.log(transformedData, 'ttttt')
+
+  // console.log(transformApiData, 'transformApiData')
+
   // Download handlers
   const handleDownloadPDF = async () => {
-    const exportData: ExportData[] = filteredWinnersA.map((item) => ({
+    const exportData: ExportData[] = transformedData.map((item) => ({
       customername: item.customername,
       email: item.email,
       phone: item.phone,
@@ -90,7 +252,7 @@ export default function Page() {
   };
 
   const handleDownloadXLS = () => {
-    const exportData: ExportData[] = filteredWinnersA.map((item) => ({
+    const exportData: ExportData[] = transformedData.map((item) => ({
       customername: item.customername,
       email: item.email,
       phone: item.phone,
@@ -144,7 +306,6 @@ export default function Page() {
     { key: "customername", label: "CUSTOMER NAME" },
     { key: "email", label: "EMAIL ADDRESS" },
     { key: "phone", label: "PHONE NUMBER" },
-
     { key: "gender", label: "GENDER" },
     { key: "userid", label: "USER ID" },
     {
@@ -153,7 +314,7 @@ export default function Page() {
       cellClassName: "text-[#F25E26] underline cursor-pointer",
       render: (row: any) => (
         <Link
-          href={`/dashboard/productdetails-auction-completed/${row.id}`}
+          href={`/dashboard/productdetails-auction-completed/${row.productno}`}
           className="bg-[#FFFFFF] text-[#F25E26] transition delay-300 duration-300 ease-in-out hover:bg-[#F25E26] hover:text-white hover:transition-all flex gap-2 rounded-lg p-2 font-Poppins text-sm items-center"
         >
           {row.productId}
@@ -199,99 +360,6 @@ export default function Page() {
     { key: "raffledrawtime", label: "RAFFLE DRAW TIME" },
   ];
 
-  const filteredWinnersA = [
-    {
-      customername: "Amaka Okafor",
-      email: "amaka.okafor@example.com",
-      phone: "08012345678",
-      gender: "Female",
-      userid: "USR001",
-      productId: "PRD001",
-      productname: 'Samsung TV 55"',
-      nooftickets: ["WS23E", "FR45FD", "ZX89K"],
-      ticketunit: 1000,
-      quantity: 1,
-      ticketprice: 3000,
-      ticketpurdate: "2024-07-05T10:30:00Z",
-      raffledrawdate: "2024-07-10T00:00:00Z",
-      raffledrawtime: "4:30 PM",
-      status: "Delivered",
-      id: "001",
-    },
-    {
-      customername: "John Doe",
-      email: "john.doe@example.com",
-      phone: "07098765432",
-      gender: "Male",
-      userid: "USR002",
-      productId: "PRD002",
-      productname: "iPhone 15 Pro",
-      nooftickets: ["GH78JK", "MN56PO"],
-      ticketunit: 2000,
-      quantity: 1,
-      ticketprice: 4000,
-      ticketpurdate: "2024-07-01T14:00:00Z",
-      raffledrawdate: "2024-07-07T00:00:00Z",
-      raffledrawtime: "3:00 PM",
-      status: "Pending",
-      id: "002",
-    },
-    {
-      customername: "Fatima Abubakar",
-      email: "fatima.a@example.com",
-      phone: "08123456789",
-      gender: "Female",
-      userid: "USR003",
-      productId: "PRD003",
-      productname: 'HP Laptop 14"',
-      nooftickets: ["RT45YU", "LK98HJ", "PO12CV", "UY78NB", "QA34FD"],
-      ticketunit: 1500,
-      quantity: 1,
-      ticketprice: 7500,
-      ticketpurdate: "2025-06-25T12:20:00Z",
-      raffledrawdate: "2025-06-28T00:00:00Z",
-      raffledrawtime: "2:15 PM",
-      status: "Delivered",
-      id: "003",
-    },
-    {
-      customername: "Emeka Nwosu",
-      email: "emeka.n@example.com",
-      phone: "09034567890",
-      gender: "Male",
-      userid: "USR004",
-      productId: "PRD004",
-      productname: "LG Home Theater",
-      nooftickets: ["TY67UI"],
-      ticketunit: 1000,
-      quantity: 1,
-      ticketprice: 1000,
-      ticketpurdate: "2025-07-02T16:00:00Z",
-      raffledrawdate: "2025-07-03T00:00:00Z",
-      raffledrawtime: "12:00 PM",
-      status: "Pending",
-      id: "004",
-    },
-    {
-      customername: "Bola Adeniyi",
-      email: "bola.adeniyi@example.com",
-      phone: "08111222333",
-      gender: "Female",
-      userid: "USR005",
-      productId: "PRD005",
-      productname: "Generator 3.5KVA",
-      nooftickets: ["PL56RT", "WE23XZ", "BN45GH", "KL89OP"],
-      ticketunit: 2500,
-      quantity: 1,
-      ticketprice: 10000,
-      ticketpurdate: "2025-06-26T09:45:00Z",
-      raffledrawdate: "2025-06-30T00:00:00Z",
-      raffledrawtime: "10:00 AM",
-      status: "Delivered",
-      id: "005",
-    },
-  ];
-
   const AjirobaLogo = ({
     className = "h-4 w-4 sm:h-6 sm:w-6 md:h-8 md:w-8",
     textClassName = "text-base sm:text-lg md:text-xl",
@@ -305,7 +373,7 @@ export default function Page() {
 
   // Filter and sort the data
   const getFilteredAndSortedData = () => {
-    let filteredData = [...filteredWinnersA];
+    let filteredData = [...transformedData];
 
     // Apply search filter
     if (search) {
@@ -338,68 +406,6 @@ export default function Page() {
       });
     }
 
-    // Apply date filtering
-    if (dateFilter) {
-      const now = new Date();
-      let startDate: Date | null = null;
-      let endDate: Date | null = null;
-      
-      switch (dateFilter) {
-        case 'last_week':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          endDate = now;
-          break;
-        case 'last_month':
-          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-          endDate = now;
-          break;
-        case 'last_year':
-          // Last year means previous calendar year (not rolling 12 months)
-          const currentYear = now.getFullYear();
-          const previousYear = currentYear - 1;
-          startDate = new Date(previousYear, 0, 1); // January 1 of previous year
-          endDate = new Date(previousYear, 11, 31, 23, 59, 59, 999); // December 31 of previous year
-          break;
-        case 'custom':
-          if (customDateRange.start && customDateRange.end) {
-            startDate = new Date(customDateRange.start);
-            endDate = new Date(customDateRange.end);
-            // Set end date to end of day
-            endDate.setHours(23, 59, 59, 999);
-          }
-          break;
-        default:
-          return filteredData;
-      }
-      
-      if (startDate && endDate) {
-        console.log('Date filter applied:', {
-          filter: dateFilter,
-          startDate: startDate.toISOString(),
-          endDate: endDate.toISOString(),
-          currentYear: now.getFullYear(),
-          totalRecords: filteredData.length
-        });
-        
-        filteredData = filteredData.filter(item => {
-          const itemDate = new Date(item.ticketpurdate);
-          const isInRange = itemDate >= startDate! && itemDate <= endDate!;
-          
-        /*   console.log('Checking item:', {
-            itemDate: itemDate.toISOString(),
-            itemYear: itemDate.getFullYear(),
-            isInRange,
-            customername: item.customername,
-            filter: dateFilter
-          }); */
-          
-          return isInRange;
-        });
-        
-       /*  console.log('Records after date filter:', filteredData.length); */
-      }
-    }
-
     // Apply sorting
     if (sort) {
       filteredData.sort((a, b) => {
@@ -420,6 +426,39 @@ export default function Page() {
   };
 
   const displayData = getFilteredAndSortedData();
+  const filteredWinnersA = displayData;
+
+  // Pagination functions
+  const handleNextPage = () => {
+    if (hasNextPage) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (hasPreviousPage) {
+      setCurrentPage(prev => Math.max(1, prev - 1));
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  if (auctionCustomerLoading) {
+    return <Loading />;
+  }
+
+  if (auctionCustomerError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Data</h2>
+          <p className="text-gray-600">Please try again later.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <section className="flex flex-col">
@@ -626,6 +665,8 @@ export default function Page() {
                       onClick={() => {
                         if (customDateRange.start && customDateRange.end) {
                           setShowCustomDatePicker(false);
+                          // Reset to page 1 when applying custom filter
+                          setCurrentPage(1);
                         }
                       }}
                       className="flex-1 px-3 py-2 bg-[#F25E26] text-white text-sm rounded-md hover:bg-[#d63918]"
@@ -654,27 +695,76 @@ export default function Page() {
           <AjirobaLogo />
         </div>
         <div className="bg-[#F25E26] text-white font-Poppins font-medium px-4 md:px-8 py-2 flex items-center text-sm rounded-t">
-          REDEEMED PRODUCTS{" "}
+        AUCTION CUSTOMERS MASTER REPORT {" "}
           <span className="ml-4 text-xs font-normal">
-            {currentTime}
+            ({currentTime})
           </span>
         </div>
         <div className="overflow-x-auto">
           <ReportsTable data={displayData} columns={columnsA} />
         </div>
+        
+        {/* Pagination */}
         {displayData && displayData.length > 0 && (
-          <div className="flex flex-col items-center py-4">
-            <div className="text-sm text-gray-600 mb-2">
-              Total: {displayData.length} records
+          <div className="flex justify-between items-center py-4 px-4 md:px-8">
+            <div className="text-sm text-gray-600">
+              Page {currentPage} of {totalPages} • Total: {(auctionCustomerData as any)?.count || displayData.length} records
               {(search || filterBy.length > 0 || dateFilter) &&
                 ` | Filtered: ${displayData.length} records`}
             </div>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handlePreviousPage}
+                disabled={!hasPreviousPage}
+                className={`px-3 py-1 text-sm rounded-md ${
+                  hasPreviousPage
+                    ? 'bg-[#F25E26] text-white hover:bg-[#d63918]'
+                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                Previous
+              </button>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const pageNum = i + 1;
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      className={`px-3 py-1 text-sm rounded-md ${
+                        currentPage === pageNum
+                          ? 'bg-[#F25E26] text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              <button
+                onClick={handleNextPage}
+                disabled={!hasNextPage}
+                className={`px-3 py-1 text-sm rounded-md ${
+                  hasNextPage
+                    ? 'bg-[#F25E26] text-white hover:bg-[#d63918]'
+                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+            
             {(search || filterBy.length > 0 || dateFilter) && (
               <button
                 onClick={() => {
                   setSearch('');
                   setFilterBy([]);
                   setDateFilter('');
+                  setCurrentPage(1);
                 }}
                 className="text-xs text-[#F25E26] hover:underline"
               >
@@ -692,8 +782,8 @@ export default function Page() {
           ticket_price={selectedTicket.ticket_amount || "N/A"}
           purchase_date={selectedTicket.date || "N/A"}
           product={selectedTicket.item_purchased || "N/A"}
-          raffle_date={selectedTicket.raffle_date || "N/A"} // Data not available in ticket_list
-          raffle_time={selectedTicket.raffle_time || "N/A"} // Data not available in ticket_list
+          raffle_date={selectedTicket.raffle_date || "N/A"}
+          raffle_time={selectedTicket.raffle_time || "N/A"}
         />
       )}
 
