@@ -45,6 +45,17 @@ interface UserData {
   total_regular_deals_trans?: any
   total_wallet_balance?: any
   no_of_customers?: any
+  total_revenue?: any
+  total_discount?: any
+  cost_price_total?: any
+  profit?: any
+  raffle_draw_winning_volume?: any
+  revenue_summary_report?: any
+  // Auction summary fields
+  revenue?: number
+  total_tickets?: number
+  rda?: number
+  eca?: number
 
 }
 

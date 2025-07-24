@@ -90,7 +90,6 @@ const Page = () => {
     error,
   } = useGetDatanew(url, "get_report_summary", userToken || " ");
 
-  console.log(reportInfo, "reportInfo");
 
   // Add null checks to prevent errors when reportInfo is undefined
   const uptimeSuccess = reportInfo?.data?.service_uptime?.success
@@ -172,22 +171,91 @@ const Page = () => {
   );
 
   const RegularDealsReport = () => {
-    const [sortBy, setSortBy] = useState("Yesterday");
+    const [sortBy, setSortBy] = useState("");
     const [customStart, setCustomStart] = useState("");
     const [customEnd, setCustomEnd] = useState("");
+
+    // Construct URL with query parameters based on filter selection
+    const getRegularDealsFilterParams = () => {
+      const params = new URLSearchParams();
+
+      switch (sortBy) {
+        case "last_week":
+          params.append("filter", "last_week");
+          break;
+        case "last_month":
+          params.append("filter", "last_month");
+          break;
+        case "last_year":
+          params.append("filter", "last_year");
+          break;
+        case "custom":
+          // Only add custom filter if both start and end dates are provided
+          if (customStart && customEnd) {
+            params.append("filter", "custom");
+            params.append("start_date", customStart);
+            params.append("end_date", customEnd);
+          }
+          break;
+        default:
+          // No filter parameter for default (all time)
+          break;
+      }
+
+      return params.toString();
+    };
+
+    const regularDealsUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/regular_deals_summary/?${getRegularDealsFilterParams()}`;
+
+    const {
+      data: regularDealsData,
+      isLoading: regularDealsLoading,
+      error: regularDealsError,
+    } = useGetDatanew(regularDealsUrl, "get_regular_deals_summary", userToken || " ");
+
+
+    console.log(regularDealsData, 'dddd')
+
+    if (regularDealsLoading) {
+      return (
+        <div className="w-full min-h-screen bg-gray-50 flex items-center justify-center">
+          <Loading />
+        </div>
+      );
+    }
+
+    if (regularDealsError) {
+      return (
+        <div className="w-full min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Data</h2>
+            <p className="text-gray-600">Please try again later.</p>
+          </div>
+        </div>
+      );
+    }
+
+    // Extract data from API response
+    const summaryData = regularDealsData?.data || {
+      total_revenue: 0,
+      total_discount: 0,
+      cost_price_total: 0,
+      profit: 0
+    };
+
     return (
       <div className="w-full min-h-screen bg-gray-50">
         <div className="bg-[#F6F6F6] px-4 sm:px-6 md:px-8 py-4 md:py-6">
           <span
             onClick={() => setShowRegularDealsReport(false)}
-            className="text-[#F25E26] cursor-pointer text-sm block mb-2 md:mb-3"
+            className="text-[#F25E26] cursor-pointer text-xs sm:text-sm block mb-2 md:mb-3"
           >
             Back
           </span>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-1">
             Reports
           </h1>
-          <p className="text-sm md:text-base text-gray-700">
+          <p className="text-xs sm:text-sm md:text-base text-gray-700">
             Regular Transaction Deals
           </p>
         </div>
@@ -196,28 +264,28 @@ const Page = () => {
           <div className="py-4 border-t border-gray-100">
             <div className="flex justify-end items-center gap-4">
               <select
-                className="border border-gray-300 rounded px-2 md:px-3 py-1 text-sm bg-white"
+                className="border border-gray-300 rounded px-2 md:px-3 py-1 text-xs sm:text-sm bg-white"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
               >
-                <option>Yesterday</option>
-                <option>Last Week</option>
-                <option>Last Month</option>
-                <option>Last Year</option>
-                <option>Custom</option>
+                <option value="">All Time</option>
+                <option value="last_week">Last Week</option>
+                <option value="last_month">Last Month</option>
+                <option value="last_year">Last Year</option>
+                <option value="custom">Custom</option>
               </select>
-              {sortBy === "Custom" && (
+              {sortBy === "custom" && (
                 <>
                   <input
                     type="date"
-                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    className="border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm"
                     value={customStart}
                     onChange={(e) => setCustomStart(e.target.value)}
                   />
-                  <span className="mx-1">to</span>
+                  <span className="mx-1 text-xs sm:text-sm">to</span>
                   <input
                     type="date"
-                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    className="border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm"
                     value={customEnd}
                     onChange={(e) => setCustomEnd(e.target.value)}
                   />
@@ -230,44 +298,44 @@ const Page = () => {
           <div className="py-6 md:p-8">
             {/* Financial Metrics Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 lg:gap-8">
-              <div className="bg-white shadow-lg  rounded-lg p-6 md:p-8 lg:p-12 border border-gray-200">
-                <h3 className="text-sm md:text-base text-gray-700 mb-4 md:mb-6 lg:mb-8 text-center">
+              <div className="bg-white shadow-lg  rounded-lg p-4 md:p-6 lg:p-8 border border-gray-200">
+                <h3 className="text-xs sm:text-sm md:text-base text-gray-700 mb-3 md:mb-4 lg:mb-6 text-center">
                   Total Revenue
                 </h3>
-                <p className="text-xl   md:text-2xl lg:text-3xl font-bold text-gray-900 text-center">
-                  ₦ 2,000,000
+                <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold  text-center">
+                  {formatNaira(summaryData.total_revenue)}
                 </p>
               </div>
-              <div className="bg-white shadow-lg  rounded-lg p-6 md:p-8 lg:p-12 border border-gray-200">
-                <h3 className="text-sm md:text-base text-gray-700 mb-4 md:mb-6 lg:mb-8 text-center">
+              <div className="bg-white shadow-lg  rounded-lg p-4 md:p-6 lg:p-8 border border-gray-200">
+                <h3 className="text-xs sm:text-sm md:text-base text-gray-700 mb-3 md:mb-4 lg:mb-6 text-center">
                   Total Discount
                 </h3>
-                <p className="text-xl   md:text-2xl lg:text-3xl font-bold text-gray-900 text-center">
-                  ₦ 100,000
+                <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-center">
+                  {formatNaira(summaryData.total_discount)}
                 </p>
               </div>
-              <div className="bg-white shadow-lg  rounded-lg p-6 md:p-8 lg:p-12 border border-gray-200">
-                <h3 className="text-sm md:text-base text-gray-700 mb-4 md:mb-6 lg:mb-8 text-center">
+              <div className="bg-white shadow-lg  rounded-lg p-4 md:p-6 lg:p-8 border border-gray-200">
+                <h3 className="text-xs sm:text-sm md:text-base text-gray-700 mb-3 md:mb-4 lg:mb-6 text-center">
                   Cost of Sale
                 </h3>
-                <p className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 text-center">
-                  ₦ 1,000,000
+                <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-center">
+                  {formatNaira(summaryData.cost_price_total)}
                 </p>
               </div>
-              <div className="bg-white shadow-lg  rounded-lg p-6 md:p-8 lg:p-12 border border-gray-200">
-                <h3 className="text-sm md:text-base text-gray-700 mb-4 md:mb-6 lg:mb-8 text-center">
+              <div className="bg-white shadow-lg  rounded-lg p-4 md:p-6 lg:p-8 border border-gray-200">
+                <h3 className="text-xs sm:text-sm md:text-base text-gray-700 mb-3 md:mb-4 lg:mb-6 text-center">
                   Total Profit
                 </h3>
-                <p className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 text-center">
-                  ₦ 900,000
+                <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-center">
+                  {formatNaira(summaryData.profit)}
                 </p>
               </div>
             </div>
 
             {/* View Report Button */}
-            <div className="flex justify-center mt-8 md:mt-12">
+            <div className="flex justify-center mt-6 md:mt-8 lg:mt-10">
               <button
-                className="bg-[#F25E26] hover:bg-[#E84526] text-white font-medium py-3 md:py-4 px-8 md:px-16 rounded-lg transition-colors duration-200 text-sm md:text-base"
+                className="bg-[#F25E26] hover:bg-[#E84526] text-white font-medium py-2 md:py-3 px-6 md:px-12 rounded-lg transition-colors duration-200 text-xs sm:text-sm md:text-base"
                 onClick={() =>
                   router.push("/dashboard/regulartransactionreport")
                 }
@@ -282,22 +350,88 @@ const Page = () => {
   };
 
   const AuctionCustomersReport = () => {
-    const [sortBy, setSortBy] = useState("Yesterday");
+    const [sortBy, setSortBy] = useState("");
     const [customStart, setCustomStart] = useState("");
     const [customEnd, setCustomEnd] = useState("");
+
+    // Construct URL with query parameters based on filter selection
+    const getAuctionCustomersFilterParams = () => {
+      const params = new URLSearchParams();
+
+      switch (sortBy) {
+        case "last_week":
+          params.append("filter", "last_week");
+          break;
+        case "last_month":
+          params.append("filter", "last_month");
+          break;
+        case "last_year":
+          params.append("filter", "last_year");
+          break;
+        case "custom":
+          // Only add custom filter if both start and end dates are provided
+          if (customStart && customEnd) {
+            params.append("filter", "custom");
+            params.append("start_date", customStart);
+            params.append("end_date", customEnd);
+          }
+          break;
+        default:
+          // No filter parameter for default (all time)
+          break;
+      }
+
+      return params.toString();
+    };
+
+    const auctionCustomersUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/auction_deals_summary/?${getAuctionCustomersFilterParams()}`;
+
+    const {
+      data: auctionCustomersData,
+      isLoading: auctionCustomersLoading,
+      error: auctionCustomersError,
+    } = useGetDatanew(auctionCustomersUrl, "get_auction_customers_summary", userToken || " ");
+
+    if (auctionCustomersLoading) {
+      return (
+        <div className="w-full min-h-screen bg-gray-50 flex items-center justify-center">
+          <Loading />
+        </div>
+      );
+    }
+
+    if (auctionCustomersError) {
+      return (
+        <div className="w-full min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Data</h2>
+            <p className="text-gray-600">Please try again later.</p>
+          </div>
+        </div>
+      );
+    }
+
+    // Extract data from API response
+    const summaryData = auctionCustomersData?.data || {
+      revenue: 0,
+      total_tickets: 0,
+      rda: 0,
+      eca: 0
+    };
+
     return (
       <div className="w-full min-h-screen bg-gray-50">
         <div className="bg-[#F6F6F6] px-4 sm:px-6 md:px-8 py-4 md:py-6">
           <span
             onClick={() => setShowAuctionCustomersReport(false)}
-            className="text-[#F25E26] cursor-pointer text-sm block mb-2 md:mb-3"
+            className="text-[#F25E26] cursor-pointer text-xs sm:text-sm block mb-2 md:mb-3"
           >
             Back
           </span>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-1">
             Reports
           </h1>
-          <p className="text-sm md:text-base text-gray-700">
+          <p className="text-xs sm:text-sm md:text-base text-gray-700">
             Auction Transaction Report (23-May-2025; 4:40 PM)
           </p>
         </div>
@@ -306,28 +440,28 @@ const Page = () => {
           <div className="py-4 border-t border-gray-100">
             <div className="flex justify-end items-center gap-4">
               <select
-                className="border border-gray-300 rounded px-2 md:px-3 py-1 text-sm bg-white"
+                className="border border-gray-300 rounded px-2 md:px-3 py-1 text-xs sm:text-sm bg-white"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
               >
-                <option>Yesterday</option>
-                <option>Last Week</option>
-                <option>Last Month</option>
-                <option>Last Year</option>
-                <option>Custom</option>
+                <option value="">All Time</option>
+                <option value="last_week">Last Week</option>
+                <option value="last_month">Last Month</option>
+                <option value="last_year">Last Year</option>
+                <option value="custom">Custom</option>
               </select>
-              {sortBy === "Custom" && (
+              {sortBy === "custom" && (
                 <>
                   <input
                     type="date"
-                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    className="border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm"
                     value={customStart}
                     onChange={(e) => setCustomStart(e.target.value)}
                   />
-                  <span className="mx-1">to</span>
+                  <span className="mx-1 text-xs sm:text-sm">to</span>
                   <input
                     type="date"
-                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    className="border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm"
                     value={customEnd}
                     onChange={(e) => setCustomEnd(e.target.value)}
                   />
@@ -340,44 +474,44 @@ const Page = () => {
           <div className="py-6 md:p-8">
             {/* Financial Metrics Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 lg:gap-8">
-              <div className="bg-[#FFEFE980] shadow-lg  rounded-lg p-6 md:p-8 lg:p-12 border border-gray-200">
-                <h3 className="text-sm md:text-base text-gray-700 mb-4 md:mb-6 lg:mb-8 text-center">
+              <div className="bg-[#FFEFE980] shadow-lg  rounded-lg p-4 md:p-6 lg:p-8 border border-gray-200">
+                <h3 className="text-xs sm:text-sm md:text-base text-gray-700 mb-3 md:mb-4 lg:mb-6 text-center">
                   Ticket GTV
                 </h3>
-                <p className="text-xl   md:text-2xl lg:text-3xl font-bold text-gray-900 text-center">
-                  ₦ 2,000,000
+                <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-center">
+                  {formatNaira(summaryData.revenue || 0)}
                 </p>
               </div>
-              <div className="bg-[#EFE3FF80] shadow-lg  rounded-lg p-6 md:p-8 lg:p-12 border border-gray-200">
-                <h3 className="text-sm md:text-base text-gray-700 mb-4 md:mb-6 lg:mb-8 text-center">
+              <div className="bg-[#EFE3FF80] shadow-lg  rounded-lg p-4 md:p-6 lg:p-8 border border-gray-200">
+                <h3 className="text-xs sm:text-sm md:text-base text-gray-700 mb-3 md:mb-4 lg:mb-6 text-center">
                   Total No of Ticket Sold
                 </h3>
-                <p className="text-xl   md:text-2xl lg:text-3xl font-bold text-gray-900 text-center">
-                  ₦ 100,000
+                <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-center">
+                  {summaryData.total_tickets}
                 </p>
               </div>
-              <div className="bg-[#F1FDFF80] shadow-lg  rounded-lg p-6 md:p-8 lg:p-12 border border-gray-200">
-                <h3 className="text-sm md:text-base text-gray-700 mb-4 md:mb-6 lg:mb-8 text-center">
+              <div className="bg-[#F1FDFF80] shadow-lg  rounded-lg p-4 md:p-6 lg:p-8 border border-gray-200">
+                <h3 className="text-xs sm:text-sm md:text-base text-gray-700 mb-3 md:mb-4 lg:mb-6 text-center">
                   RDA
                 </h3>
-                <p className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 text-center">
-                  ₦ 1,000,000
+                <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-center">
+                  {formatNaira(summaryData.rda || 0)}
                 </p>
               </div>
-              <div className="bg-[#E8FFE699] shadow-lg  rounded-lg p-6 md:p-8 lg:p-12 border border-gray-200">
-                <h3 className="text-sm md:text-base text-gray-700 mb-4 md:mb-6 lg:mb-8 text-center">
+              <div className="bg-[#E8FFE699] shadow-lg  rounded-lg p-4 md:p-6 lg:p-8 border border-gray-200">
+                <h3 className="text-xs sm:text-sm md:text-base text-gray-700 mb-3 md:mb-4 lg:mb-6 text-center">
                   ECA
                 </h3>
-                <p className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 text-center">
-                  ₦ 900,000
+                <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-center">
+                  {formatNaira(summaryData.eca || 0)}
                 </p>
               </div>
             </div>
 
             {/* View Report Button */}
-            <div className="flex justify-center mt-8 md:mt-12">
+            <div className="flex justify-center mt-6 md:mt-8 lg:mt-10">
               <button
-                className="bg-[#F25E26] hover:bg-[#E84526] text-white font-medium py-3 md:py-4 px-8 md:px-16 rounded-lg transition-colors duration-200 text-sm md:text-base"
+                className="bg-[#F25E26] hover:bg-[#E84526] text-white font-medium py-2 md:py-3 px-6 md:px-12 rounded-lg transition-colors duration-200 text-xs sm:text-sm md:text-base"
                 onClick={() =>
                   router.push("/dashboard/auctiontransactionreport")
                 }
@@ -507,7 +641,7 @@ const Page = () => {
             Back
           </span>
           <div className="flex items-center gap-2 mb-6">
-            <h1 className="text-2xl font-bold text-black">
+            <h1 className="text-2xl font-semibold text-black">
               Recharge Transaction Report
             </h1>
             <span className="text-base text-gray-600 font-normal">
@@ -527,7 +661,7 @@ const Page = () => {
                   onClick={() => setActiveTab(tab)}
                   className={`px-10 py-3 rounded-xl font-semibold transition-colors ${
                     activeTab === tab
-                      ? "bg-[#F25E26] text-white font-bold"
+                      ? "bg-[#F25E26] text-white font-semibold"
                       : "bg-[#EDEDED] text-gray-500"
                   }`}
                 >
@@ -579,7 +713,7 @@ const Page = () => {
                   className="bg-white shadow-lg rounded-lg border border-[#FEEAE2] flex flex-col justify-between"
                 >
                   <div className="w-full h-6 bg-[#FEF6F3] rounded-t-lg"></div>
-                  <div className="flex flex-col justify-center items-center p-4 md:p-6 flex-1">
+                  <div className="flex flex-col justify-center items-center p-3 md:p-4 lg:p-6 flex-1">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="flex items-center justify-center gap-2">
                         {/* You can keep your SVG here or use a different icon per card if needed */}
@@ -595,12 +729,12 @@ const Page = () => {
                           <polyline points="3.27,6.96 12,12.01 20.73,6.96" />
                           <line x1="12" y1="22.08" x2="12" y2="12" />
                         </svg>
-                        <h3 className="text-sm md:text-base font-medium text-gray-700">
+                        <h3 className="text-xs sm:text-sm md:text-base font-medium text-gray-700">
                           {item.title}
                         </h3>
                       </div>
                     </div>
-                    <p className="text-xl md:text-2xl font-bold text-gray-900">
+                    <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-center">
                       {item.value}
                     </p>
                   </div>
@@ -721,12 +855,12 @@ const Page = () => {
           >
             Back
           </span>
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-1">
             Customer Statistics
           </h1>
-          <p className="text-lg font-medium text-gray-700">
+          <p className="text-xs sm:text-sm md:text-base font-medium text-gray-700">
             Customer Statistic Summary{" "}
-            <span className="text-base font-normal">
+            <span className="text-xs sm:text-sm font-normal">
               (23-May-2025; 4:40 PM)
             </span>
           </p>
@@ -765,41 +899,41 @@ const Page = () => {
             )}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
-            <div className="rounded-xl border-2 border-green-200 bg-green-50 p-8 flex flex-col items-center justify-center min-h-[160px]">
-              <div className="text-lg font-medium text-gray-700 mb-2 text-center">
+            <div className="rounded-xl border-2 border-green-200 bg-green-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[160px]">
+              <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
                 Registered Customers
               </div>
-              <div className="text-3xl font-bold text-gray-900 text-center">
+              <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
                 2,000,000
               </div>
             </div>
-            <div className="rounded-xl border-2 border-red-200 bg-red-50 p-8 flex flex-col items-center justify-center min-h-[160px]">
-              <div className="text-lg font-medium text-gray-700 mb-2 text-center">
+            <div className="rounded-xl border-2 border-red-200 bg-red-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[160px]">
+              <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
                 Customer Wallet Balance
               </div>
-              <div className="text-3xl font-bold text-gray-900 text-center">
+              <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
                 ₦ 5,000,000
               </div>
             </div>
-            <div className="rounded-xl border-2 border-purple-400 bg-purple-50 p-8 flex flex-col items-center justify-center min-h-[160px]">
-              <div className="text-lg font-medium text-gray-700 mb-2 text-center">
+            <div className="rounded-xl border-2 border-purple-400 bg-purple-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[160px]">
+              <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
                 Customers With Balance:
               </div>
               <div className="flex flex-col items-center justify-center h-full gap-2">
-                <div className="flex items-center gap-2 text-xl font-semibold text-gray-900">
+                <div className="flex items-center gap-2 text-sm sm:text-base md:text-lg font-semibold text-gray-900">
                   <span>&gt; 0:</span>{" "}
-                  <span className="font-bold">400,000</span>
+                  <span className="font-semibold">400,000</span>
                 </div>
-                <div className="flex items-center gap-2 text-xl font-semibold text-gray-900">
-                  <span>&lt; 0:</span> <span className="font-bold">0</span>
+                <div className="flex items-center gap-2 text-sm sm:text-base md:text-lg font-semibold text-gray-900">
+                  <span>&lt; 0:</span> <span className="font-semibold">0</span>
                 </div>
               </div>
             </div>
-            <div className="rounded-xl border-2 border-yellow-300 bg-yellow-50 p-8 flex flex-col items-center justify-center min-h-[160px]">
-              <div className="text-lg font-medium text-gray-700 mb-2 text-center">
+            <div className="rounded-xl border-2 border-yellow-300 bg-yellow-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[160px]">
+              <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
                 Unredeemed Ajiroba Points
               </div>
-              <div className="text-3xl font-bold text-gray-900 text-center">
+              <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
                 100,000
               </div>
             </div>
@@ -807,7 +941,7 @@ const Page = () => {
           <div className="flex justify-center mt-8 mb-8">
             <button
               onClick={() => router.push("/dashboard/customersreport")}
-              className="bg-[#F25E26] hover:bg-[#E84526] text-white font-medium py-3 px-16 rounded-lg transition-colors duration-200 text-base"
+              className="bg-[#F25E26] hover:bg-[#E84526] text-white font-medium py-2 md:py-3 px-6 md:px-12 rounded-lg transition-colors duration-200 text-xs sm:text-sm md:text-base"
             >
               View Report
             </button>
@@ -832,10 +966,10 @@ const Page = () => {
           >
             Back
           </span>
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">Reports</h1>
-          <p className="text-lg font-medium text-gray-700">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-1">Reports</h1>
+          <p className="text-xs sm:text-sm md:text-base font-medium text-gray-700">
             Raffle Draw Winning Report{" "}
-            <span className="text-base font-normal">
+            <span className="text-xs sm:text-sm font-normal">
               (23-May-2025; 4:40 PM)
             </span>
           </p>
@@ -874,51 +1008,51 @@ const Page = () => {
             )}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-            <div className="rounded-xl border-2 border-red-200 bg-red-50 p-8 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-base font-medium text-gray-700 mb-2 text-center">
+            <div className="rounded-xl border-2 border-red-200 bg-red-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[120px]">
+              <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
                 Gross Winning Value
               </div>
-              <div className="text-2xl font-bold text-gray-900 text-center">
+              <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
                 ₦ 2,000,000
               </div>
             </div>
-            <div className="rounded-xl border-2 border-purple-200 bg-purple-50 p-8 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-base font-medium text-gray-700 mb-2 text-center">
+            <div className="rounded-xl border-2 border-purple-200 bg-purple-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[120px]">
+              <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
                 Total Number of Winners
               </div>
-              <div className="text-2xl font-bold text-gray-900 text-center">
+              <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
                 5,000,000
               </div>
             </div>
-            <div className="rounded-xl border-2 border-yellow-200 bg-yellow-50 p-8 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-base font-medium text-gray-700 mb-2 text-center">
+            <div className="rounded-xl border-2 border-yellow-200 bg-yellow-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[120px]">
+              <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
                 Number of Redemption
               </div>
-              <div className="text-2xl font-bold text-gray-900 text-center">
+              <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
                 500,000
               </div>
             </div>
-            <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-8 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-base font-medium text-gray-700 mb-2 text-center">
+            <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[120px]">
+              <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
                 Value of Redemption
               </div>
-              <div className="text-2xl font-bold text-gray-900 text-center">
+              <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
                 ₦ 3,000,000
               </div>
             </div>
-            <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-8 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-base font-medium text-gray-700 mb-2 text-center">
+            <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[120px]">
+              <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
                 Number of Pending Redemption
               </div>
-              <div className="text-2xl font-bold text-gray-900 text-center">
+              <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
                 100,000
               </div>
             </div>
-            <div className="rounded-xl border-2 border-green-200 bg-green-50 p-8 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-base font-medium text-gray-700 mb-2 text-center">
+            <div className="rounded-xl border-2 border-green-200 bg-green-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[120px]">
+              <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
                 Value of Pending Redemption
               </div>
-              <div className="text-2xl font-bold text-gray-900 text-center">
+              <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
                 ₦ 400,000,000
               </div>
             </div>
@@ -926,7 +1060,7 @@ const Page = () => {
           <div className="flex justify-center mt-8 mb-8">
             <button
               onClick={() => router.push("/dashboard/raffletickets")}
-              className="bg-red-100 hover:bg-red-200 text-gray-900 font-medium py-3 px-16 rounded-lg transition-colors duration-200 text-base border border-red-200"
+              className="bg-red-100 hover:bg-red-200 text-gray-900 font-medium py-2 md:py-3 px-6 md:px-12 rounded-lg transition-colors duration-200 text-xs sm:text-sm md:text-base border border-red-200"
             >
               View Report
             </button>
@@ -1076,7 +1210,7 @@ const Page = () => {
                       <p className="text-xs text-gray-600 mb-1 group-hover:text-teal-100">
                         Auction Customers GTV.
                       </p>
-                      <p className="text-lg font-bold text-gray-900 group-hover:text-white">
+                      <p className="text-lg font-semibold text-gray-900 group-hover:text-white">
                         {reportInfo?.data
                           ? formatNaira(
                               reportInfo.data.total_auction_customers_GTV || 0
@@ -1088,7 +1222,7 @@ const Page = () => {
                       <p className="text-xs text-gray-600 mb-1 group-hover:text-teal-100">
                         Regular Customer GTV
                       </p>
-                      <p className="text-lg font-bold text-gray-900 group-hover:text-white">
+                      <p className="text-lg font-semibold text-gray-900 group-hover:text-white">
                         {reportInfo?.data
                           ? formatNaira(
                               reportInfo.data.total_regular_customers_GTV || 0
@@ -1155,7 +1289,7 @@ const Page = () => {
                             Success Rate
                           </span>
                         </div>
-                        <div className="text-2xl font-bold text-gray-900 group-hover:text-white mb-4">
+                        <div className="text-2xl font-semibold text-gray-900 group-hover:text-white mb-4">
                           {reportInfo?.data?.service_uptime?.success || "75%"}
                         </div>
                         <div className="flex items-center gap-2 mb-3">
@@ -1164,7 +1298,7 @@ const Page = () => {
                             Failure Rate
                           </span>
                         </div>
-                        <div className="text-2xl font-bold text-gray-900 group-hover:text-white">
+                        <div className="text-2xl font-semibold text-gray-900 group-hover:text-white">
                           {reportInfo?.data?.service_uptime?.failure || "25%"}
                         </div>
                       </div>
@@ -1211,7 +1345,7 @@ const Page = () => {
                     <div className="text-sm text-gray-600 mb-2 group-hover:text-red-100">
                       Regular GTV
                     </div>
-                    <div className="text-2xl font-bold text-gray-900 group-hover:text-white">
+                    <div className="text-2xl font-semibold text-gray-900 group-hover:text-white">
                     {reportInfo?.data
                           ? formatNaira(
                               reportInfo.data.total_regular_customers_GTV || 0
@@ -1252,7 +1386,7 @@ const Page = () => {
                     <div className="text-sm text-gray-600 mb-2 group-hover:text-purple-100">
                       Auction GTV
                     </div>
-                    <div className="text-2xl font-bold text-gray-900 group-hover:text-white">
+                    <div className="text-2xl font-semibold text-gray-900 group-hover:text-white">
                     {reportInfo?.data
                           ? formatNaira(
                               reportInfo.data.total_auction_customers_GTV || 0
@@ -1290,8 +1424,12 @@ const Page = () => {
                     <div className="text-sm text-gray-600 mb-2 group-hover:text-yellow-100">
                       Recharge GTV
                     </div>
-                    <div className="text-2xl font-bold text-gray-900 group-hover:text-white">
-                      ₦450,476,823
+                    <div className="text-2xl font-semibold text-gray-900 group-hover:text-white">
+                    {reportInfo?.data
+                          ? formatNaira(
+                              reportInfo.data.total_bills_trans || 0
+                            )
+                          : "₦0.00"}
                     </div>
                   </div>
                 </div>
@@ -1330,7 +1468,7 @@ const Page = () => {
                       <div className="text-sm text-gray-600 group-hover:text-teal-100">
                         Customer Wallet Bal
                       </div>
-                      <div className="text-2xl font-bold text-gray-900 group-hover:text-white">
+                      <div className="text-2xl font-semibold text-gray-900 group-hover:text-white">
                       {reportInfo?.data
                           ? formatNaira(
                               reportInfo.data.total_wallet_balance || 0
@@ -1376,8 +1514,12 @@ const Page = () => {
                     <div className="text-sm text-gray-600 mb-2 group-hover:text-blue-100">
                       Consolidated Revenue
                     </div>
-                    <div className="text-2xl font-bold text-gray-900 group-hover:text-white">
-                      ₦45,823,000
+                    <div className="text-2xl font-semibold text-gray-900 group-hover:text-white">
+                    {reportInfo?.data
+                          ? formatNaira(
+                              reportInfo.data.revenue_summary_report || 0
+                            )
+                          : "₦0.00"}
                     </div>
                   </div>
                 </div>
@@ -1412,8 +1554,12 @@ const Page = () => {
                       <div className="text-sm text-gray-600 group-hover:text-green-100">
                         Gross Winning Volume
                       </div>
-                      <div className="text-2xl font-bold text-gray-900 group-hover:text-white">
-                        ₦450,476,823
+                      <div className="text-2xl font-semibold text-gray-900 group-hover:text-white">
+                      {reportInfo?.data
+                          ? formatNaira(
+                              reportInfo.data.raffle_draw_winning_volume || 0
+                            )
+                          : "₦0.00"}
                       </div>
                     </div>
                     <div className="flex gap-4 flex-wrap">
@@ -1421,7 +1567,7 @@ const Page = () => {
                         Total No of Winners
                       </div>
                       <div className="text-xl font-semibold text-gray-900 group-hover:text-white">
-                        500
+                        {reportInfo?.data?.total_raffle_winner}
                       </div>
                     </div>
                   </div>
