@@ -33,6 +33,18 @@ interface UserData {
   current_datetime?: any
   delivery_estimation?: any
   flatMap?: any
+  total_auction_customers_GTV?: any
+  service_uptime?: any
+  total_amount_made?: any
+  total_auction_customers?: any
+  total_auction_trans?: any
+  total_bills_trans?: any
+  total_raffle_winner?: any
+  total_regular_customers?: any
+  total_regular_customers_GTV?: any
+  total_regular_deals_trans?: any
+  total_wallet_balance?: any
+  no_of_customers?: any
 
 }
 

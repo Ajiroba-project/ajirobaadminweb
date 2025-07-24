@@ -17,15 +17,18 @@ import {
 import ModalComponent from "@/app/components/ModalComponent";
 import Link from "next/link";
 import Image from "next/image";
-import mtn from "@/app/asset/mtn.png"
-import glo from "@/app/asset/glo.svg"
-import airtel from "@/app/asset/airtel.svg"
-import ninemobile from "@/app/asset/9mobile.svg"
-import startimes from "@/app/asset/startimes.svg"
-import dstv from "@/app/asset/dstv.svg"
-import showmax from "@/app/asset/showmax.svg"
-import gotv from "@/app/asset/gotv.svg"
-
+import mtn from "@/app/asset/mtn.png";
+import glo from "@/app/asset/glo.svg";
+import airtel from "@/app/asset/airtel.svg";
+import ninemobile from "@/app/asset/9mobile.svg";
+import startimes from "@/app/asset/startimes.svg";
+import dstv from "@/app/asset/dstv.svg";
+import showmax from "@/app/asset/showmax.svg";
+import gotv from "@/app/asset/gotv.svg";
+import { useGetDatanew } from "@/hooks/useGetData";
+import Cookies from "js-cookie";
+import Loading from "@/app/components/Loading";
+import { redirect } from 'next/navigation'
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale);
@@ -34,16 +37,75 @@ const Page = () => {
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
   const router = useRouter();
 
-  const [topSortBy, setTopSortBy] = useState('Yesterday');
-  const [topCustomStart, setTopCustomStart] = useState('');
-  const [topCustomEnd, setTopCustomEnd] = useState('');
+  const formatNaira = (value: number) => {
+    if (typeof value !== "number") return "₦0.00";
+    return "₦" + value.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
+  };
+
+  const [topSortBy, setTopSortBy] = useState("all_time");
+  const [topCustomStart, setTopCustomStart] = useState("");
+  const [topCustomEnd, setTopCustomEnd] = useState("");
+
+  const [userToken, setUserToken] = useState(Cookies.get("token"));
+
+
+
+
+  /*  useAuthMiddleware(router) */
+  useAuthMiddleware(router);
+
+  // Construct URL with query parameters based on filter selection
+  const getFilterParams = () => {
+    const params = new URLSearchParams();
+
+    switch (topSortBy) {
+      case "last_7_days":
+        params.append("filter", "last_7_days");
+        break;
+      case "last_month":
+        params.append("filter", "last_month");
+        break;
+      case "last_year":
+        params.append("filter", "last_year");
+        break;
+      case "custom":
+        params.append("filter", "custom");
+        if (topCustomStart) params.append("start_date", topCustomStart);
+        if (topCustomEnd) params.append("end_date", topCustomEnd);
+        break;
+      default:
+        params.append("filter", "all_time");
+    }
+
+    return params.toString();
+  };
+
+  const url = `${
+    process.env.NEXT_PUBLIC_BASE_URL
+  }/admin/report_summary/?${getFilterParams()}`;
+
+  const {
+    data: reportInfo,
+    isLoading: reportLoading,
+    error,
+  } = useGetDatanew(url, "get_report_summary", userToken || " ");
+
+  console.log(reportInfo, "reportInfo");
+
+  // Add null checks to prevent errors when reportInfo is undefined
+  const uptimeSuccess = reportInfo?.data?.service_uptime?.success
+    ? parseFloat(reportInfo.data.service_uptime.success.replace("%", ""))
+    : 0; // Default value
+  const uptimeFailure = reportInfo?.data?.service_uptime?.failure
+    ? parseFloat(reportInfo.data.service_uptime.failure.replace("%", ""))
+    : 0; // Default value
 
   // Chart data for Service Uptime Report
   const uptimeData = {
     labels: ["Success Rate", "Failure Rate"],
     datasets: [
       {
-        data: [70, 30],
+        data: [uptimeSuccess, uptimeFailure],
         backgroundColor: ["#10b981", "#ef4444"],
         borderColor: ["#10b981", "#ef4444"],
         borderWidth: 0,
@@ -110,9 +172,9 @@ const Page = () => {
   );
 
   const RegularDealsReport = () => {
-    const [sortBy, setSortBy] = useState('Yesterday');
-    const [customStart, setCustomStart] = useState('');
-    const [customEnd, setCustomEnd] = useState('');
+    const [sortBy, setSortBy] = useState("Yesterday");
+    const [customStart, setCustomStart] = useState("");
+    const [customEnd, setCustomEnd] = useState("");
     return (
       <div className="w-full min-h-screen bg-gray-50">
         <div className="bg-[#F6F6F6] px-4 sm:px-6 md:px-8 py-4 md:py-6">
@@ -136,7 +198,7 @@ const Page = () => {
               <select
                 className="border border-gray-300 rounded px-2 md:px-3 py-1 text-sm bg-white"
                 value={sortBy}
-                onChange={e => setSortBy(e.target.value)}
+                onChange={(e) => setSortBy(e.target.value)}
               >
                 <option>Yesterday</option>
                 <option>Last Week</option>
@@ -144,20 +206,20 @@ const Page = () => {
                 <option>Last Year</option>
                 <option>Custom</option>
               </select>
-              {sortBy === 'Custom' && (
+              {sortBy === "Custom" && (
                 <>
                   <input
                     type="date"
                     className="border border-gray-300 rounded px-2 py-1 text-sm"
                     value={customStart}
-                    onChange={e => setCustomStart(e.target.value)}
+                    onChange={(e) => setCustomStart(e.target.value)}
                   />
                   <span className="mx-1">to</span>
                   <input
                     type="date"
                     className="border border-gray-300 rounded px-2 py-1 text-sm"
                     value={customEnd}
-                    onChange={e => setCustomEnd(e.target.value)}
+                    onChange={(e) => setCustomEnd(e.target.value)}
                   />
                 </>
               )}
@@ -206,7 +268,9 @@ const Page = () => {
             <div className="flex justify-center mt-8 md:mt-12">
               <button
                 className="bg-[#F25E26] hover:bg-[#E84526] text-white font-medium py-3 md:py-4 px-8 md:px-16 rounded-lg transition-colors duration-200 text-sm md:text-base"
-                onClick={() => router.push('/dashboard/regulartransactionreport')}
+                onClick={() =>
+                  router.push("/dashboard/regulartransactionreport")
+                }
               >
                 View Report
               </button>
@@ -218,9 +282,9 @@ const Page = () => {
   };
 
   const AuctionCustomersReport = () => {
-    const [sortBy, setSortBy] = useState('Yesterday');
-    const [customStart, setCustomStart] = useState('');
-    const [customEnd, setCustomEnd] = useState('');
+    const [sortBy, setSortBy] = useState("Yesterday");
+    const [customStart, setCustomStart] = useState("");
+    const [customEnd, setCustomEnd] = useState("");
     return (
       <div className="w-full min-h-screen bg-gray-50">
         <div className="bg-[#F6F6F6] px-4 sm:px-6 md:px-8 py-4 md:py-6">
@@ -244,7 +308,7 @@ const Page = () => {
               <select
                 className="border border-gray-300 rounded px-2 md:px-3 py-1 text-sm bg-white"
                 value={sortBy}
-                onChange={e => setSortBy(e.target.value)}
+                onChange={(e) => setSortBy(e.target.value)}
               >
                 <option>Yesterday</option>
                 <option>Last Week</option>
@@ -252,20 +316,20 @@ const Page = () => {
                 <option>Last Year</option>
                 <option>Custom</option>
               </select>
-              {sortBy === 'Custom' && (
+              {sortBy === "Custom" && (
                 <>
                   <input
                     type="date"
                     className="border border-gray-300 rounded px-2 py-1 text-sm"
                     value={customStart}
-                    onChange={e => setCustomStart(e.target.value)}
+                    onChange={(e) => setCustomStart(e.target.value)}
                   />
                   <span className="mx-1">to</span>
                   <input
                     type="date"
                     className="border border-gray-300 rounded px-2 py-1 text-sm"
                     value={customEnd}
-                    onChange={e => setCustomEnd(e.target.value)}
+                    onChange={(e) => setCustomEnd(e.target.value)}
                   />
                 </>
               )}
@@ -314,7 +378,9 @@ const Page = () => {
             <div className="flex justify-center mt-8 md:mt-12">
               <button
                 className="bg-[#F25E26] hover:bg-[#E84526] text-white font-medium py-3 md:py-4 px-8 md:px-16 rounded-lg transition-colors duration-200 text-sm md:text-base"
-                onClick={() => router.push('/dashboard/auctiontransactionreport')}
+                onClick={() =>
+                  router.push("/dashboard/auctiontransactionreport")
+                }
               >
                 View Report
               </button>
@@ -326,19 +392,22 @@ const Page = () => {
   };
 
   const RechargeTransactionReport = () => {
-    const [sortBy, setSortBy] = useState('Yesterday');
-    const [customStart, setCustomStart] = useState('');
-    const [customEnd, setCustomEnd] = useState('');
+    const [sortBy, setSortBy] = useState("Yesterday");
+    const [customStart, setCustomStart] = useState("");
+    const [customEnd, setCustomEnd] = useState("");
     const [activeTab, setActiveTab] = useState("Airtime");
 
     // Data-driven configuration for each tab
-    const tabData: Record<string, {
-      summary: { title: string; value: string }[];
-      billersTitle: string;
-      serviceProviders: { name: string; img: any }[];
-      dataColumns: string[][];
-      dataColumnTitle: string;
-    }> = {
+    const tabData: Record<
+      string,
+      {
+        summary: { title: string; value: string }[];
+        billersTitle: string;
+        serviceProviders: { name: string; img: any }[];
+        dataColumns: string[][];
+        dataColumnTitle: string;
+      }
+    > = {
       Airtime: {
         summary: [
           { title: "Airtime GTV", value: "₦10,000,000" },
@@ -473,7 +542,7 @@ const Page = () => {
               <select
                 className="border border-gray-300 rounded px-2 md:px-3 py-1 text-sm bg-white"
                 value={sortBy}
-                onChange={e => setSortBy(e.target.value)}
+                onChange={(e) => setSortBy(e.target.value)}
               >
                 <option>Yesterday</option>
                 <option>Last Week</option>
@@ -481,20 +550,20 @@ const Page = () => {
                 <option>Last Year</option>
                 <option>Custom</option>
               </select>
-              {sortBy === 'Custom' && (
+              {sortBy === "Custom" && (
                 <>
                   <input
                     type="date"
                     className="border border-gray-300 rounded px-2 py-1 text-sm"
                     value={customStart}
-                    onChange={e => setCustomStart(e.target.value)}
+                    onChange={(e) => setCustomStart(e.target.value)}
                   />
                   <span className="mx-1">to</span>
                   <input
                     type="date"
                     className="border border-gray-300 rounded px-2 py-1 text-sm"
                     value={customEnd}
-                    onChange={e => setCustomEnd(e.target.value)}
+                    onChange={(e) => setCustomEnd(e.target.value)}
                   />
                 </>
               )}
@@ -503,42 +572,50 @@ const Page = () => {
 
           {/* Summary Metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-6">
-            {currentTabData.summary.map((item: { title: string; value: string }, idx: number) => (
-              <div
-                key={item.title}
-                className="bg-white shadow-lg rounded-lg border border-[#FEEAE2] flex flex-col justify-between"
-              >
-                <div className="w-full h-6 bg-[#FEF6F3] rounded-t-lg"></div>
-                <div className="flex flex-col justify-center items-center p-4 md:p-6 flex-1">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="flex items-center justify-center gap-2">
-                      {/* You can keep your SVG here or use a different icon per card if needed */}
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#EF4444"
-                        strokeWidth="2"
-                      >
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                        <polyline points="3.27,6.96 12,12.01 20.73,6.96" />
-                        <line x1="12" y1="22.08" x2="12" y2="12" />
-                      </svg>
-                      <h3 className="text-sm md:text-base font-medium text-gray-700">{item.title}</h3>
+            {currentTabData.summary.map(
+              (item: { title: string; value: string }, idx: number) => (
+                <div
+                  key={item.title}
+                  className="bg-white shadow-lg rounded-lg border border-[#FEEAE2] flex flex-col justify-between"
+                >
+                  <div className="w-full h-6 bg-[#FEF6F3] rounded-t-lg"></div>
+                  <div className="flex flex-col justify-center items-center p-4 md:p-6 flex-1">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="flex items-center justify-center gap-2">
+                        {/* You can keep your SVG here or use a different icon per card if needed */}
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#EF4444"
+                          strokeWidth="2"
+                        >
+                          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                          <polyline points="3.27,6.96 12,12.01 20.73,6.96" />
+                          <line x1="12" y1="22.08" x2="12" y2="12" />
+                        </svg>
+                        <h3 className="text-sm md:text-base font-medium text-gray-700">
+                          {item.title}
+                        </h3>
+                      </div>
                     </div>
+                    <p className="text-xl md:text-2xl font-bold text-gray-900">
+                      {item.value}
+                    </p>
                   </div>
-                  <p className="text-xl md:text-2xl font-bold text-gray-900">{item.value}</p>
+                  <div className="w-full h-6 bg-[#FEF6F3] rounded-b-lg"></div>
                 </div>
-                <div className="w-full h-6 bg-[#FEF6F3] rounded-b-lg"></div>
-              </div>
-            ))}
+              )
+            )}
           </div>
 
           <div className="flex justify-end mb-6">
-            <span 
+            <span
               className="text-[#F25E26] text-sm cursor-pointer"
-              onClick={() => router.push('/dashboard/rechargetransactionreport')}
+              onClick={() =>
+                router.push("/dashboard/rechargetransactionreport")
+              }
             >
               See More &gt;
             </span>
@@ -559,24 +636,34 @@ const Page = () => {
                     Service Provider
                   </div>
                   <div className="flex-1 flex flex-col">
-                    {currentTabData.serviceProviders.map((provider: { name: string; img?: any }, idx: number) => (
-                      <div
-                        key={provider.name}
-                        className={`flex items-center justify-center py-6 border-b border-gray-200 bg-white ${idx === currentTabData.serviceProviders.length - 1 ? "border-b-0" : ""}`}
-                      >
-                        {activeTab === "Electricity" ? (
-                          <button
-                            className="bg-orange-500 text-white px-6 py-2 rounded-lg font-semibold text-base"
-                            style={{ minWidth: 100 }}
-                            disabled
-                          >
-                            {provider.name}
-                          </button>
-                        ) : (
-                          <Image src={provider.img} alt={provider.name} className="h-12 w-auto" />
-                        )}
-                      </div>
-                    ))}
+                    {currentTabData.serviceProviders.map(
+                      (provider: { name: string; img?: any }, idx: number) => (
+                        <div
+                          key={provider.name}
+                          className={`flex items-center justify-center py-6 border-b border-gray-200 bg-white ${
+                            idx === currentTabData.serviceProviders.length - 1
+                              ? "border-b-0"
+                              : ""
+                          }`}
+                        >
+                          {activeTab === "Electricity" ? (
+                            <button
+                              className="bg-orange-500 text-white px-6 py-2 rounded-lg font-semibold text-base"
+                              style={{ minWidth: 100 }}
+                              disabled
+                            >
+                              {provider.name}
+                            </button>
+                          ) : (
+                            <Image
+                              src={provider.img}
+                              alt={provider.name}
+                              className="h-12 w-auto"
+                            />
+                          )}
+                        </div>
+                      )
+                    )}
                   </div>
                 </div>
                 {/* Data Columns */}
@@ -596,18 +683,20 @@ const Page = () => {
                     </div>
                   </div>
                   {/* Data Rows */}
-                  {currentTabData.dataColumns.map((row: string[], idx: number) => (
-                    <div className="grid grid-cols-4" key={idx}>
-                      {row.map((cell: string, cidx: number) => (
-                        <div
-                          key={cidx}
-                          className="py-6 px-4 text-center bg-gray-100 m-2 rounded-lg font-semibold text-gray-800 flex items-center justify-center"
-                        >
-                          {cell}
-                        </div>
-                      ))}
-                    </div>
-                  ))}
+                  {currentTabData.dataColumns.map(
+                    (row: string[], idx: number) => (
+                      <div className="grid grid-cols-4" key={idx}>
+                        {row.map((cell: string, cidx: number) => (
+                          <div
+                            key={cidx}
+                            className="py-6 px-4 text-center bg-gray-100 m-2 rounded-lg font-semibold text-gray-800 flex items-center justify-center"
+                          >
+                            {cell}
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
             </div>
@@ -619,22 +708,27 @@ const Page = () => {
 
   // Customer Statistics Report Component
   const CustomerStatisticsReport = () => {
-    const [sortBy, setSortBy] = useState('Yesterday');
-    const [customStart, setCustomStart] = useState('');
-    const [customEnd, setCustomEnd] = useState('');
+    const [sortBy, setSortBy] = useState("Yesterday");
+    const [customStart, setCustomStart] = useState("");
+    const [customEnd, setCustomEnd] = useState("");
     return (
       <div className="w-full min-h-screen bg-gray-50">
         <div className="bg-[#F6F6F6] px-8 pt-8 pb-6">
           <span
             onClick={() => setShowCustomerStatistics(false)}
             className="text-[#F25E26] cursor-pointer text-sm block mb-4 ml-1"
-            style={{ marginTop: '4px' }}
+            style={{ marginTop: "4px" }}
           >
             Back
           </span>
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">Customer Statistics</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">
+            Customer Statistics
+          </h1>
           <p className="text-lg font-medium text-gray-700">
-            Customer Statistic Summary <span className="text-base font-normal">(23-May-2025; 4:40 PM)</span>
+            Customer Statistic Summary{" "}
+            <span className="text-base font-normal">
+              (23-May-2025; 4:40 PM)
+            </span>
           </p>
         </div>
         <div className="max-w-3xl mx-auto px-8">
@@ -642,7 +736,7 @@ const Page = () => {
             <select
               className="border border-gray-300 rounded-lg px-4 py-2 text-gray-700 text-sm"
               value={sortBy}
-              onChange={e => setSortBy(e.target.value)}
+              onChange={(e) => setSortBy(e.target.value)}
             >
               <option>Yesterday</option>
               <option>Last Week</option>
@@ -650,13 +744,13 @@ const Page = () => {
               <option>Last Year</option>
               <option>Custom</option>
             </select>
-            {sortBy === 'Custom' && (
+            {sortBy === "Custom" && (
               <>
                 <input
                   type="date"
                   className="border border-gray-300 rounded-lg px-2 py-2 text-gray-700 text-sm"
                   value={customStart}
-                  onChange={e => setCustomStart(e.target.value)}
+                  onChange={(e) => setCustomStart(e.target.value)}
                   placeholder="Start date"
                 />
                 <span className="mx-1">to</span>
@@ -664,7 +758,7 @@ const Page = () => {
                   type="date"
                   className="border border-gray-300 rounded-lg px-2 py-2 text-gray-700 text-sm"
                   value={customEnd}
-                  onChange={e => setCustomEnd(e.target.value)}
+                  onChange={(e) => setCustomEnd(e.target.value)}
                   placeholder="End date"
                 />
               </>
@@ -672,18 +766,29 @@ const Page = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
             <div className="rounded-xl border-2 border-green-200 bg-green-50 p-8 flex flex-col items-center justify-center min-h-[160px]">
-              <div className="text-lg font-medium text-gray-700 mb-2 text-center">Registered Customers</div>
-              <div className="text-3xl font-bold text-gray-900 text-center">2,000,000</div>
+              <div className="text-lg font-medium text-gray-700 mb-2 text-center">
+                Registered Customers
+              </div>
+              <div className="text-3xl font-bold text-gray-900 text-center">
+                2,000,000
+              </div>
             </div>
             <div className="rounded-xl border-2 border-red-200 bg-red-50 p-8 flex flex-col items-center justify-center min-h-[160px]">
-              <div className="text-lg font-medium text-gray-700 mb-2 text-center">Customer Wallet Balance</div>
-              <div className="text-3xl font-bold text-gray-900 text-center">₦ 5,000,000</div>
+              <div className="text-lg font-medium text-gray-700 mb-2 text-center">
+                Customer Wallet Balance
+              </div>
+              <div className="text-3xl font-bold text-gray-900 text-center">
+                ₦ 5,000,000
+              </div>
             </div>
             <div className="rounded-xl border-2 border-purple-400 bg-purple-50 p-8 flex flex-col items-center justify-center min-h-[160px]">
-              <div className="text-lg font-medium text-gray-700 mb-2 text-center">Customers With Balance:</div>
+              <div className="text-lg font-medium text-gray-700 mb-2 text-center">
+                Customers With Balance:
+              </div>
               <div className="flex flex-col items-center justify-center h-full gap-2">
                 <div className="flex items-center gap-2 text-xl font-semibold text-gray-900">
-                  <span>&gt; 0:</span> <span className="font-bold">400,000</span>
+                  <span>&gt; 0:</span>{" "}
+                  <span className="font-bold">400,000</span>
                 </div>
                 <div className="flex items-center gap-2 text-xl font-semibold text-gray-900">
                   <span>&lt; 0:</span> <span className="font-bold">0</span>
@@ -691,12 +796,19 @@ const Page = () => {
               </div>
             </div>
             <div className="rounded-xl border-2 border-yellow-300 bg-yellow-50 p-8 flex flex-col items-center justify-center min-h-[160px]">
-              <div className="text-lg font-medium text-gray-700 mb-2 text-center">Unredeemed Ajiroba Points</div>
-              <div className="text-3xl font-bold text-gray-900 text-center">100,000</div>
+              <div className="text-lg font-medium text-gray-700 mb-2 text-center">
+                Unredeemed Ajiroba Points
+              </div>
+              <div className="text-3xl font-bold text-gray-900 text-center">
+                100,000
+              </div>
             </div>
           </div>
           <div className="flex justify-center mt-8 mb-8">
-            <button  onClick={() => router.push('/dashboard/customersreport')}   className="bg-[#F25E26] hover:bg-[#E84526] text-white font-medium py-3 px-16 rounded-lg transition-colors duration-200 text-base">
+            <button
+              onClick={() => router.push("/dashboard/customersreport")}
+              className="bg-[#F25E26] hover:bg-[#E84526] text-white font-medium py-3 px-16 rounded-lg transition-colors duration-200 text-base"
+            >
               View Report
             </button>
           </div>
@@ -707,22 +819,25 @@ const Page = () => {
 
   // Raffle Draw Winning Report Component
   const RaffleDrawReport = () => {
-    const [sortBy, setSortBy] = useState('Yesterday');
-    const [customStart, setCustomStart] = useState('');
-    const [customEnd, setCustomEnd] = useState('');
+    const [sortBy, setSortBy] = useState("Yesterday");
+    const [customStart, setCustomStart] = useState("");
+    const [customEnd, setCustomEnd] = useState("");
     return (
       <div className="w-full min-h-screen bg-gray-50">
         <div className="bg-[#F6F6F6] px-8 pt-8 pb-6">
           <span
             onClick={() => setShowRaffleDrawReport(false)}
             className="text-[#F25E26] cursor-pointer text-sm block mb-4 ml-1"
-            style={{ marginTop: '4px' }}
+            style={{ marginTop: "4px" }}
           >
             Back
           </span>
           <h1 className="text-3xl font-bold text-gray-900 mb-1">Reports</h1>
           <p className="text-lg font-medium text-gray-700">
-            Raffle Draw Winning Report <span className="text-base font-normal">(23-May-2025; 4:40 PM)</span>
+            Raffle Draw Winning Report{" "}
+            <span className="text-base font-normal">
+              (23-May-2025; 4:40 PM)
+            </span>
           </p>
         </div>
         <div className="max-w-5xl mx-auto px-8">
@@ -730,7 +845,7 @@ const Page = () => {
             <select
               className="border border-gray-300 rounded-lg px-4 py-2 text-gray-700 text-sm"
               value={sortBy}
-              onChange={e => setSortBy(e.target.value)}
+              onChange={(e) => setSortBy(e.target.value)}
             >
               <option>Yesterday</option>
               <option>Last Week</option>
@@ -738,13 +853,13 @@ const Page = () => {
               <option>Last Year</option>
               <option>Custom</option>
             </select>
-            {sortBy === 'Custom' && (
+            {sortBy === "Custom" && (
               <>
                 <input
                   type="date"
                   className="border border-gray-300 rounded-lg px-2 py-2 text-gray-700 text-sm"
                   value={customStart}
-                  onChange={e => setCustomStart(e.target.value)}
+                  onChange={(e) => setCustomStart(e.target.value)}
                   placeholder="Start date"
                 />
                 <span className="mx-1">to</span>
@@ -752,7 +867,7 @@ const Page = () => {
                   type="date"
                   className="border border-gray-300 rounded-lg px-2 py-2 text-gray-700 text-sm"
                   value={customEnd}
-                  onChange={e => setCustomEnd(e.target.value)}
+                  onChange={(e) => setCustomEnd(e.target.value)}
                   placeholder="End date"
                 />
               </>
@@ -760,32 +875,59 @@ const Page = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
             <div className="rounded-xl border-2 border-red-200 bg-red-50 p-8 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-base font-medium text-gray-700 mb-2 text-center">Gross Winning Value</div>
-              <div className="text-2xl font-bold text-gray-900 text-center">₦ 2,000,000</div>
+              <div className="text-base font-medium text-gray-700 mb-2 text-center">
+                Gross Winning Value
+              </div>
+              <div className="text-2xl font-bold text-gray-900 text-center">
+                ₦ 2,000,000
+              </div>
             </div>
             <div className="rounded-xl border-2 border-purple-200 bg-purple-50 p-8 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-base font-medium text-gray-700 mb-2 text-center">Total Number of Winners</div>
-              <div className="text-2xl font-bold text-gray-900 text-center">5,000,000</div>
+              <div className="text-base font-medium text-gray-700 mb-2 text-center">
+                Total Number of Winners
+              </div>
+              <div className="text-2xl font-bold text-gray-900 text-center">
+                5,000,000
+              </div>
             </div>
             <div className="rounded-xl border-2 border-yellow-200 bg-yellow-50 p-8 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-base font-medium text-gray-700 mb-2 text-center">Number of Redemption</div>
-              <div className="text-2xl font-bold text-gray-900 text-center">500,000</div>
+              <div className="text-base font-medium text-gray-700 mb-2 text-center">
+                Number of Redemption
+              </div>
+              <div className="text-2xl font-bold text-gray-900 text-center">
+                500,000
+              </div>
             </div>
             <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-8 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-base font-medium text-gray-700 mb-2 text-center">Value of Redemption</div>
-              <div className="text-2xl font-bold text-gray-900 text-center">₦ 3,000,000</div>
+              <div className="text-base font-medium text-gray-700 mb-2 text-center">
+                Value of Redemption
+              </div>
+              <div className="text-2xl font-bold text-gray-900 text-center">
+                ₦ 3,000,000
+              </div>
             </div>
             <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-8 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-base font-medium text-gray-700 mb-2 text-center">Number of Pending Redemption</div>
-              <div className="text-2xl font-bold text-gray-900 text-center">100,000</div>
+              <div className="text-base font-medium text-gray-700 mb-2 text-center">
+                Number of Pending Redemption
+              </div>
+              <div className="text-2xl font-bold text-gray-900 text-center">
+                100,000
+              </div>
             </div>
             <div className="rounded-xl border-2 border-green-200 bg-green-50 p-8 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-base font-medium text-gray-700 mb-2 text-center">Value of Pending Redemption</div>
-              <div className="text-2xl font-bold text-gray-900 text-center">₦ 400,000,000</div>
+              <div className="text-base font-medium text-gray-700 mb-2 text-center">
+                Value of Pending Redemption
+              </div>
+              <div className="text-2xl font-bold text-gray-900 text-center">
+                ₦ 400,000,000
+              </div>
             </div>
           </div>
           <div className="flex justify-center mt-8 mb-8">
-            <button onClick={() => router.push('/dashboard/raffletickets')} className="bg-red-100 hover:bg-red-200 text-gray-900 font-medium py-3 px-16 rounded-lg transition-colors duration-200 text-base border border-red-200">
+            <button
+              onClick={() => router.push("/dashboard/raffletickets")}
+              className="bg-red-100 hover:bg-red-200 text-gray-900 font-medium py-3 px-16 rounded-lg transition-colors duration-200 text-base border border-red-200"
+            >
               View Report
             </button>
           </div>
@@ -845,6 +987,10 @@ const Page = () => {
     );
   }
 
+  if (reportLoading) {
+    return <Loading />
+  }
+
   return (
     <section>
       <PageLayout>
@@ -863,35 +1009,35 @@ const Page = () => {
                 <p className="text-sm text-gray-600">(23-May-2025; 4:40 PM)</p>
               </div>
               <div className="flex items-center gap-4">
-                  <select
-                    className="border border-gray-300 rounded px-2 py-1 text-sm"
-                    value={topSortBy}
-                    onChange={e => setTopSortBy(e.target.value)}
-                  >
-                    <option>Yesterday</option>
-                    <option>Last Week</option>
-                    <option>Last Month</option>
-                    <option>Last Year</option>
-                    <option>Custom</option>
-                  </select>
-                  {topSortBy === 'Custom' && (
-                    <>
-                      <input
-                        type="date"
-                        className="border border-gray-300 rounded px-2 py-1 text-sm"
-                        value={topCustomStart}
-                        onChange={e => setTopCustomStart(e.target.value)}
-                      />
-                      <span className="mx-1">to</span>
-                      <input
-                        type="date"
-                        className="border border-gray-300 rounded px-2 py-1 text-sm"
-                        value={topCustomEnd}
-                        onChange={e => setTopCustomEnd(e.target.value)}
-                      />
-                    </>
-                  )}
-                </div>
+                <select
+                  className="border border-gray-300 rounded px-2 py-1 text-sm"
+                  value={topSortBy}
+                  onChange={(e) => setTopSortBy(e.target.value)}
+                >
+                  <option value="all_time">All Time</option>
+                  <option value="last_7_days">Last 7 Days</option>
+                  <option value="last_month">Last Month</option>
+                  <option value="last_year">Last Year</option>
+                  <option value="custom">Custom</option>
+                </select>
+                {topSortBy === "custom" && (
+                  <>
+                    <input
+                      type="date"
+                      className="border border-gray-300 rounded px-2 py-1 text-sm"
+                      value={topCustomStart}
+                      onChange={(e) => setTopCustomStart(e.target.value)}
+                    />
+                    <span className="mx-1">to</span>
+                    <input
+                      type="date"
+                      className="border border-gray-300 rounded px-2 py-1 text-sm"
+                      value={topCustomEnd}
+                      onChange={(e) => setTopCustomEnd(e.target.value)}
+                    />
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Main Dashboard Content */}
@@ -931,7 +1077,11 @@ const Page = () => {
                         Auction Customers GTV.
                       </p>
                       <p className="text-lg font-bold text-gray-900 group-hover:text-white">
-                        ₦13,000,000
+                        {reportInfo?.data
+                          ? formatNaira(
+                              reportInfo.data.total_auction_customers_GTV || 0
+                            )
+                          : "₦0.00"}
                       </p>
                     </div>
                     <div className="flex gap-1 flex-wrap">
@@ -939,7 +1089,11 @@ const Page = () => {
                         Regular Customer GTV
                       </p>
                       <p className="text-lg font-bold text-gray-900 group-hover:text-white">
-                        ₦19,000,000
+                        {reportInfo?.data
+                          ? formatNaira(
+                              reportInfo.data.total_regular_customers_GTV || 0
+                            )
+                          : "₦0.00"}
                       </p>
                     </div>
                     <div className="flex gap-1 flex-wrap">
@@ -947,15 +1101,15 @@ const Page = () => {
                         No of Auction Customer.
                       </p>
                       <p className="text-base font-semibold text-gray-900 group-hover:text-white">
-                        1,500,000
+                        {reportInfo?.data?.total_auction_customers || 0}
                       </p>
                     </div>
                     <div className="flex gap-1 flex-wrap">
                       <p className="text-xs text-gray-600 mb-1 group-hover:text-teal-100">
-                        Regular Customer GTV
+                        No Of Regular Customer
                       </p>
                       <p className="text-base font-semibold text-gray-900 group-hover:text-white">
-                        1,500,000
+                        {reportInfo?.data?.total_regular_customers || 0}
                       </p>
                     </div>
                   </div>
@@ -1002,7 +1156,7 @@ const Page = () => {
                           </span>
                         </div>
                         <div className="text-2xl font-bold text-gray-900 group-hover:text-white mb-4">
-                          70%
+                          {reportInfo?.data?.service_uptime?.success || "75%"}
                         </div>
                         <div className="flex items-center gap-2 mb-3">
                           <div className="w-2 h-2 bg-red-500 rounded-full"></div>
@@ -1011,7 +1165,7 @@ const Page = () => {
                           </span>
                         </div>
                         <div className="text-2xl font-bold text-gray-900 group-hover:text-white">
-                          30%
+                          {reportInfo?.data?.service_uptime?.failure || "25%"}
                         </div>
                       </div>
                     </div>
@@ -1058,7 +1212,11 @@ const Page = () => {
                       Regular GTV
                     </div>
                     <div className="text-2xl font-bold text-gray-900 group-hover:text-white">
-                      ₦45,823
+                    {reportInfo?.data
+                          ? formatNaira(
+                              reportInfo.data.total_regular_customers_GTV || 0
+                            )
+                          : "₦0.00"}
                     </div>
                   </div>
                 </div>
@@ -1095,7 +1253,11 @@ const Page = () => {
                       Auction GTV
                     </div>
                     <div className="text-2xl font-bold text-gray-900 group-hover:text-white">
-                      ₦45,823
+                    {reportInfo?.data
+                          ? formatNaira(
+                              reportInfo.data.total_auction_customers_GTV || 0
+                            )
+                          : "₦0.00"}
                     </div>
                   </div>
                 </div>
@@ -1138,8 +1300,10 @@ const Page = () => {
               {/* Bottom Row - Statistics */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Customer Statistics */}
-                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:bg-teal-500 hover:text-white transition-all duration-300 cursor-pointer group"
-                  onClick={() => setShowCustomerStatistics(true)}>
+                <div
+                  className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:bg-teal-500 hover:text-white transition-all duration-300 cursor-pointer group"
+                  onClick={() => setShowCustomerStatistics(true)}
+                >
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-teal-600">
                       <svg
@@ -1167,7 +1331,11 @@ const Page = () => {
                         Customer Wallet Bal
                       </div>
                       <div className="text-2xl font-bold text-gray-900 group-hover:text-white">
-                        ₦450,476,823
+                      {reportInfo?.data
+                          ? formatNaira(
+                              reportInfo.data.total_wallet_balance || 0
+                            )
+                          : "₦0.00"}
                       </div>
                     </div>
                     <div className="flex gap-4 flex-wrap">
@@ -1175,15 +1343,17 @@ const Page = () => {
                         No of Customers
                       </div>
                       <div className="text-xl font-semibold text-gray-900 group-hover:text-white">
-                        500
+                        {reportInfo?.data?.no_of_customers}
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Revenue Summary Report */}
-                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:bg-blue-500 hover:text-white transition-all duration-300 cursor-pointer group"
-                  onClick={() => router.push('/dashboard/revenuesummaryreport')}>
+                <div
+                  className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:bg-blue-500 hover:text-white transition-all duration-300 cursor-pointer group"
+                  onClick={() => router.push("/dashboard/revenuesummaryreport")}
+                >
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-blue-600">
                       <svg
@@ -1213,8 +1383,10 @@ const Page = () => {
                 </div>
 
                 {/* Raffle Draw Winning Report */}
-                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:bg-green-500 hover:text-white transition-all duration-300 cursor-pointer group"
-                  onClick={() => setShowRaffleDrawReport(true)}>
+                <div
+                  className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:bg-green-500 hover:text-white transition-all duration-300 cursor-pointer group"
+                  onClick={() => setShowRaffleDrawReport(true)}
+                >
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-green-600">
                       <svg
