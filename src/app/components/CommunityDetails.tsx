@@ -340,6 +340,7 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
                                 {item?.content}
                             </h3>
                             <div className="w-full flex justify-center py-12 rounded-sm bg-[#F6F6F6]">
+                             {/*    {console.log(item?.images?.[0]?.image)} */}
                                 <Image
                                     src={
                                         item?.images?.[0]?.image
