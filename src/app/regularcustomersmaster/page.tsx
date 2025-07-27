@@ -129,7 +129,7 @@ export default function Page() {
   };
 
   // API integration
-  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/regular_customer_master_report/?${getFilterParams()}`;
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/regular_transaction_report/?${getFilterParams()}`;
   const {
     data: regularCustomerData,
     isLoading: regularCustomerLoading,
