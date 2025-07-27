@@ -3,11 +3,12 @@ import Image from 'next/image';
 import React, { useState } from 'react';
 import Loading from './Loading';
 import Cookies from "js-cookie";
+import { BsEmojiSmile } from "react-icons/bs";
+import { AiOutlinePicture } from "react-icons/ai";
 
 const PostCreationForm = () => {
     const [content, setContent] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-
 
     interface ImageFile extends File { }
 
@@ -42,18 +43,7 @@ const PostCreationForm = () => {
 
             const base64Images = await Promise.all(imagePromises);
 
-            // // Create the request body
-            // const requestBody = {
-            //     content: content,
-            //     post_images: base64Images.map(base64 => ({
-            //         // Remove the prefix (e.g., "data:image/jpeg;base64,")
-            //         image: base64.split(',')[1]
-            //     }))
-            // };
-
             // Create the request body with proper structure for post_images
-
-            // Add each image to the post_images object with numeric keys
             const requestBody = {
                 content: content,
                 post_images: base64Images.map(base64 => [base64.split(',')[1]])  // Array of arrays
@@ -91,9 +81,6 @@ const PostCreationForm = () => {
 
     interface HandleImageChangeEvent extends React.ChangeEvent<HTMLInputElement> { }
 
-
-
-
     // When handling image changes:
     const [images, setImages] = useState<File[]>([]);
     const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -110,7 +97,6 @@ const PostCreationForm = () => {
         }
     };
 
-
     // Properly implemented removeImage function that updates both arrays
     const removeImage = (index: number): void => {
         // Revoke the URL to prevent memory leaks
@@ -122,24 +108,20 @@ const PostCreationForm = () => {
     };
 
     return (
-        <div className="max-w-screen-md mx-auto">
-            <form onSubmit={handleSubmit} className="border border-gray-300 rounded-lg overflow-hidden">
-                <div className="flex items-center">
-                    <div className="flex items-center pl-4">
+        <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <form onSubmit={handleSubmit} className="w-full">
+                <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
+                    <div className="flex items-center gap-2">
                         <button
                             type="button"
-                            className="p-2 text-gray-500 hover:text-gray-700"
+                            className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
                             aria-label="Add emoji"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                            <BsEmojiSmile className="h-5 w-5" />
                         </button>
 
-                        <label className="p-2 cursor-pointer text-gray-500 hover:text-gray-700">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
+                        <label className="p-2 cursor-pointer text-gray-500 hover:text-gray-700 transition-colors">
+                            <AiOutlinePicture className="h-5 w-5" />
                             <input
                                 type="file"
                                 accept="image/*"
@@ -155,49 +137,44 @@ const PostCreationForm = () => {
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         placeholder="Type here..."
-                        className="flex-1 py-3 px-4 outline-none text-gray-700"
+                        className="flex-1 py-2 px-3 outline-none text-gray-700 bg-transparent border-none focus:ring-0"
                     />
 
                     <button
                         type="submit"
                         disabled={isLoading || !content}
-                        className={`px-6 py-3 font-medium ${isLoading || !content
-                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            : 'bg-[#F25e26] text-white hover:bg-red-800'
-                            }`}
+                        className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                            isLoading || !content
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                : 'bg-[#F25e26] text-white hover:bg-[#d94a1a]'
+                        }`}
                     >
-                        {isLoading ? (
-                            'loading...'
-                        ) : (
-                            'Post'
-                        )}
+                        {isLoading ? 'Posting...' : 'Post'}
                     </button>
                 </div>
 
                 {/* Image preview section */}
-
-
                 {images.length > 0 && (
-                    <div className="p-4 border-t border-gray-200">
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                         <div className="flex flex-wrap gap-3">
                             {images.map((image, index) => (
                                 <div key={index} className="relative group">
-                                    <div className="w-24 h-24 rounded overflow-hidden border border-gray-200">
+                                    <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-white">
                                         <Image
                                             src={imageUrls[index]}
                                             alt={`Preview ${index}`}
                                             className="w-full h-full object-cover"
-                                            width={96}
-                                            height={96}
+                                            width={80}
+                                            height={80}
                                             unoptimized
                                         />
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => removeImage(index)}
-                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md"
+                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </button>
@@ -206,7 +183,6 @@ const PostCreationForm = () => {
                         </div>
                     </div>
                 )}
-
             </form>
         </div>
     );
