@@ -10,6 +10,7 @@ import { ReportsTable } from "../dashboard/components/ReportsTable";
 import { DownloadModal } from "@/app/components/DownloadModal";
 import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
 import { useGetDatanew } from "@/hooks/useGetData";
+import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 
 // TypeScript interfaces for API response
 interface ProductInfo {
@@ -76,6 +77,8 @@ export default function Page() {
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPreviousPage, setHasPreviousPage] = useState(false);
 
+  useAuthMiddleware(router);
+
   useEffect(() => {
     setCurrentTime(
       new Date().toLocaleString("en-US", {
@@ -133,6 +136,10 @@ export default function Page() {
     error: regularCustomerError,
   } = useGetDatanew(url, "get_regular_customer_master", userToken || " ");
 
+
+console.log(regularCustomerData, 'reggg')
+
+
   // Transform API data to match component structure
   const transformApiData = (apiData: any): any[] => {
 
@@ -141,6 +148,8 @@ export default function Page() {
     if (!apiData) {
       return [];
     }
+
+    console.log(apiData)
     
     return apiData?.map((item: any) => {
       const productInfo = item.product_info?.[0] || {};
