@@ -232,6 +232,7 @@ const transformApiData = (apiData: any): any[] => {
 
     //  router.push(`/ticketdetailsreport/${row.productId}`);
     router.push(`/ticketdetailsreport/?productno=${row.productno}&itemid=${row.id}`);
+   /*  router.push(`/dashboard/ticketdetails/${row.productno}?itemid=${row.id}`); */
 
   };
 
