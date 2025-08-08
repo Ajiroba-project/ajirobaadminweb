@@ -139,7 +139,7 @@ export default function Page() {
   } = useGetDatanew(url, "get_regular_customer_master", userToken || " ");
 
 
-console.log(regularCustomerData, 'reggg')
+
 
 
   // Transform API data to match component structure
@@ -151,7 +151,7 @@ console.log(regularCustomerData, 'reggg')
       return [];
     }
 
-    console.log(apiData)
+
     
     return apiData?.map((item: any) => {
       const productInfo = item.product_info || {};

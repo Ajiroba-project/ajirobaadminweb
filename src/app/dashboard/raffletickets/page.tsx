@@ -124,10 +124,12 @@ export default function Page() {
     }
   }, [api]);
 
-  const raffleData = (api?.results?.data || []).map((item) => {
+  const raffleData = (api?.results?.data || []).map((item, index) => {
     const d = item.raffle_details || {};
+    const id = item.id;
+
     return {
-      id: item.id,
+      id: `${item.id}-${index}`, // Ensure unique ID by combining with index
       name: d.name || "",
       phone: d.phone_number || "",
       email: d.email || "",
@@ -137,6 +139,7 @@ export default function Page() {
       ticketAmount: Number(d.ticket_price || 0),
       product: d.product || "",
       productId: d.product_no || "",
+      productno: id,
       winningValue: Number(d.winning_value || 0),
       status: d.status ? d.status.charAt(0).toUpperCase() + d.status.slice(1) : "",
       redemptionDate: d.redemption_date

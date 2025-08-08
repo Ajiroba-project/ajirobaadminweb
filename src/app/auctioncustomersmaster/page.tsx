@@ -13,6 +13,7 @@ import { DownloadModal } from "@/app/components/DownloadModal";
 import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
 import { useGetDatanew } from "@/hooks/useGetData";
 import Loading from "@/app/components/Loading";
+import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 
 // Define the API response types
 interface Ticket {
@@ -66,6 +67,7 @@ interface ApiResponse {
 
 export default function Page() {
   const router = useRouter();
+  useAuthMiddleware(router);
 
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("");

@@ -214,7 +214,7 @@ const Page = () => {
     } = useGetDatanew(regularDealsUrl, "get_regular_deals_summary", userToken || " ");
 
 
-    console.log(regularDealsData, 'dddd')
+   
 
     if (regularDealsLoading) {
       return (

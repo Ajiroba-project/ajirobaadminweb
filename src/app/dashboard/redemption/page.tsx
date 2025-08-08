@@ -155,7 +155,7 @@ const Page = () => {
   );
 
   // console.log(winnerInfo, "winnerInfo")
-  console.log(redeemedInfo, "redeemedInfo")
+
 
   
 

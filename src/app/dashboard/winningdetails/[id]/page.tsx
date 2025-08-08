@@ -16,10 +16,12 @@ import { FaBell } from "react-icons/fa6";
 import { Pagination } from "@/app/components/Pagination";
 import { FaSearch } from "react-icons/fa";
 import ModalComponent from "@/app/components/ModalComponent";
+import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 
 export default function ProductDetailsAuctionPage() {
     const params = useParams();
     const router = useRouter();
+    useAuthMiddleware(router);
     const id = params?.id;
     const [userToken, setUserToken] = useState(Cookies.get("token"));
     const [isModalOpen, setIsModalOpen] = useState(false);

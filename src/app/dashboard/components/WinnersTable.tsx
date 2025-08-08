@@ -57,7 +57,7 @@ export const WinnersTable = <T extends RowData>({
         <tbody>
           {data?.map((row, idx) => (
             <tr
-              key={row.id ?? idx}
+              key={`${row.id}-${idx}`}
               className={`border-b border-[#E9E9E9] hover:bg-[#F6F6F6] ${rowClassName}`}
               onClick={onRowAction ? () => onRowAction(row, idx) : undefined}
             >
@@ -126,7 +126,7 @@ export const RedeemedTable = <T extends RowData>({
         <tbody>
           {data?.map((row, idx) => (
             <tr
-              key={row.id ?? idx}
+              key={`${row.id}-${idx}`}
               className={`border-b border-[#E9E9E9] hover:bg-[#F6F6F6] ${rowClassName}`}
               onClick={onRowAction ? () => onRowAction(row, idx) : undefined}
             >

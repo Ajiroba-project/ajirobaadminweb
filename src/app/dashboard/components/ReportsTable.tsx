@@ -102,7 +102,7 @@ export const ReportsTable = <T extends RowData>({
           <tbody>
             {paginatedData.map((row, idx) => (
               <tr
-                key={row.id ?? idx} // Fallback to index if id is undefined
+                key={`${row.id}-${idx}`} // Use combination of id and index to ensure uniqueness
                 className={`border-b border-[#E9E9E9] hover:bg-[#F6F6F6] ${rowClassName}`}
                 onClick={onRowAction ? () => onRowAction(row, idx) : undefined}
               >

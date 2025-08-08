@@ -11,6 +11,7 @@ import { FaStar } from "react-icons/fa6";
 import Loading from "@/app/components/Loading";
 import { parseISO, format } from "date-fns";
 import { h1 } from "framer-motion/m";
+import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 
 
 
@@ -226,10 +227,11 @@ export default function ProductDetailsAuctionPage() {
     const params = useParams();
 
     const router = useRouter();
+    useAuthMiddleware(router);
 
     const id = params?.id;
 
-    console.log(id, 'id')
+
 
 
 
@@ -245,7 +247,6 @@ export default function ProductDetailsAuctionPage() {
 
     // console.log(prodInfo?.data?.product_reviews?.total_reviews, 'prodInfo?.data?.product_reviews?.total_reviews')
 
-    console.log(prodInfo, 'prodii')
     if (prodLoading) {
         return <Loading />;
     }

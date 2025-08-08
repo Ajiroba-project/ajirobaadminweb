@@ -10,6 +10,7 @@ import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
 import RaffleTicket from "@/app/dashboard/components/RaffleTicket";
 import { useGetDatanew } from "@/hooks/useGetData";
 import Cookies from "js-cookie";
+import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 
 // Type definitions for the API response
 interface TicketDetails {
@@ -59,6 +60,9 @@ interface TransformedTicket {
 
 export default function Page() {
   const router = useRouter();
+
+  useAuthMiddleware(router);
+
   const searchParams = useSearchParams();
   const productId = searchParams.get('productno');
   const itemId = searchParams.get('itemid');
@@ -86,7 +90,7 @@ export default function Page() {
       error: ticketError,
   } = useGetDatanew(ticketurl, "get_ticket_details", userToken || " ");
 
-  console.log(ticketdata, 'ticketdaaa')
+
 
   useEffect(() => {
     setCurrentTime(

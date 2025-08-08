@@ -228,7 +228,7 @@ const transformApiData = (apiData: any): any[] => {
   // Handle ticket number click
   const handleTicketClick = (row: any) => {
 
-    console.log(row, 'rrr')
+
 
     //  router.push(`/ticketdetailsreport/${row.productId}`);
     router.push(`/ticketdetailsreport/?productno=${row.productno}&itemid=${row.id}`);
