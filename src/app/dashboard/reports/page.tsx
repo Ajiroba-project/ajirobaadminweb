@@ -33,7 +33,7 @@ import { redirect } from 'next/navigation'
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale);
 
-const Page = () => {
+const ReportsPageContent = () => {
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -1787,5 +1787,11 @@ const Page = () => {
     </section>
   );
 };
+
+const Page = () => (
+  <Suspense fallback={<Loading />}>
+    <ReportsPageContent />
+  </Suspense>
+);
 
 export default Page;
