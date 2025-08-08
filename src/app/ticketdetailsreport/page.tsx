@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { ProfileHeader } from "@/app/components/Header";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -58,11 +58,8 @@ interface TransformedTicket {
   id: string;
 }
 
-export default function Page() {
+function TicketDetailsContent() {
   const router = useRouter();
-
-  useAuthMiddleware(router);
-
   const searchParams = useSearchParams();
   const productId = searchParams.get('productno');
   const itemId = searchParams.get('itemid');
@@ -89,8 +86,6 @@ export default function Page() {
       isLoading: ticketLoading,
       error: ticketError,
   } = useGetDatanew(ticketurl, "get_ticket_details", userToken || " ");
-
-
 
   useEffect(() => {
     setCurrentTime(
@@ -132,7 +127,6 @@ export default function Page() {
       setCurrentPage(prev => prev - 1);
     }
   };
-
 
   // Download handlers
   const handleDownloadPDF = async () => {
@@ -438,5 +432,19 @@ export default function Page() {
         />
       )}
     </section>
+  );
+}
+
+export default function Page() {
+  useAuthMiddleware(useRouter());
+
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center h-64">
+        <div className="text-lg">Loading...</div>
+      </div>
+    }>
+      <TicketDetailsContent />
+    </Suspense>
   );
 }
