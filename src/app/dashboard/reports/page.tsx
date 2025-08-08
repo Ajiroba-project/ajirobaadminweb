@@ -1,9 +1,9 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useStore } from "@/store/nav-store";
 
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PageLayout from "@/app/components/Layout/PageLayout";
 import { Doughnut } from "react-chartjs-2";
 import {
@@ -36,6 +36,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale);
 const Page = () => {
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const formatNaira = (value: number) => {
     if (typeof value !== "number") return "₦0.00";
@@ -139,6 +140,14 @@ const Page = () => {
     useState(false);
   const [showCustomerStatistics, setShowCustomerStatistics] = useState(false);
   const [showRaffleDrawReport, setShowRaffleDrawReport] = useState(false);
+
+  // If navigated with ?showCustomerStatistics=1, open that section by default
+  useEffect(() => {
+    const shouldShow = searchParams.get("showCustomerStatistics");
+    if (shouldShow) {
+      setShowCustomerStatistics(true);
+    }
+  }, [searchParams]);
 
   // Modal content: two large, centered buttons
   const modalButtons = (

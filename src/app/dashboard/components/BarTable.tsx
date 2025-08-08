@@ -22,6 +22,7 @@ import revenueImg from '@/app/asset/image/revenue.svg';
 import customerHoverImg from '@/app/asset/image/customerhover.svg';
 import revenueHoverImg from '@/app/asset/image/revenuehover.svg';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 
 // Register the necessary components
@@ -171,6 +172,8 @@ const BarChart: React.FC = () => {
   const [isRevenueHovered, setIsRevenueHovered] = useState(false);
   const [isCustomerHovered, setIsCustomerHovered] = useState(false);
 
+  const router = useRouter();
+
 
   const [userToken, setUserToken] = useState(Cookies.get("token"));
 
@@ -197,7 +200,7 @@ const BarChart: React.FC = () => {
     <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 w-full  mb-8'>
       <div className='bg-white p-6 rounded-lg shadow-lg flex flex-col '>
       <h2 className="text-lg font-semibold mb-4">Revenue Summary Report</h2>
-        <Image
+        <Image onClick={() => router.push('/serviceuptimereport')}
           src={isRevenueHovered ? revenueHoverImg : revenueImg}
           alt="Revenue Summary Report"
           className=" object-contain mb-2 cursor-pointer"
@@ -209,7 +212,7 @@ const BarChart: React.FC = () => {
       </div>
       <div className='bg-white p-6 rounded-lg shadow-lg flex flex-col '>
       <h2 className="text-lg font-semibold mb-4">Customer Statistics</h2>
-      <Image
+      <Image onClick={() => router.push('/dashboard/reports?showCustomerStatistics=1')}
         src={isCustomerHovered ? customerHoverImg : customerImg}
         alt="Customer Statistics"
         className=" object-contain mb-2 cursor-pointer"

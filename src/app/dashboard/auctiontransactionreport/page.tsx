@@ -249,7 +249,7 @@ const transformApiData = (apiData: any): any[] => {
       cellClassName: "text-[#F25E26] underline cursor-pointer",
       render: (row: any) => (
         <Link
-          href={`/dashboard/productdetails-product/${row.productno}`}
+          href={`/dashboard/productdetails-auction-completed/${row.productno}`}
           className="bg-[#FFFFFF] text-[#F25E26] transition delay-300 duration-300 ease-in-out hover:bg-[#F25E26] hover:text-white hover:transition-all flex gap-2 rounded-lg p-2 font-Poppins text-sm items-center"
         >
           {row.productId}
