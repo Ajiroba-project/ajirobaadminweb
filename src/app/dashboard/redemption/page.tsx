@@ -48,6 +48,7 @@ interface Winner {
   productId: string;
   product: string;
   status?: string;
+  productno?: string
 }
 
 // Add interface for the API response structure
@@ -233,6 +234,7 @@ const Page = () => {
       product_info: {
         product_no: string | null;
         product_name: string;
+        product_id: string;
       };
       ticket_number: string;
       redemption_status: string;
@@ -244,7 +246,8 @@ const Page = () => {
       phone: item.user_info.phone,
       address: item.user_info.address,
       ticket: item.ticket_number,
-      productId: item.product_info.product_no || 'N/A',
+      productno: item.product_info.product_no || 'N/A',
+      productId: item.product_info.product_id || 'N/A',
       product: item.product_info.product_name,
       status: item.redemption_status,
       id: item.id,
@@ -371,10 +374,10 @@ const Page = () => {
       cellClassName: "text-[#F25E26] underline cursor-pointer",
       render: (row: Winner) => (
         <Link
-          href={`/dashboard/productdetails-auction-completed/${row.id}`}
+          href={`/dashboard/productdetails-auction-completed/${row.productId}`}
           className="bg-[#FFFFFF] text-[#F25E26] transition delay-300 duration-300 ease-in-out hover:bg-[#F25E26] hover:text-white hover:transition-all flex gap-2 rounded-lg p-2 font-Poppins text-sm items-center"
         >
-          {row.productId}
+          {row.productno}
         </Link>
       ),
     },

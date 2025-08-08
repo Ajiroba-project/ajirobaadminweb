@@ -9,6 +9,8 @@ import Brand from "@/app/asset/logo.svg";
 import { DownloadModal } from "@/app/components/DownloadModal";
 import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
 import { ReportsTable } from "../components/ReportsTable";
+import { useGetDatanew } from "@/hooks/useGetData";
+import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 
 export default function Page() {
   const router = useRouter();
@@ -28,20 +30,71 @@ export default function Page() {
   const [pageSize] = useState(10);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [currentTime, setCurrentTime] = useState<string>("");
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrev, setHasPrev] = useState(false);
 
+  useAuthMiddleware(router);
+
+  // Build query params for backend filtering
+  const buildQueryParams = () => {
+    const params = new URLSearchParams();
+    if (dateFilter === "last_week") params.append("filter", "last_week");
+    else if (dateFilter === "last_month") params.append("filter", "last_month");
+    else if (dateFilter === "last_year") params.append("filter", "last_year");
+    else if (dateFilter === "custom" && customDateRange.start && customDateRange.end) {
+      params.append("filter", "custom");
+      params.append("start_date", customDateRange.start);
+      params.append("end_date", customDateRange.end);
+    }
+    params.append("page", String(currentPage));
+    return params.toString();
+  };
+
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/customer_statistics_report/?${buildQueryParams()}`;
+
+  type CustomerApiItem = {
+    id: string;
+    customer_details: {
+      customer_name?: string;
+      waller_balance?: number;
+      phone_no?: string;
+      email?: string;
+      gender?: boolean;
+      address?: string;
+      state?: string;
+      user_id?: string;
+      signup_date?: string;
+    };
+  };
+
+  interface CustomerApiResponse {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: {
+      status: string;
+      message: string;
+      current_datetime?: string;
+      data: CustomerApiItem[];
+    };
+  }
+
+  const { data: apiRaw, isLoading, error } = useGetDatanew(
+    url,
+    "get_customer_statistics_report",
+    userToken || " "
+  );
+
+  const api = apiRaw as unknown as CustomerApiResponse | undefined;
+
+  // Update header time and pagination flags when API changes
   useEffect(() => {
-    setCurrentTime(
-      new Date().toLocaleString("en-US", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true,
-      })
-    );
-  }, []);
+    if (api?.results?.current_datetime) {
+      setCurrentTime(api.results.current_datetime);
+    }
+    setHasNext(Boolean(api?.next));
+    setHasPrev(Boolean(api?.previous));
+  }, [api]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -60,52 +113,34 @@ export default function Page() {
 
   // --- Replace the filteredRegularCustomers and columnsRegular with customer-centric data and columns ---
 
-  const customerData = [
-    {
-      customername: "Bolu Davies",
-      walletbalance: 1000,
-      phonenumber: "08136560876",
-      email: "Ajiroba@gmail.com",
-      gender: "male",
-      address: "43, bliss lane street, ijapa village,",
-      state: "Lagos",
-      userid: "2635BA",
-      signupdatetime: "21-MAY-2024; 4:30 PM",
-    },
-    {
-      customername: "Bolu Davies",
-      walletbalance: 5000,
-      phonenumber: "08136560876",
-      email: "Ajiroba@gmail.com",
-      gender: "female",
-      address: "43, bliss lane street, ijapa village,",
-      state: "Lagos",
-      userid: "2635BA",
-      signupdatetime: "21-MAY-2024; 4:30 PM",
-    },
-    {
-      customername: "Bolu Davies",
-      walletbalance: 10000,
-      phonenumber: "08136560876",
-      email: "Ajiroba@gmail.com",
-      gender: "male",
-      address: "43, bliss lane street, ijapa village,",
-      state: "Lagos",
-      userid: "2635BA",
-      signupdatetime: "21-MAY-2024; 4:30 PM",
-    },
-    {
-      customername: "Ajiroba Davies",
-      walletbalance: 200000,
-      phonenumber: "08136560876",
-      email: "toba@gmail.com",
-      gender: "male",
-      address: "43, bliss lane street, ijapa village,",
-      state: "Lagos",
-      userid: "2635BA",
-      signupdatetime: "21-MAY-2024; 4:30 PM",
-    },
-  ];
+  const customerData = (api?.results?.data || []).map((item) => {
+    const d = item.customer_details || {};
+    const genderStr = d.gender === true ? "Male" : d.gender === false ? "Female" : "N/A";
+    // Keep ISO for potential sorting; render formatted in UI via column render if needed
+    const isoDate = d.signup_date || "";
+    const displayDate = isoDate
+      ? new Date(isoDate).toLocaleString("en-US", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        })
+      : "";
+    return {
+      customername: d.customer_name || "",
+      walletbalance: Number(d.waller_balance || 0),
+      phonenumber: d.phone_no || "",
+      email: d.email || "",
+      gender: genderStr.toLowerCase(),
+      address: d.address || "",
+      state: d.state || "",
+      userid: d.user_id || "",
+      signupdatetime: displayDate,
+      signupdateISO: isoDate,
+    } as any;
+  });
 
   const columns = [
     { key: "index", label: "S/N", render: (_: any, idx: number) => idx + 1 },
@@ -182,53 +217,7 @@ export default function Page() {
       filteredData = filteredData.filter(item => item.gender.toLowerCase() === genderFilter.toLowerCase());
     }
 
-    // Apply date filtering
-    if (dateFilter) {
-      const now = new Date();
-      let startDate: Date | null = null;
-      let endDate: Date | null = null;
-      
-      switch (dateFilter) {
-        case 'last_week':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          endDate = now;
-          break;
-        case 'last_month':
-          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-          endDate = now;
-          break;
-        case 'last_year':
-          const currentYear = now.getFullYear();
-          const previousYear = currentYear - 1;
-          startDate = new Date(previousYear, 0, 1);
-          endDate = new Date(previousYear, 11, 31, 23, 59, 59, 999);
-          break;
-        case 'custom':
-          if (customDateRange.start && customDateRange.end) {
-            startDate = new Date(customDateRange.start);
-            endDate = new Date(customDateRange.end);
-            endDate.setHours(23, 59, 59, 999);
-          }
-          break;
-        case 'yesterday':
-          startDate = new Date(now);
-          startDate.setDate(now.getDate() - 1);
-          startDate.setHours(0, 0, 0, 0);
-          endDate = new Date(now);
-          endDate.setDate(now.getDate() - 1);
-          endDate.setHours(23, 59, 59, 999);
-          break;
-        default:
-          return filteredData;
-      }
-      
-      if (startDate && endDate) {
-        filteredData = filteredData.filter(item => {
-          const itemDate = new Date(item.signupdatetime);
-          return itemDate >= startDate! && itemDate <= endDate!;
-        });
-      }
-    }
+    // Date filtering moved to backend; no client-side date filtering
 
     // Apply sorting
     if (sort) {
@@ -248,7 +237,7 @@ export default function Page() {
   };
 
   const displayData = getFilteredAndSortedData();
-  const totalWallet = displayData.reduce((sum, item) => sum + (item.walletbalance || 0), 0);
+  const totalWallet = displayData.reduce((sum, item) => sum + (Number(item.walletbalance) || 0), 0);
 
 
   // Download handlers
@@ -365,75 +354,7 @@ export default function Page() {
         </div>
 
         <div className="w-full md:w-auto flex gap-4">
-          {/* Filter by dropdown */}
-          <div className="relative filter-dropdown">
-            <button
-              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-              className="w-full md:w-auto px-4 py-2 border border-[#E9E9E9] rounded-md bg-white text-[#353131] text-sm font-Poppins focus:outline-none focus:ring-2 focus:ring-[#F25E26] flex items-center justify-between min-w-[120px]"
-            >
-              Filter by {filterBy.length > 0 && `(${filterBy.length})`}
-              <svg
-                className={`ml-2 h-4 w-4 transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            
-            {showFilterDropdown && (
-              <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-10">
-                <div className="p-2 space-y-2">
-                  {[
-                    { key: 'name', label: 'Name' },
-                    { key: 'gender', label: 'Gender' },
-                  ].map((filter) => (
-                    <label key={filter.key} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                      <input
-                        type="checkbox"
-                        checked={filterBy.includes(filter.key)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setFilterBy([...filterBy, filter.key]);
-                          } else {
-                            setFilterBy(filterBy.filter(f => f !== filter.key));
-                            if (filter.key === 'gender') setGenderFilter("");
-                          }
-                        }}
-                        className="rounded border-gray-300 text-[#F25E26] focus:ring-[#F25E26]"
-                      />
-                      <span className="text-sm text-[#353131]">{filter.label}</span>
-                    </label>
-                  ))}
-                  {/* Gender dropdown if gender filter is checked */}
-                  {filterBy.includes('gender') && (
-                    <div className="pl-6 pt-1">
-                      <select
-                        value={genderFilter}
-                        onChange={e => setGenderFilter(e.target.value)}
-                        className="w-full px-2 py-1 border border-[#E9E9E9] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#F25E26]"
-                      >
-                        <option value="">Select Gender</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                      </select>
-                    </div>
-                  )}
-                  {filterBy.length > 0 && (
-                    <div className="pt-2 border-t border-gray-200">
-                      <button
-                        onClick={() => { setFilterBy([]); setGenderFilter(""); }}
-                        className="w-full text-left px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded"
-                      >
-                        Clear all filters
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+         
 
           {/* Sort by dropdown */}
           <div className="relative sort-dropdown">
@@ -456,7 +377,6 @@ export default function Page() {
               <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-10">
                 <div className="p-2 space-y-1">
                   {[
-                    { value: 'yesterday', label: 'Yesterday' },
                     { value: 'last_week', label: 'Last Week' },
                     { value: 'last_month', label: 'Last Month' },
                     { value: 'last_year', label: 'Last Year' },
@@ -560,6 +480,11 @@ export default function Page() {
           <span className="ml-4 text-xs font-normal">{currentTime}</span>
         </div>
         <div className="overflow-x-auto">
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">Loading...</div>
+          ) : error ? (
+            <div className="flex justify-center items-center py-12 text-red-600">Error loading data.</div>
+          ) : (
           <table className="min-w-full border text-xs md:text-sm table-auto">
             <thead>
               <tr>
@@ -596,6 +521,25 @@ export default function Page() {
               </tr>
             </tbody>
           </table>
+          )}
+        </div>
+        {/* Pagination Controls */}
+        <div className="flex justify-between items-center mt-4">
+          <button
+            className="px-3 py-1 border rounded disabled:opacity-50"
+            disabled={!hasPrev || currentPage <= 1}
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          >
+            Previous
+          </button>
+          <div className="text-sm text-gray-600">Page {currentPage}</div>
+          <button
+            className="px-3 py-1 border rounded disabled:opacity-50"
+            disabled={!hasNext}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Next
+          </button>
         </div>
       </div>
 

@@ -23,6 +23,8 @@ interface ProductInfo {
   profit: number;
   number_in_stock: number;
   payment_method: string;
+  quantity: number;
+  total_cost: number
 }
 
 interface RegularCustomerData {
@@ -180,6 +182,8 @@ console.log(regularCustomerData, 'reggg')
         modeofpayment: productInfo.mode_of_payment || 'N/A',
         status: productInfo.status ||  "N/A",
         id: item.id || 'N/A',
+        quantity: productInfo.quantity || 0,
+        total_cost: productInfo.total_cost || 0
       };
     });
   };
@@ -203,7 +207,7 @@ console.log(regularCustomerData, 'reggg')
   const transformedData = transformApiData((regularCustomerData as unknown as RegularCustomerApiResponse)?.results?.data);
 
 
-
+// console.log(transformApiData, 'transformmmmmmmm')
 
   // Pagination handlers
   const handleNextPage = () => {
@@ -240,6 +244,8 @@ console.log(regularCustomerData, 'reggg')
       purchasetime: item.purchasetime,
       modeofpayment: item.modeofpayment,
       status: item.status,
+      quantity: item.quantity,
+      total_cost: item.total_cost
     }));
 
     setShowDownloadModal(false);
@@ -266,6 +272,8 @@ console.log(regularCustomerData, 'reggg')
       purchasetime: item.purchasetime,
       modeofpayment: item.modeofpayment,
       status: item.status,
+      quantity: item.quantity,
+      total_cost: item.total_cost
     }));
 
     exportToXLS(exportData, {
@@ -286,6 +294,8 @@ console.log(regularCustomerData, 'reggg')
         { key: 'vat', header: 'VAT', width: 10 },
         { key: 'purchasetime', header: 'Purchase Time', width: 18 },
         { key: 'modeofpayment', header: 'Mode of Payment', width: 15 },
+        { key: 'quantity', header: 'Quantity', width: 10 },
+        { key: 'totalcost', header: 'Total Cost', width: 10 },
         { key: 'status', header: 'Status', width: 12 },
       ],
       summaryRows: [
@@ -329,6 +339,8 @@ console.log(regularCustomerData, 'reggg')
     { key: "vat", label: "VAT" },
     { key: "purchasetime", label: "PURCHASE TIME/TIME" },
     { key: "modeofpayment", label: "MODE OF PAYMENT" },
+    { key: "quantity", label: "QUANTITY" },
+    { key: "total_cost", label: "TOTAL COST" },
     {
       key: "status",
       label: "STATUS",

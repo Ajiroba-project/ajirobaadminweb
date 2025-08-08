@@ -17,6 +17,7 @@ import Loading from "@/app/components/Loading";
 import { formatDistanceToNow } from "date-fns";
 import Cookies from "js-cookie";
 import PostCreationForm from "./PostCreationForm";
+import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 
 type CommentFormValues = {
     comment: string;
@@ -284,7 +285,7 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
     // Set default content as trending posts
     let posts = trendingrinfo?.data?.data?.posts || [];
 
-    console.log(posts, 'posttt')
+  /*   console.log(posts, 'posttt') */
 
     // Conditionally render posts based on active tab
     if (activeTab === 'Liked') {
@@ -777,7 +778,10 @@ const NotificationSidebar = () => {
 };
 
 const MainLayout = () => {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState<string>("Trending");
+
+    useAuthMiddleware(router);
     return (
         <div className="w-full max-w-7xl mx-auto">
             <section className="flex flex-col lg:flex-row gap-6">

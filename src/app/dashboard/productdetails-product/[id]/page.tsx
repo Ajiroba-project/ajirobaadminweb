@@ -10,6 +10,7 @@ import { useGetDatanew } from "@/hooks/useGetData";
 import { FaStar } from "react-icons/fa6";
 import Loading from "@/app/components/Loading";
 import { parseISO, format } from "date-fns";
+import { h1 } from "framer-motion/m";
 
 
 
@@ -46,9 +47,6 @@ const CustomerReview = ({ data }: any) => {
     };
 
 
-    {
-      console.log(data)
-    }
 
 
     return (
@@ -255,6 +253,50 @@ export default function ProductDetailsAuctionPage() {
 
 
     // console.log(prodInfo?.data?.product_info, 'product_infooo')
+
+    if (
+      prodInfo?.data &&
+      typeof prodInfo.data === 'object' &&
+      Object.keys(prodInfo.data).length === 0
+    ) {
+      return (
+<>
+
+<div className="min-h-screen bg-gray-100 w-full flex flex-col items-center font-poppins"  >
+            <div className="w-full bg-gray-100" style={{ width: '100', maxWidth: '80%' }}>
+                <div className="flex flex-col" >
+                    <ProfileHeader />
+                    <div className="flex items-center justify-between w-full">
+                        <p
+                            className="text-[#F25E26] underline cursor-pointer mt-2 mb-0  p-4 lg:px-14 px-7 "
+                            onClick={() => router.back()}
+                        >
+                            Back
+                        </p>
+                        <h1 className="text-lg md:text-xl lg:text-2xl py-2 mb-6 font-semibold text-center flex-1">Products Details</h1>
+                        <span className="w-24" /> {/* Spacer for symmetry */}
+                    </div>
+                </div>
+            </div>
+
+
+            <div className="flex items-center justify-center h-full w-full py-10">
+          <h1 className="text-center font-Poppins text-lg font-semibold">
+          No data returned. Possible API issue.
+          </h1>
+        </div>
+            </div>
+
+
+</>
+
+        
+      
+      );
+    }
+    
+    
+
 
 
     return (
@@ -552,13 +594,12 @@ export default function ProductDetailsAuctionPage() {
                 </div>
             </div>
 
-       
 
-        <div style={{ width: '100', maxWidth: '75%' }}>
-        {Number(prodInfo?.data?.product_reviews?.total_reviews) >= 1 && (
-    <CustomerReview data={prodInfo?.data} />
-  )}
-        </div>
+            <div style={{ width: '100', maxWidth: '75%' }}>
+            {Number(prodInfo?.data?.product_reviews?.total_reviews) >= 1 && (
+        <CustomerReview data={prodInfo?.data} />
+      )}
+            </div>
 
         </div>
     );

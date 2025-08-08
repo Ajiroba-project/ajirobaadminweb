@@ -11,9 +11,12 @@ import { DownloadModal } from "@/app/components/DownloadModal";
 import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
 import { ReportsTable } from "../components/ReportsTable";
 import RaffleTicket from "../components/RaffleTicket";
+import { useGetDatanew } from "@/hooks/useGetData";
+import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 
 export default function Page() {
   const router = useRouter();
+  useAuthMiddleware(router);
 
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("");
@@ -29,6 +32,7 @@ export default function Page() {
   const [pageSize] = useState(10);
   const [showTicket, setShowTicket] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<any>(null);
+  const [userToken] = useState(Cookies.get("token"));
 
   useEffect(() => {
     setCurrentTime(
@@ -58,69 +62,89 @@ export default function Page() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Raffle Winning Report Data (from image)
-  const raffleData = [
-    {
-      name: "Bolu Davies",
-      phone: "08136560876",
-      email: "Ajiroba@gmail.com",
-      drawDate: "21-MAY-2024",
-      drawTime: "3:29 PM",
-      ticketNumber: "263435",
-      ticketAmount: 200,
-      product: "T-shirt",
-      productId: "5648T53",
-      winningValue: 24000,
-      status: "Redeemed by Transfer",
-      redemptionDate: "21-MAY-2024",
-      id: 1,
-    },
-    {
-      name: "Bolu Davies",
-      phone: "08136560876",
-      email: "Ajiroba@gmail.com",
-      drawDate: "21-MAY-2024",
-      drawTime: "3:29 PM",
-      ticketNumber: "263435",
-      ticketAmount: 200,
-      product: "Rice",
-      productId: "5648T53",
-      winningValue: 24000,
-      status: "Redeemed by Gift Voucher",
-      redemptionDate: "21-MAY-2024",
-      id: 2,
-    },
-    {
-      name: "Bolu Davies",
-      phone: "08136560876",
-      email: "Ajiroba@gmail.com",
-      drawDate: "21-MAY-2024",
-      drawTime: "3:29 PM",
-      ticketNumber: "263435",
-      ticketAmount: 200,
-      product: "T-shirt",
-      productId: "5648T53",
-      winningValue: 24000,
-      status: "Redeemed by Delivery",
-      redemptionDate: "21-MAY-2024",
-      id: 3,
-    },
-    {
-      name: "Bolu Davies",
-      phone: "08136560876",
-      email: "Ajiroba@gmail.com",
-      drawDate: "21-MAY-2024",
-      drawTime: "3:29 PM",
-      ticketNumber: "263435",
-      ticketAmount: 200,
-      product: "Rice",
-      productId: "5648T53",
-      winningValue: 24000,
-      status: "Not Redeemed",
-      redemptionDate: "N/A",
-      id: 4,
-    },
-  ];
+  // API integration
+  interface RaffleReportItem {
+    id: string;
+    raffle_details: {
+      name?: string;
+      phone_number?: string;
+      email?: string;
+      raffle_date?: string; // human-readable
+      raffle_time?: string;
+      ticket_no?: string;
+      ticket_price?: number;
+      product?: string;
+      product_no?: string | null;
+      winning_value?: number;
+      status?: string;
+      redemption_date?: string; // ISO
+      purchased_date?: string; // ISO
+    };
+  }
+
+  interface RaffleReportApiResponse {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: {
+      status: string;
+      message: string;
+      current_datetime?: string;
+      data: RaffleReportItem[];
+    };
+  }
+
+  const buildQueryParams = () => {
+    const params = new URLSearchParams();
+    if (dateFilter === "last_week") params.append("filter", "last_week");
+    else if (dateFilter === "last_month") params.append("filter", "last_month");
+    else if (dateFilter === "last_year") params.append("filter", "last_year");
+    else if (dateFilter === "custom" && customDateRange.start && customDateRange.end) {
+      params.append("filter", "custom");
+      params.append("start_date", customDateRange.start);
+      params.append("end_date", customDateRange.end);
+    }
+    params.append("page", String(currentPage));
+    return params.toString();
+  };
+
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/raffle_draw_report/?${buildQueryParams()}`;
+
+  const { data: apiRaw, isLoading, error } = useGetDatanew(
+    url,
+    "get_raffle_draw_report",
+    userToken || " "
+  );
+
+  const api = apiRaw as unknown as RaffleReportApiResponse | undefined;
+
+  useEffect(() => {
+    if (api?.results?.current_datetime) {
+      setCurrentTime(api.results.current_datetime);
+    }
+  }, [api]);
+
+  const raffleData = (api?.results?.data || []).map((item) => {
+    const d = item.raffle_details || {};
+    return {
+      id: item.id,
+      name: d.name || "",
+      phone: d.phone_number || "",
+      email: d.email || "",
+      drawDate: d.raffle_date || "",
+      drawTime: d.raffle_time || "",
+      ticketNumber: d.ticket_no || "",
+      ticketAmount: Number(d.ticket_price || 0),
+      product: d.product || "",
+      productId: d.product_no || "",
+      winningValue: Number(d.winning_value || 0),
+      status: d.status ? d.status.charAt(0).toUpperCase() + d.status.slice(1) : "",
+      redemptionDate: d.redemption_date
+        ? new Date(d.redemption_date).toLocaleDateString("en-US")
+        : "N/A",
+      purchasedDateISO: d.purchased_date || "",
+    };
+  });
 
   // Table columns for Raffle Winning Report
   const columnsRaffle = [
@@ -156,8 +180,16 @@ export default function Page() {
       key: "productId",
       label: "PRODUCT ID",
       cellClassName: "text-[#F25E26] underline cursor-pointer",
-      render: (row: any) => (
+     /*  render: (row: any) => (
         <span className="text-[#F25E26] underline cursor-pointer">{row.productId}</span>
+      ), */
+      render: (row: any) => (
+        <Link
+          href={`/dashboard/productdetails-product/${row.productno}`}
+          className="bg-[#FFFFFF] text-[#F25E26] transition delay-300 duration-300 ease-in-out hover:bg-[#F25E26] hover:text-white hover:transition-all flex gap-2 rounded-lg p-2 font-Poppins text-sm items-center"
+        >
+          {row.productId}
+        </Link>
       ),
     },
     { key: "winningValue", label: "WINNING VALUE (NGN)", sum: true },
@@ -201,52 +233,7 @@ export default function Page() {
       });
     }
 
-    // Apply date filtering
-    if (dateFilter) {
-      const now = new Date();
-      let startDate: Date | null = null;
-      let endDate: Date | null = null;
-      
-      switch (dateFilter) {
-        case 'yesterday':
-          const yesterday = new Date(now);
-          yesterday.setDate(yesterday.getDate() - 1);
-          startDate = new Date(yesterday.setHours(0, 0, 0, 0));
-          endDate = new Date(yesterday.setHours(23, 59, 59, 999));
-          break;
-        case 'last_week':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          endDate = now;
-          break;
-        case 'last_month':
-          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-          endDate = now;
-          break;
-        case 'last_year':
-          const currentYear = now.getFullYear();
-          const previousYear = currentYear - 1;
-          startDate = new Date(previousYear, 0, 1);
-          endDate = new Date(previousYear, 11, 31, 23, 59, 59, 999);
-          break;
-        case 'custom':
-          if (customDateRange.start && customDateRange.end) {
-            startDate = new Date(customDateRange.start);
-            endDate = new Date(customDateRange.end);
-            endDate.setHours(23, 59, 59, 999);
-          }
-          break;
-        default:
-          return filteredData;
-      }
-      
-      if (startDate && endDate) {
-        filteredData = filteredData.filter(item => {
-          if (item.drawDate === "N/A") return false;
-          const itemDate = new Date(item.drawDate);
-          return itemDate >= startDate! && itemDate <= endDate!;
-        });
-      }
-    }
+    // Date filtering handled by backend via query params
 
     // Apply sorting
     if (sort) {
@@ -485,8 +472,7 @@ export default function Page() {
             {showSortDropdown && (
               <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-10">
                 <div className="p-2 space-y-1">
-                  {[
-                    { value: 'yesterday', label: 'Yesterday' },
+              {[
                     { value: 'last_week', label: 'Last Week' },
                     { value: 'last_month', label: 'Last Month' },
                     { value: 'last_year', label: 'Last Year' },
