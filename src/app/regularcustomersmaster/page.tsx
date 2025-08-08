@@ -23,6 +23,8 @@ interface ProductInfo {
   profit: number;
   number_in_stock: number;
   payment_method: string;
+  quantity: number;
+  total_cost: number
 }
 
 interface RegularCustomerData {
@@ -129,7 +131,7 @@ export default function Page() {
   };
 
   // API integration
-  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/regular_transaction_report/?${getFilterParams()}`;
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/regular_customer_master_report/?${getFilterParams()}`;
   const {
     data: regularCustomerData,
     isLoading: regularCustomerLoading,
@@ -137,7 +139,7 @@ export default function Page() {
   } = useGetDatanew(url, "get_regular_customer_master", userToken || " ");
 
 
-console.log(regularCustomerData, 'reggg')
+
 
 
   // Transform API data to match component structure
@@ -149,32 +151,39 @@ console.log(regularCustomerData, 'reggg')
       return [];
     }
 
-    console.log(apiData)
+
     
     return apiData?.map((item: any) => {
-      const productInfo = item.product_info?.[0] || {};
+      const productInfo = item.product_info || {};
+      const userInfo = item.user_info || {};
       return {
-        customername: "N/A", // API doesn't provide customer info
-        email: "N/A",
-        phone: "N/A",
-        gender: "N/A",
-        userid: item.order_id || 'N/A',
+        customername: userInfo?.customer_name || "N/A", // API doesn't provide customer info
+        email: userInfo?.email || "N/A",
+        phone: userInfo?.phone || "N/A",
+        gender: userInfo?.gender === true
+        ? "Male"
+        : userInfo?.gender === false
+        ? "Female"
+        : "N/A",
+        userid: userInfo.user_id || 'N/A',
         productId: productInfo.product_no || 'N/A',
         productno: productInfo.product_id || 'N/A',
         productname: productInfo.product_name || 'N/A',
         costprice: productInfo.cost_price || 0,
         sellingprice: productInfo.selling_price || 0,
-        discountprice: productInfo.discount_price || 0,
+        discountprice: productInfo.discount || 0,
         profit: productInfo.profit || 0,
-        vat: "7.5%",
-        purchasetime: item.date_created ? new Date(item.date_created).toLocaleDateString('en-GB', {
+        vat: productInfo.tax,
+        purchasetime: productInfo.date_time ? new Date(productInfo.date_time).toLocaleDateString('en-GB', {
           day: '2-digit',
           month: 'short',
           year: 'numeric'
         }).toUpperCase() : 'N/A',
-        modeofpayment: productInfo.payment_method || 'N/A',
+        modeofpayment: productInfo.mode_of_payment || 'N/A',
         status: productInfo.status ||  "N/A",
         id: item.id || 'N/A',
+        quantity: productInfo.quantity || 0,
+        total_cost: productInfo.total_cost || 0
       };
     });
   };
@@ -198,7 +207,7 @@ console.log(regularCustomerData, 'reggg')
   const transformedData = transformApiData((regularCustomerData as unknown as RegularCustomerApiResponse)?.results?.data);
 
 
-
+// console.log(transformApiData, 'transformmmmmmmm')
 
   // Pagination handlers
   const handleNextPage = () => {
@@ -235,6 +244,8 @@ console.log(regularCustomerData, 'reggg')
       purchasetime: item.purchasetime,
       modeofpayment: item.modeofpayment,
       status: item.status,
+      quantity: item.quantity,
+      total_cost: item.total_cost
     }));
 
     setShowDownloadModal(false);
@@ -261,6 +272,8 @@ console.log(regularCustomerData, 'reggg')
       purchasetime: item.purchasetime,
       modeofpayment: item.modeofpayment,
       status: item.status,
+      quantity: item.quantity,
+      total_cost: item.total_cost
     }));
 
     exportToXLS(exportData, {
@@ -281,6 +294,8 @@ console.log(regularCustomerData, 'reggg')
         { key: 'vat', header: 'VAT', width: 10 },
         { key: 'purchasetime', header: 'Purchase Time', width: 18 },
         { key: 'modeofpayment', header: 'Mode of Payment', width: 15 },
+        { key: 'quantity', header: 'Quantity', width: 10 },
+        { key: 'totalcost', header: 'Total Cost', width: 10 },
         { key: 'status', header: 'Status', width: 12 },
       ],
       summaryRows: [
@@ -324,13 +339,15 @@ console.log(regularCustomerData, 'reggg')
     { key: "vat", label: "VAT" },
     { key: "purchasetime", label: "PURCHASE TIME/TIME" },
     { key: "modeofpayment", label: "MODE OF PAYMENT" },
+    { key: "quantity", label: "QUANTITY" },
+    { key: "total_cost", label: "TOTAL COST" },
     {
       key: "status",
       label: "STATUS",
       render: (row: any) => (
         <span
           className={`px-2 py-1 rounded-full text-xs font-medium ${
-            row.status === "Successful"
+            row.status === "success"
               ? "bg-green-100 text-green-800"
               : "bg-yellow-100 text-yellow-800"
           }`}

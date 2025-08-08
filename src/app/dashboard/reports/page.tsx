@@ -214,7 +214,7 @@ const Page = () => {
     } = useGetDatanew(regularDealsUrl, "get_regular_deals_summary", userToken || " ");
 
 
-    console.log(regularDealsData, 'dddd')
+   
 
     if (regularDealsLoading) {
       return (
@@ -526,109 +526,168 @@ const Page = () => {
   };
 
   const RechargeTransactionReport = () => {
-    const [sortBy, setSortBy] = useState("Yesterday");
-    const [customStart, setCustomStart] = useState("");
-    const [customEnd, setCustomEnd] = useState("");
-    const [activeTab, setActiveTab] = useState("Airtime");
-
-    // Data-driven configuration for each tab
-    const tabData: Record<
-      string,
-      {
-        summary: { title: string; value: string }[];
-        billersTitle: string;
-        serviceProviders: { name: string; img: any }[];
-        dataColumns: string[][];
-        dataColumnTitle: string;
-      }
-    > = {
-      Airtime: {
-        summary: [
-          { title: "Airtime GTV", value: "₦10,000,000" },
-          { title: "Total Commission Earned", value: "₦300,000" },
-          { title: "Counts", value: "10,500" },
-        ],
-        billersTitle: "Billers share of Airtime GTV",
-        serviceProviders: [
-          { name: "MTN", img: mtn },
-          { name: "Airtel", img: airtel },
-          { name: "9mobile", img: ninemobile },
-          { name: "Glo", img: glo },
-        ],
-        dataColumns: [
-          ["₦ 7,000,000", "₦ 210,000", "5,000", "2%"],
-          ["₦ 2,000,000", "₦ 60,000", "2,500", "3%"],
-          ["₦ 500,000", "₦ 20,000", "2,000", "4%"],
-          ["₦ 500,000", "₦ 20,000", "1,000", "4%"],
-        ],
-        dataColumnTitle: "Airtime GTV",
-      },
-      Data: {
-        summary: [
-          { title: "Data GTV", value: "₦5,000,000" },
-          { title: "Total Commission Earned", value: "₦150,000" },
-          { title: "Counts", value: "5,500" },
-        ],
-        billersTitle: "Billers share of Data GTV",
-        serviceProviders: [
-          { name: "MTN Data", img: mtn },
-          { name: "Airtel Data", img: airtel },
-          { name: "9mobile Data", img: ninemobile },
-          { name: "Glo Data", img: glo },
-        ],
-        dataColumns: [
-          ["₦ 3,000,000", "₦ 90,000", "2,000", "3%"],
-          ["₦ 1,500,000", "₦ 45,000", "1,000", "3%"],
-          ["₦ 500,000", "₦ 15,000", "500", "3%"],
-          ["₦ 0", "₦ 0", "0", "0%"],
-        ],
-        dataColumnTitle: "Data GTV",
-      },
-      Electricity: {
-        summary: [
-          { title: "Electricity GTV", value: "₦2,000,000" },
-          { title: "Total Commission Earned", value: "₦60,000" },
-          { title: "Counts", value: "1,200" },
-        ],
-        billersTitle: "Billers share of Electricity GTV",
-        serviceProviders: [
-          { name: "Ikeja Electric", img: mtn }, // Placeholder
-          { name: "Eko Electric", img: airtel }, // Placeholder
-          { name: "Abuja Electric", img: ninemobile }, // Placeholder
-          { name: "PHED", img: glo }, // Placeholder
-        ],
-        dataColumns: [
-          ["₦ 1,000,000", "₦ 30,000", "600", "3%"],
-          ["₦ 500,000", "₦ 15,000", "300", "3%"],
-          ["₦ 300,000", "₦ 9,000", "200", "3%"],
-          ["₦ 200,000", "₦ 6,000", "100", "3%"],
-        ],
-        dataColumnTitle: "Electricity GTV",
-      },
-      Cable: {
-        summary: [
-          { title: "Cable GTV", value: "₦1,000,000" },
-          { title: "Total Commission Earned", value: "₦30,000" },
-          { title: "Counts", value: "800" },
-        ],
-        billersTitle: "Billers share of Cable GTV",
-        serviceProviders: [
-          { name: "DSTV", img: dstv }, // Placeholder
-          { name: "GOTV", img: gotv }, // Placeholder
-          { name: "Startimes", img: startimes }, // Placeholder
-          { name: "Showmax", img: showmax }, // Placeholder
-        ],
-        dataColumns: [
-          ["₦ 600,000", "₦ 18,000", "400", "3%"],
-          ["₦ 200,000", "₦ 6,000", "200", "3%"],
-          ["₦ 100,000", "₦ 3,000", "100", "3%"],
-          ["₦ 100,000", "₦ 3,000", "100", "3%"],
-        ],
-        dataColumnTitle: "Cable GTV",
-      },
+    type ProviderMetrics = {
+      gtv: number;
+      commission: number;
+      count: number;
+      commission_rate?: string;
     };
 
-    const currentTabData = tabData[activeTab];
+    type RechargeCategory = Record<string, ProviderMetrics | { gtv: number; commission: number; count: number }>;
+
+    interface RechargeApiResponse {
+      status: string;
+      message: string;
+      current_datetime?: string;
+      data?: {
+        airtime?: RechargeCategory;
+        data?: RechargeCategory;
+        electricity?: RechargeCategory;
+        cable?: RechargeCategory;
+        [key: string]: RechargeCategory | undefined;
+      };
+    }
+
+    const [sortBy, setSortBy] = useState("");
+    const [customStart, setCustomStart] = useState("");
+    const [customEnd, setCustomEnd] = useState("");
+    const [activeTab, setActiveTab] = useState<string>("Airtime");
+
+    const getRechargeFilterParams = () => {
+      const params = new URLSearchParams();
+      switch (sortBy) {
+        case "last_week":
+          params.append("filter", "last_week");
+          break;
+        case "last_month":
+          params.append("filter", "last_month");
+          break;
+        case "last_year":
+          params.append("filter", "last_year");
+          break;
+        case "custom":
+          if (customStart && customEnd) {
+            params.append("filter", "custom");
+            params.append("start_date", customStart);
+            params.append("end_date", customEnd);
+          }
+          break;
+        default:
+          // all_time or no filter
+          break;
+      }
+      return params.toString();
+    };
+
+    const rechargeUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/recharge_transaction_report/?${getRechargeFilterParams()}`;
+
+    const { data: rechargeData, isLoading: rechargeLoading, error: rechargeError } = useGetDatanew(
+      rechargeUrl,
+      "get_recharge_transaction_report",
+      userToken || " "
+    );
+
+    // Build dynamic tab data from API
+    const api = rechargeData as unknown as RechargeApiResponse | undefined;
+    const apiData = api?.data || {};
+
+    // Update header time when available
+    const headerTime = api?.current_datetime;
+
+    const categoryDisplayName = (key: string) => {
+      const map: Record<string, string> = {
+        airtime: "Airtime",
+        data: "Data",
+        electricity: "Electricity",
+        cable: "Cable",
+      };
+      return map[key] || key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    };
+
+    const providerLogo = (name: string) => {
+      const key = name.toUpperCase();
+      if (key.includes("MTN")) return mtn;
+      if (key.includes("AIRTEL")) return airtel;
+      if (key.includes("9MOBILE") || key.includes("ETISALAT")) return ninemobile;
+      if (key.includes("GLO")) return glo;
+      if (key.includes("DSTV")) return dstv;
+      if (key.includes("GOTV")) return gotv;
+      if (key.includes("STARTIMES") || key.includes("STARTIME")) return startimes;
+      if (key.includes("SHOWMAX")) return showmax;
+      return undefined;
+    };
+
+    const buildTabData = () => {
+      const result: Record<
+        string,
+        {
+          summary: { title: string; value: string }[];
+          billersTitle: string;
+          serviceProviders: { name: string; img?: any }[];
+          dataColumns: string[][];
+          dataColumnTitle: string;
+        }
+      > = {};
+
+      Object.entries(apiData).forEach(([categoryKey, providers]) => {
+        const displayName = categoryDisplayName(categoryKey);
+        const total = (providers as any)?.total as { gtv: number; commission: number; count: number } | undefined;
+
+        const providerEntries = Object.entries(providers || {}).filter(([k]) => k !== "total");
+
+        const serviceProviders = providerEntries.map(([name]) => ({ name, img: providerLogo(name) }));
+
+        const dataColumns = providerEntries.map(([name, metrics]) => {
+          const m = metrics as ProviderMetrics;
+          return [
+            formatNaira(m.gtv || 0),
+            formatNaira(m.commission || 0),
+            String(m.count || 0),
+            m.commission_rate || "0%",
+          ];
+        });
+
+        result[displayName] = {
+          summary: [
+            { title: `${displayName} GTV`, value: formatNaira(total?.gtv || 0) },
+            { title: "Total Commission Earned", value: formatNaira(total?.commission || 0) },
+            { title: "Counts", value: String(total?.count || 0) },
+          ],
+          billersTitle: `Billers share of ${displayName} GTV`,
+          serviceProviders,
+          dataColumns,
+          dataColumnTitle: `${displayName} GTV`,
+        };
+      });
+
+      return result;
+    };
+
+    const tabData = buildTabData();
+
+    // Ensure active tab exists
+    const availableTabs = Object.keys(tabData);
+    const currentTab = availableTabs.includes(activeTab) ? activeTab : availableTabs[0] || "";
+    const currentTabData = currentTab ? tabData[currentTab] : undefined;
+
+    if (rechargeLoading) {
+      return (
+        <div className="w-full min-h-screen bg-gray-50 flex items-center justify-center">
+          <Loading />
+        </div>
+      );
+    }
+
+    if (rechargeError) {
+      return (
+        <div className="w-full min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Data</h2>
+            <p className="text-gray-600">Please try again later.</p>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="w-full min-h-screen bg-gray-100">
@@ -645,7 +704,7 @@ const Page = () => {
               Recharge Transaction Report
             </h1>
             <span className="text-base text-gray-600 font-normal">
-              (23-May-2025; 4:40 PM)
+              {headerTime ? `(${headerTime})` : ""}
             </span>
           </div>
         </div>
@@ -655,12 +714,12 @@ const Page = () => {
           {/* Navigation and Sort Section */}
           <div className="mb-6">
             <div className="flex flex-wrap  gap-4">
-              {Object.keys(tabData).map((tab: string) => (
+              {availableTabs.map((tab: string) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`px-10 py-3 rounded-xl font-semibold transition-colors ${
-                    activeTab === tab
+                    currentTab === tab
                       ? "bg-[#F25E26] text-white font-semibold"
                       : "bg-[#EDEDED] text-gray-500"
                   }`}
@@ -678,13 +737,13 @@ const Page = () => {
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
               >
-                <option>Yesterday</option>
-                <option>Last Week</option>
-                <option>Last Month</option>
-                <option>Last Year</option>
-                <option>Custom</option>
+                <option value="">All Time</option>
+                <option value="last_week">Last Week</option>
+                <option value="last_month">Last Month</option>
+                <option value="last_year">Last Year</option>
+                <option value="custom">Custom</option>
               </select>
-              {sortBy === "Custom" && (
+              {sortBy === "custom" && (
                 <>
                   <input
                     type="date"
@@ -706,7 +765,7 @@ const Page = () => {
 
           {/* Summary Metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-6">
-            {currentTabData.summary.map(
+            {currentTabData?.summary.map(
               (item: { title: string; value: string }, idx: number) => (
                 <div
                   key={item.title}
@@ -759,7 +818,7 @@ const Page = () => {
           <div className="bg-white shadow-lg rounded-2xl overflow-hidden mt-8">
             <div className="bg-[#F25E26] px-6 py-4 flex justify-center rounded-t-2xl">
               <h2 className="text-white font-semibold text-lg text-center">
-                {currentTabData.billersTitle}
+                {currentTabData?.billersTitle}
               </h2>
             </div>
             <div className="p-4 md:p-8">
@@ -770,17 +829,17 @@ const Page = () => {
                     Service Provider
                   </div>
                   <div className="flex-1 flex flex-col">
-                    {currentTabData.serviceProviders.map(
+                    {currentTabData?.serviceProviders.map(
                       (provider: { name: string; img?: any }, idx: number) => (
                         <div
                           key={provider.name}
                           className={`flex items-center justify-center py-6 border-b border-gray-200 bg-white ${
-                            idx === currentTabData.serviceProviders.length - 1
+                            idx === (currentTabData?.serviceProviders.length || 1) - 1
                               ? "border-b-0"
                               : ""
                           }`}
                         >
-                          {activeTab === "Electricity" ? (
+                          {provider.img == null ? (
                             <button
                               className="bg-orange-500 text-white px-6 py-2 rounded-lg font-semibold text-base"
                               style={{ minWidth: 100 }}
@@ -804,7 +863,7 @@ const Page = () => {
                 <div className="md:w-3/4 w-full border border-gray-300 rounded-2xl md:rounded-r-2xl md:rounded-l-none overflow-hidden">
                   <div className="grid grid-cols-4">
                     <div className="py-3 px-4 font-semibold text-gray-800 border-b border-gray-200 text-center">
-                      {currentTabData.dataColumnTitle}
+                      {currentTabData?.dataColumnTitle}
                     </div>
                     <div className="py-3 px-4 font-semibold text-gray-800 border-b border-gray-200 text-center">
                       Commission
@@ -817,7 +876,7 @@ const Page = () => {
                     </div>
                   </div>
                   {/* Data Rows */}
-                  {currentTabData.dataColumns.map(
+                  {currentTabData?.dataColumns.map(
                     (row: string[], idx: number) => (
                       <div className="grid grid-cols-4" key={idx}>
                         {row.map((cell: string, cidx: number) => (
@@ -842,9 +901,88 @@ const Page = () => {
 
   // Customer Statistics Report Component
   const CustomerStatisticsReport = () => {
-    const [sortBy, setSortBy] = useState("Yesterday");
+    interface CustomerStatsApiResponse {
+      status: string;
+      message: string;
+      current_datetime?: string;
+      data?: {
+        registered_customers?: number;
+        customer_wallet_balance?: number;
+        customer_with_balance?: {
+          customers_with_positive_balance?: number;
+          customers_with_negative_balance?: number;
+        };
+        unredeemed_point?: number;
+      };
+    }
+
+    const [sortBy, setSortBy] = useState("");
     const [customStart, setCustomStart] = useState("");
     const [customEnd, setCustomEnd] = useState("");
+
+    const getCustomerStatsParams = () => {
+      const params = new URLSearchParams();
+      switch (sortBy) {
+        case "last_week":
+          params.append("filter", "last_week");
+          break;
+        case "last_month":
+          params.append("filter", "last_month");
+          break;
+        case "last_year":
+          params.append("filter", "last_year");
+          break;
+        case "custom":
+          if (customStart && customEnd) {
+            params.append("filter", "custom");
+            params.append("start_date", customStart);
+            params.append("end_date", customEnd);
+          }
+          break;
+        default:
+          // all_time or default
+          break;
+      }
+      return params.toString();
+    };
+
+    const customerStatsUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/customer_statistics_summary/?${getCustomerStatsParams()}`;
+
+    const { data: customerStatsRaw, isLoading: customerStatsLoading, error: customerStatsError } = useGetDatanew(
+      customerStatsUrl,
+      "get_customer_statistics_summary",
+      userToken || " "
+    );
+
+    const api = customerStatsRaw as unknown as CustomerStatsApiResponse | undefined;
+    const headerTime = api?.current_datetime;
+    const stats = api?.data;
+
+    const registeredCustomers = stats?.registered_customers ?? 0;
+    const customerWalletBalance = stats?.customer_wallet_balance ?? 0;
+    const positiveBalance = stats?.customer_with_balance?.customers_with_positive_balance ?? 0;
+    const negativeBalance = stats?.customer_with_balance?.customers_with_negative_balance ?? 0;
+    const unredeemedPoint = stats?.unredeemed_point ?? 0;
+
+    if (customerStatsLoading) {
+      return (
+        <div className="w-full min-h-screen bg-gray-50 flex items-center justify-center">
+          <Loading />
+        </div>
+      );
+    }
+
+    if (customerStatsError) {
+      return (
+        <div className="w-full min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Data</h2>
+            <p className="text-gray-600">Please try again later.</p>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="w-full min-h-screen bg-gray-50">
         <div className="bg-[#F6F6F6] px-8 pt-8 pb-6">
@@ -860,9 +998,7 @@ const Page = () => {
           </h1>
           <p className="text-xs sm:text-sm md:text-base font-medium text-gray-700">
             Customer Statistic Summary{" "}
-            <span className="text-xs sm:text-sm font-normal">
-              (23-May-2025; 4:40 PM)
-            </span>
+            <span className="text-xs sm:text-sm font-normal">{headerTime ? `(${headerTime})` : ""}</span>
           </p>
         </div>
         <div className="max-w-3xl mx-auto px-8">
@@ -872,13 +1008,13 @@ const Page = () => {
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
             >
-              <option>Yesterday</option>
-              <option>Last Week</option>
-              <option>Last Month</option>
-              <option>Last Year</option>
-              <option>Custom</option>
+              <option value="">All Time</option>
+              <option value="last_week">Last Week</option>
+              <option value="last_month">Last Month</option>
+              <option value="last_year">Last Year</option>
+              <option value="custom">Custom</option>
             </select>
-            {sortBy === "Custom" && (
+            {sortBy === "custom" && (
               <>
                 <input
                   type="date"
@@ -904,7 +1040,7 @@ const Page = () => {
                 Registered Customers
               </div>
               <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
-                2,000,000
+                {registeredCustomers}
               </div>
             </div>
             <div className="rounded-xl border-2 border-red-200 bg-red-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[160px]">
@@ -912,7 +1048,7 @@ const Page = () => {
                 Customer Wallet Balance
               </div>
               <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
-                ₦ 5,000,000
+                {formatNaira(customerWalletBalance)}
               </div>
             </div>
             <div className="rounded-xl border-2 border-purple-400 bg-purple-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[160px]">
@@ -922,10 +1058,10 @@ const Page = () => {
               <div className="flex flex-col items-center justify-center h-full gap-2">
                 <div className="flex items-center gap-2 text-sm sm:text-base md:text-lg font-semibold text-gray-900">
                   <span>&gt; 0:</span>{" "}
-                  <span className="font-semibold">400,000</span>
+                  <span className="font-semibold">{positiveBalance}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm sm:text-base md:text-lg font-semibold text-gray-900">
-                  <span>&lt; 0:</span> <span className="font-semibold">0</span>
+                  <span>&lt; 0:</span> <span className="font-semibold">{negativeBalance}</span>
                 </div>
               </div>
             </div>
@@ -934,7 +1070,7 @@ const Page = () => {
                 Unredeemed Ajiroba Points
               </div>
               <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
-                100,000
+                {unredeemedPoint}
               </div>
             </div>
           </div>
@@ -953,9 +1089,49 @@ const Page = () => {
 
   // Raffle Draw Winning Report Component
   const RaffleDrawReport = () => {
-    const [sortBy, setSortBy] = useState("Yesterday");
+    interface RaffleApiResponse {
+      status: string;
+      message: string;
+      current_datetime?: string;
+      data?: {
+        gross_winning_value?: number;
+        total_no_of_winners?: number;
+        no_of_redemption?: number;
+        value_of_redemption?: number;
+        no_of_pending_redemption?: number;
+        value_of_pending_redemption?: number;
+      };
+    }
+
+    const [sortBy, setSortBy] = useState("");
     const [customStart, setCustomStart] = useState("");
     const [customEnd, setCustomEnd] = useState("");
+
+    const buildRaffleParams = () => {
+      const params = new URLSearchParams();
+      if (sortBy === "last_week") params.append("filter", "last_week");
+      else if (sortBy === "last_month") params.append("filter", "last_month");
+      else if (sortBy === "last_year") params.append("filter", "last_year");
+      else if (sortBy === "custom" && customStart && customEnd) {
+        params.append("filter", "custom");
+        params.append("start_date", customStart);
+        params.append("end_date", customEnd);
+      }
+      return params.toString();
+    };
+
+    const raffleUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/raffle_draw_summary/?${buildRaffleParams()}`;
+
+    const { data: raffleRaw, isLoading: raffleLoading, error: raffleError } = useGetDatanew(
+      raffleUrl,
+      "get_raffle_draw_summary",
+      userToken || " "
+    );
+
+    const api = raffleRaw as unknown as RaffleApiResponse | undefined;
+    const headerTime = api?.current_datetime;
+    const d = api?.data || {};
+
     return (
       <div className="w-full min-h-screen bg-gray-50">
         <div className="bg-[#F6F6F6] px-8 pt-8 pb-6">
@@ -969,9 +1145,7 @@ const Page = () => {
           <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-1">Reports</h1>
           <p className="text-xs sm:text-sm md:text-base font-medium text-gray-700">
             Raffle Draw Winning Report{" "}
-            <span className="text-xs sm:text-sm font-normal">
-              (23-May-2025; 4:40 PM)
-            </span>
+            <span className="text-xs sm:text-sm font-normal">{headerTime ? `(${headerTime})` : ""}</span>
           </p>
         </div>
         <div className="max-w-5xl mx-auto px-8">
@@ -981,13 +1155,13 @@ const Page = () => {
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
             >
-              <option>Yesterday</option>
-              <option>Last Week</option>
-              <option>Last Month</option>
-              <option>Last Year</option>
-              <option>Custom</option>
+              <option value="">All Time</option>
+              <option value="last_week">Last Week</option>
+              <option value="last_month">Last Month</option>
+              <option value="last_year">Last Year</option>
+              <option value="custom">Custom</option>
             </select>
-            {sortBy === "Custom" && (
+            {sortBy === "custom" && (
               <>
                 <input
                   type="date"
@@ -1007,56 +1181,62 @@ const Page = () => {
               </>
             )}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-            <div className="rounded-xl border-2 border-red-200 bg-red-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
-                Gross Winning Value
+          {raffleLoading ? (
+            <div className="flex justify-center items-center py-12">Loading...</div>
+          ) : raffleError ? (
+            <div className="flex justify-center items-center py-12 text-red-600">Error loading data.</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+              <div className="rounded-xl border-2 border-red-200 bg-red-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[120px]">
+                <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
+                  Gross Winning Value
+                </div>
+                <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
+                  {formatNaira(d.gross_winning_value || 0)}
+                </div>
               </div>
-              <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
-                ₦ 2,000,000
+              <div className="rounded-xl border-2 border-purple-200 bg-purple-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[120px]">
+                <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
+                  Total Number of Winners
+                </div>
+                <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
+                  {d.total_no_of_winners || 0}
+                </div>
+              </div>
+              <div className="rounded-xl border-2 border-yellow-200 bg-yellow-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[120px]">
+                <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
+                  Number of Redemption
+                </div>
+                <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
+                  {d.no_of_redemption || 0}
+                </div>
+              </div>
+              <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[120px]">
+                <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
+                  Value of Redemption
+                </div>
+                <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
+                  {formatNaira(d.value_of_redemption || 0)}
+                </div>
+              </div>
+              <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[120px]">
+                <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
+                  Number of Pending Redemption
+                </div>
+                <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
+                  {d.no_of_pending_redemption || 0}
+                </div>
+              </div>
+              <div className="rounded-xl border-2 border-green-200 bg-green-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[120px]">
+                <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
+                  Value of Pending Redemption
+                </div>
+                <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
+                  {formatNaira(d.value_of_pending_redemption || 0)}
+                </div>
               </div>
             </div>
-            <div className="rounded-xl border-2 border-purple-200 bg-purple-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
-                Total Number of Winners
-              </div>
-              <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
-                5,000,000
-              </div>
-            </div>
-            <div className="rounded-xl border-2 border-yellow-200 bg-yellow-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
-                Number of Redemption
-              </div>
-              <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
-                500,000
-              </div>
-            </div>
-            <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
-                Value of Redemption
-              </div>
-              <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
-                ₦ 3,000,000
-              </div>
-            </div>
-            <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
-                Number of Pending Redemption
-              </div>
-              <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
-                100,000
-              </div>
-            </div>
-            <div className="rounded-xl border-2 border-green-200 bg-green-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[120px]">
-              <div className="text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-2 text-center">
-                Value of Pending Redemption
-              </div>
-              <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
-                ₦ 400,000,000
-              </div>
-            </div>
-          </div>
+          )}
           <div className="flex justify-center mt-8 mb-8">
             <button
               onClick={() => router.push("/dashboard/raffletickets")}

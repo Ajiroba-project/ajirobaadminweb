@@ -1,95 +1,3 @@
-// "use client";
-// import Image from "next/image";
-// import logo from "@/app/asset/logo.svg";
-// import { useRouter } from "next/navigation";
-
-// const revenueData = [
-//   { sn: 1, item: "Regular Deals", gtv: "1,000", profit: "5,000" },
-//   { sn: 2, item: "Auction Deals", gtv: "5,000", profit: "5,000" },
-//   { sn: 3, item: "Airtime", gtv: "10,000", profit: "5,000" },
-//   { sn: 4, item: "Data", gtv: "200,000", profit: "5,000" },
-//   { sn: 5, item: "Electricity", gtv: "200,000", profit: "5,000" },
-//   { sn: 6, item: "Cable Subscription", gtv: "200,000", profit: "5,000" },
-// ];
-
-// export default function RevenueSummaryReportPage() {
-//   const router = useRouter();
-//   return (
-//     <div className="min-h-screen bg-[#FCFCFC]">
-//       <div className="bg-[#F6F6F6] px-8 pt-6 pb-4 flex items-center justify-between">
-//         <div className="flex items-center gap-2">
-//           <Image src={logo} alt="Ajiroba Logo" width={120} height={40} />
-//         </div>
-//         <button className="bg-[#F25E26] hover:bg-[#E84526] text-white font-semibold px-8 py-2 rounded-lg text-base shadow" style={{marginRight: 8}}>
-//           Download
-//         </button>
-//       </div>
-//       <div className="max-w-3xl mx-auto px-4 pt-2">
-//         <span
-//           onClick={() => router.back()}
-//           className="text-[#F25E26] cursor-pointer text-sm block mb-2 mt-6"
-//         >
-//           Back
-//         </span>
-//         <h1 className="text-3xl font-bold text-gray-900 mb-6">Revenue Summary Report</h1>
-//         <div className="flex justify-end mb-4">
-//           <button className="border border-gray-300 rounded-lg px-4 py-2 text-gray-700 text-sm flex items-center gap-2">
-//             Sort by
-//             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6,9 12,15 18,9"></polyline></svg>
-//           </button>
-//         </div>
-//         {/* Table */}
-//         <div className="overflow-x-auto">
-//           <table className="w-full border border-black text-center bg-white">
-//             <thead>
-//               <tr>
-//                 <th colSpan={4} className="py-2 border-b border-black">
-//                   <div className="flex items-center gap-2 justify-center">
-//                     <Image src={logo} alt="Ajiroba Logo" width={40} height={40} />
-//                     <span className="text-2xl font-bold">AJÍRÓBA<sup className="text-xs align-super">®</sup></span>
-//                   </div>
-//                 </th>
-//               </tr>
-//               <tr>
-//                 <th colSpan={4} className="py-2 border-b border-black bg-orange-500 text-white text-lg font-semibold">
-//                   <div className="flex items-center justify-between px-4">
-//                     <span>REVENUE SUMMARY REPORT</span>
-//                     <span>(5, May, 2025 ; 4:30PM)</span>
-//                   </div>
-//                 </th>
-//               </tr>
-//               <tr className="bg-gray-100 border-b border-black">
-//                 <th className="py-2 px-2 border-r border-black font-bold">S/N</th>
-//                 <th className="py-2 px-2 border-r border-black font-bold">ITEMS</th>
-//                 <th className="py-2 px-2 border-r border-black font-bold">GROSS TRANSACTION VOLUME (GTV) (₦)</th>
-//                 <th className="py-2 px-2 font-bold">PROFIT (₦)</th>
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {revenueData.map((row) => (
-//                 <tr key={row.sn} className="border-b border-black">
-//                   <td className="py-2 px-2 border-r border-black">{row.sn}</td>
-//                   <td className="py-2 px-2 border-r border-black">{row.item}</td>
-//                   <td className="py-2 px-2 border-r border-black">{row.gtv}</td>
-//                   <td className="py-2 px-2">{row.profit}</td>
-//                 </tr>
-//               ))}
-//               {/* Totals row */}
-//               <tr className="font-bold text-lg">
-//                 <td colSpan={2} className="py-2 px-2 border-t-2 border-black text-left">TOTAL</td>
-//                 <td className="py-2 px-2 border-t-2 border-black">216,000</td>
-//                 <td className="py-2 px-2 border-t-2 border-black">96,000</td>
-//               </tr>
-//             </tbody>
-//           </table>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// } 
-
-
-
 "use client";
 import React, { useState, useEffect } from "react";
 import { ProfileHeader } from "@/app/components/Header";
@@ -101,9 +9,13 @@ import Brand from "@/app/asset/logo.svg";
 import { ReportsTable } from "../components/ReportsTable";
 import { DownloadModal } from "@/app/components/DownloadModal";
 import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
+import { useGetDatanew } from "@/hooks/useGetData";
+import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 
 export default function Page() {
   const router = useRouter();
+
+  useAuthMiddleware(router);
 
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("");
@@ -123,19 +35,43 @@ export default function Page() {
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [currentTime, setCurrentTime] = useState<string>("");
 
+  // Build query params and fetch API
+  const buildQueryParams = () => {
+    const params = new URLSearchParams();
+    if (sort === "last_week") params.append("filter", "last_week");
+    else if (sort === "last_month") params.append("filter", "last_month");
+    else if (sort === "last_year") params.append("filter", "last_year");
+    else if (sort === "custom" && customDateRange.start && customDateRange.end) {
+      params.append("filter", "custom");
+      params.append("start_date", customDateRange.start);
+      params.append("end_date", customDateRange.end);
+    }
+    return params.toString();
+  };
+
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/revenue_summary_report/?${buildQueryParams()}`;
+
+  type RevenueCategory = { gtv?: number; profit?: number } | undefined;
+  interface RevenueApiResponse {
+    status: string;
+    message: string;
+    current_datetime?: string;
+    data?: Record<string, RevenueCategory>;
+  }
+
+  const { data: apiRaw, isLoading, error } = useGetDatanew(
+    url,
+    "get_revenue_summary_report",
+    userToken || " "
+  );
+
+  const api = apiRaw as unknown as RevenueApiResponse | undefined;
+
   useEffect(() => {
-    setCurrentTime(
-      new Date().toLocaleString("en-US", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true,
-      })
-    );
-  }, []);
+    if (api?.current_datetime) {
+      setCurrentTime(api.current_datetime);
+    }
+  }, [api]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -157,7 +93,7 @@ export default function Page() {
 
   // Download handlers
   const handleDownloadPDF = async () => {
-    const exportData: ExportData[] = filteredServiceUptime.map((item) => ({
+    const exportData: ExportData[] = displayData.map((item) => ({
       items: item.items,
       gross: item.gross,
       profit: item.profit,
@@ -171,7 +107,7 @@ export default function Page() {
   };
 
   const handleDownloadXLS = () => {
-    const exportData: ExportData[] = filteredServiceUptime.map((item) => ({
+    const exportData: ExportData[] = displayData.map((item) => ({
       items: item.items,
       gross: item.gross,
       profit: item.profit,
@@ -205,49 +141,21 @@ export default function Page() {
       label: "GROSS TRANSACTION VOLUME (GTV) (₦)",
       sum: true,
     },
-
-    { key: "profit", label: "Profit", sum: true },
-    { key: "date", label: "Date" },
+    { key: "profit", label: "Profit (₦)", sum: true },
   ];
 
-  const filteredServiceUptime = [
-    {
-      items: "Regular Deals",
-      gross: 1000,
-      profit: 5000,
-      date: new Date().toISOString().slice(0, 10), // today
-    },
-    {
-      items: "Auction Deals",
-      gross: 1000,
-      profit: 9000,
-      date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10), // yesterday
-    },
-    {
-      items: "Special Promo",
-      gross: 2000,
-      profit: 1500,
-      date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), // last week
-    },
-    {
-      items: "Flash Sale",
-      gross: 3000,
-      profit: 2500,
-      date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), // last month
-    },
-    {
-      items: "Year End Bonus",
-      gross: 5000,
-      profit: 3500,
-      date: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), // last year
-    },
-    {
-      items: "Custom Test",
-      gross: 4000,
-      profit: 2000,
-      date: "2023-12-15", // custom test date
-    },
-  ];
+  const toTitle = (s: string) => s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const filteredServiceUptime = React.useMemo(() => {
+    const rows: { items: string; gross: number; profit: number }[] = [];
+    const data = api?.data || {};
+    Object.entries(data).forEach(([key, val]) => {
+      if (key === "total") return; // skip total row
+      const gtv = Number(val?.gtv || 0);
+      const profit = Number(val?.profit || 0);
+      rows.push({ items: toTitle(key), gross: gtv, profit });
+    });
+    return rows;
+  }, [api]);
 
   const AjirobaLogo = ({
     className = "h-4 w-4 sm:h-6 sm:w-6 md:h-8 md:w-8",
@@ -260,7 +168,7 @@ export default function Page() {
     </div>
   );
 
-  // Filter and sort the data
+  // Filter and sort the data (search only; date filtering is handled by backend)
   const getFilteredAndSortedData = () => {
     let filteredData = [...filteredServiceUptime];
 
@@ -270,8 +178,7 @@ export default function Page() {
         (item) =>
           item.items.toLowerCase().includes(search.toLowerCase()) ||
           item.gross.toString().includes(search) ||
-          item.profit.toString().includes(search) ||
-          (item.date && item.date.includes(search))
+          item.profit.toString().includes(search)
       );
     }
 
@@ -291,57 +198,7 @@ export default function Page() {
       });
     }
 
-    // Apply date range filter
-    if (sort) {
-      const today = new Date();
-      let startDate: Date | null = null;
-      let endDate: Date | null = null;
-      switch (sort) {
-        case "yesterday":
-          startDate = new Date(today);
-          startDate.setDate(today.getDate() - 1);
-          endDate = new Date(startDate);
-          break;
-        case "lastweek":
-          startDate = new Date(today);
-          startDate.setDate(today.getDate() - 7);
-          endDate = today;
-          break;
-        case "lastmonth":
-          startDate = new Date(today);
-          startDate.setMonth(today.getMonth() - 1);
-          endDate = today;
-          break;
-        case "lastyear":
-          startDate = new Date(today);
-          startDate.setFullYear(today.getFullYear() - 1);
-          endDate = today;
-          break;
-        case "custom":
-          if (customDateRange.start && customDateRange.end) {
-            startDate = new Date(customDateRange.start);
-            endDate = new Date(customDateRange.end);
-          }
-          break;
-        default:
-          break;
-      }
-      if (startDate && endDate) {
-        filteredData = filteredData.filter((item) => {
-          const itemDate = new Date(item.date);
-          // For 'yesterday', match only that day
-          if (sort === "yesterday") {
-            return (
-              itemDate.getFullYear() === startDate.getFullYear() &&
-              itemDate.getMonth() === startDate.getMonth() &&
-              itemDate.getDate() === startDate.getDate()
-            );
-          }
-          // For ranges, inclusive
-          return itemDate >= startDate && itemDate <= endDate;
-        });
-      }
-    }
+    // No client-side date filtering
 
     return filteredData;
   };
@@ -405,72 +262,7 @@ export default function Page() {
 
         <div className="w-full md:w-auto flex gap-4">
           {/* Filter by dropdown */}
-          <div className="relative filter-dropdown">
-            <button
-              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-              className="w-full md:w-auto px-4 py-2 border border-[#E9E9E9] rounded-md bg-white text-[#353131] text-sm font-Poppins focus:outline-none focus:ring-2 focus:ring-[#F25E26] flex items-center justify-between min-w-[120px]"
-            >
-              Filter by {filterBy.length > 0 && `(${filterBy.length})`}
-              <svg
-                className={`ml-2 h-4 w-4 transition-transform ${
-                  showFilterDropdown ? "rotate-180" : ""
-                }`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-
-            {showFilterDropdown && (
-              <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-10">
-                <div className="p-2 space-y-2">
-                  {[
-                    { key: "items", label: "Items" },
-                  ].map((filter) => (
-                    <label
-                      key={filter.key}
-                      className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={filterBy.includes(filter.key)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setFilterBy([...filterBy, filter.key]);
-                          } else {
-                            setFilterBy(
-                              filterBy.filter((f) => f !== filter.key)
-                            );
-                          }
-                        }}
-                        className="rounded border-gray-300 text-[#F25E26] focus:ring-[#F25E26]"
-                      />
-                      <span className="text-sm text-[#353131]">
-                        {filter.label}
-                      </span>
-                    </label>
-                  ))}
-                  {filterBy.length > 0 && (
-                    <div className="pt-2 border-t border-gray-200">
-                      <button
-                        onClick={() => setFilterBy([])}
-                        className="w-full text-left px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded"
-                      >
-                        Clear all filters
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+       
 
           {/* Sort by dropdown */}
           <div className="relative sort-dropdown">
@@ -500,10 +292,9 @@ export default function Page() {
               <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-10">
                 <div className="p-2 space-y-1">
                   {[
-                    { value: "yesterday", label: "Yesterday" },
-                    { value: "lastweek", label: "Last Week" },
-                    { value: "lastmonth", label: "Last Month" },
-                    { value: "lastyear", label: "Last Year" },
+                    { value: "last_week", label: "Last Week" },
+                    { value: "last_month", label: "Last Month" },
+                    { value: "last_year", label: "Last Year" },
                     { value: "custom", label: "Custom" },
                   ].map((option) => (
                     <button
