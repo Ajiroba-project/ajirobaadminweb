@@ -815,9 +815,16 @@ const ReportsPageContent = () => {
           <div className="flex justify-end mb-6">
             <span
               className="text-[#F25E26] text-sm cursor-pointer"
-              onClick={() =>
-                router.push("/dashboard/rechargetransactionreport")
-              }
+              onClick={() => {
+                const tabToType: Record<string, string> = {
+                  Airtime: 'airtime',
+                  Data: 'data',
+                  Electricity: 'electricity',
+                  Cable: 'cable',
+                };
+                const typeParam = tabToType[currentTab] || 'airtime';
+                router.push(`/dashboard/rechargetransactionreport?type=${typeParam}`);
+              }}
             >
               See More &gt;
             </span>
