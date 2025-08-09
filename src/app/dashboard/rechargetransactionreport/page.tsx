@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { ProfileHeader } from "@/app/components/Header";
 import { useRouter, useSearchParams } from "next/navigation";
 import Cookies from "js-cookie";
@@ -7,14 +7,19 @@ import Link from "next/link";
 import Image from "next/image";
 import Brand from "@/app/asset/logo.svg";
 import axios from "axios";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { DownloadModal } from "@/app/components/DownloadModal";
 import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
 import { ReportsTable } from "../components/ReportsTable";
+import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 
-export default function Page() {
+
+function RechargeReportPage() {
   const router = useRouter();
+  useAuthMiddleware(router);
   const searchParams = useSearchParams();
+  const token = Cookies.get("token") || "";
 
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState("");
@@ -26,14 +31,6 @@ export default function Page() {
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [currentTime, setCurrentTime] = useState<string>("");
 
-  // API driven state
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
-  const [rows, setRows] = useState<any[]>([]);
-  const [totalSummary, setTotalSummary] = useState<{ total_amount?: number; total_commission?: number } | null>(null);
-  const [count, setCount] = useState<number>(0);
-  const [nextUrl, setNextUrl] = useState<string | null>(null);
-  const [prevUrl, setPrevUrl] = useState<string | null>(null);
   const [serverPage, setServerPage] = useState<number>(1);
 
   useEffect(() => {
@@ -115,71 +112,68 @@ export default function Page() {
     return params.toString();
   };
 
-  const token = Cookies.get("token") || "";
+  // token already ensured above
 
-  // Fetch data from API
-  const fetchData = async (url?: string) => {
-    try {
-      setLoading(true);
-      setError("");
-      const finalUrl = url ? url : `${baseUrl}?${buildQueryString()}`;
-      const resp = await axios.get(finalUrl, {
-        headers: { Authorization: `Token ${token}` },
-      });
+  // React Query fetcher with Suspense
+  const fetchRechargeReport = async () => {
+    const finalUrl = `${baseUrl}?${buildQueryString()}`;
+    const resp = await axios.get(finalUrl, { headers: { Authorization: `Token ${token}` } });
+    const root = resp.data || {};
+    const wrapper = root.results ? root : { count: root.count, next: root.next, previous: root.previous, results: root };
+    const results = wrapper.results || {};
 
-      // Response can be either {count,next,previous,results:{...}} or directly {...}
-      const root = resp.data || {};
-      const wrapper = root.results ? root : { count: root.count, next: root.next, previous: root.previous, results: root };
-      const results = wrapper.results || {};
+    const dataArray: any[] = Array.isArray(results.data) ? results.data : [];
+    const rows = dataArray.map((item: any, idx: number) => {
+      const core = item.airtime_transactions || item.data_transactions || item.electricity_transactions || item.electicity_transactions || item.cable_transactions || item;
+      return {
+        id: item.id || idx,
+        date: core?.date ?? "N/A",
+        time: core?.time ?? "N/A",
+        biller: core?.biller ?? "N/A",
+        amount: Number(core?.amount ?? 0),
+        commission: core?.commission ?? "0%",
+        commission_profit: Number(core?.commission_profit ?? 0),
+        phone_number: core?.phone_number ?? "N/A",
+        channel: core?.channel ?? "N/A",
+        token: core?.token,
+        meter_type: core?.meter_type,
+        iuc_number: core?.iuc_number,
+      };
+    });
 
-      setCount(wrapper.count || (results.data ? results.data.length : 0) || 0);
-      setNextUrl(wrapper.next || null);
-      setPrevUrl(wrapper.previous || null);
-      // Header datetime
-      if (results.current_datetime) setCurrentTime(results.current_datetime);
-
-      // Totals
-      if (results.total) setTotalSummary(results.total);
-      else setTotalSummary(null);
-
-      // Map rows
-      const dataArray: any[] = Array.isArray(results.data) ? results.data : [];
-      const flatRows = dataArray.map((item: any, idx: number) => {
-        const core = item.airtime_transactions || item.data_transactions || item.electricity_transactions || item.electicity_transactions || item.cable_transactions || item; // handle possible key typos
-        return {
-          id: item.id || idx,
-          date: core?.date ?? "N/A",
-          time: core?.time ?? "N/A",
-          biller: core?.biller ?? "N/A",
-          amount: Number(core?.amount ?? 0),
-          commission: core?.commission ?? "0%",
-          commission_profit: Number(core?.commission_profit ?? 0),
-          phone_number: core?.phone_number ?? "N/A",
-          channel: core?.channel ?? "N/A",
-          token: core?.token,
-          meter_type: core?.meter_type,
-          iuc_number: core?.iuc_number,
-        };
-      });
-      setRows(flatRows);
-    } catch (e: any) {
-      setError(e?.response?.data?.message || e?.message || "Failed to load data");
-    } finally {
-      setLoading(false);
-    }
+    return {
+      rows,
+      count: wrapper.count || (results.data ? results.data.length : 0) || 0,
+      next: wrapper.next || null,
+      previous: wrapper.previous || null,
+      current_datetime: results.current_datetime,
+      total: results.total || null,
+    } as const;
   };
 
-  // Trigger fetch on param changes
-  useEffect(() => {
-    setServerPage(1);
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [typeParam]);
+  type RechargeQueryResult = {
+    rows: any[];
+    count: number;
+    next: string | null;
+    previous: string | null;
+    current_datetime?: string;
+    total: { total_amount?: number; total_commission?: number } | null;
+  };
+
+  const { data: queryData } = useSuspenseQuery<RechargeQueryResult>({
+    queryKey: ["recharge-report", typeParam, dateFilter, customDateRange.start, customDateRange.end, serverPage],
+    queryFn: fetchRechargeReport,
+  });
 
   useEffect(() => {
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateFilter, customDateRange.start, customDateRange.end, serverPage]);
+    const anyData: any = queryData as any;
+    if (anyData?.current_datetime) setCurrentTime(anyData.current_datetime);
+  }, [queryData]);
+
+  // Reset to page 1 when type changes
+  useEffect(() => {
+    setServerPage(1);
+  }, [typeParam]);
 
   // Table columns based on type
   const columnsRecharge = useMemo(() => {
@@ -210,7 +204,8 @@ export default function Page() {
 
   // Filter the data locally (search + filterBy)
   const getFilteredAndSortedData = () => {
-    let filteredData = [...rows];
+    const anyData: any = queryData as any;
+    let filteredData = [...((anyData?.rows) || [])];
 
     // Apply search filter
     if (search) {
@@ -247,8 +242,9 @@ export default function Page() {
   const displayData = getFilteredAndSortedData();
 
   // Totals for summary row (fallback to client calc if server not provided)
-  const totalAmount = totalSummary?.total_amount ?? displayData.reduce((sum, item) => sum + (item.amount || 0), 0);
-  const totalCommission = totalSummary?.total_commission ?? displayData.reduce((sum, item) => sum + (item.commission_profit || 0), 0);
+  const anyTotals: any = queryData as any;
+  const totalAmount = anyTotals?.total?.total_amount ?? displayData.reduce((sum, item) => sum + (item.amount || 0), 0);
+  const totalCommission = anyTotals?.total?.total_commission ?? displayData.reduce((sum, item) => sum + (item.commission_profit || 0), 0);
 
   // Download handlers (PDF/XLS)
   const handleDownloadPDF = async () => {
@@ -564,43 +560,35 @@ export default function Page() {
           <span className="text-xs font-normal">({currentTime})</span>
         </div>
         <div className="overflow-x-auto">
-          {loading ? (
-            <div className="w-full py-8 text-center text-sm text-gray-600">Loading...</div>
-          ) : error ? (
-            <div className="w-full py-8 text-center text-sm text-red-600">{error}</div>
-          ) : (
-            <ReportsTable 
-              data={displayData} 
-              columns={columnsRecharge as any} 
-              showPagination={false}
-              emptyRowCount={8}
-            />
-          )}
+          <ReportsTable 
+            data={displayData} 
+            columns={columnsRecharge as any} 
+            showPagination={false}
+            emptyRowCount={8}
+          />
         </div>
         {/* Server pagination controls */}
         <div className="flex items-center justify-between px-4 md:px-8 py-4">
           <button
-            disabled={!prevUrl || loading}
+            disabled={!((queryData as any)?.previous)}
             onClick={() => {
-              if (prevUrl) {
+              if ((queryData as any)?.previous) {
                 setServerPage((p) => Math.max(1, p - 1));
-                fetchData(prevUrl);
               }
             }}
-            className={`px-4 py-2 rounded-md text-sm ${prevUrl ? 'bg-gray-100 text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+            className={`px-4 py-2 rounded-md text-sm ${(queryData as any)?.previous ? 'bg-gray-100 text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
           >
             Previous
           </button>
-          <div className="text-xs text-gray-600">{count ? `Total Records: ${count}` : ''}</div>
+          <div className="text-xs text-gray-600">{(queryData as any)?.count ? `Total Records: ${(queryData as any).count}` : ''}</div>
           <button
-            disabled={!nextUrl || loading}
+            disabled={!((queryData as any)?.next)}
             onClick={() => {
-              if (nextUrl) {
+              if ((queryData as any)?.next) {
                 setServerPage((p) => p + 1);
-                fetchData(nextUrl);
               }
             }}
-            className={`px-4 py-2 rounded-md text-sm ${nextUrl ? 'bg-gray-100 text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+            className={`px-4 py-2 rounded-md text-sm ${(queryData as any)?.next ? 'bg-gray-100 text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
           >
             Next
           </button>
@@ -639,3 +627,11 @@ export default function Page() {
     </section>
   );
 } 
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div className="w-full py-8 text-center text-sm text-gray-600">Loading...</div>}>
+      <RechargeReportPage />
+    </Suspense>
+  );
+}
