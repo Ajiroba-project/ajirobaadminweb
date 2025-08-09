@@ -1,21 +1,27 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { ProfileHeader } from "@/app/components/Header";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Cookies from "js-cookie";
 import Link from "next/link";
 import Image from "next/image";
 import Brand from "@/app/asset/logo.svg";
+import axios from "axios";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { DownloadModal } from "@/app/components/DownloadModal";
 import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
 import { ReportsTable } from "../components/ReportsTable";
+import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 
-export default function Page() {
+
+function RechargeReportPage() {
   const router = useRouter();
+  useAuthMiddleware(router);
+  const searchParams = useSearchParams();
+  const token = Cookies.get("token") || "";
 
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [filterBy, setFilterBy] = useState<string[]>([]);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -24,8 +30,8 @@ export default function Page() {
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [currentTime, setCurrentTime] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(10);
+
+  const [serverPage, setServerPage] = useState<number>(1);
 
   useEffect(() => {
     setCurrentTime(
@@ -55,81 +61,158 @@ export default function Page() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Recharge Transaction Report Data (from image)
-  const rechargeData = [
-    {
-      date: "7-Aug-2024",
-      time: "6:29 PM",
-      biller: "MTN",
-      amountRecharge: 2000,
-      commission: "2%",
-      commissionProfit: 40.00,
-      customerPhone: "081346719865",
-      paymentChannel: "Wallet",
-      id: 1,
-    },
-    {
-      date: "17-Aug-2024",
-      time: "6:29 AM",
-      biller: "SMOBILE",
-      amountRecharge: 2000,
-      commission: "3%",
-      commissionProfit: 60.00,
-      customerPhone: "081246719865",
-      paymentChannel: "Bank Transfer",
-      id: 2,
-    },
-    {
-      date: "23-Aug-2024",
-      time: "8:29 PM",
-      biller: "AIRTEL",
-      amountRecharge: 2000,
-      commission: "4%",
-      commissionProfit: 80.00,
-      customerPhone: "081646719865",
-      paymentChannel: "Ajiroba Point",
-      id: 3,
-    },
-    {
-      date: "7-Sep-2024",
-      time: "6:29 PM",
-      biller: "GLO",
-      amountRecharge: 2000,
-      commission: "4%",
-      commissionProfit: 80.00,
-      customerPhone: "081046719865",
-      paymentChannel: "Wallet",
-      id: 4,
-    },
-  ];
+  // Determine report type from query param
+  const typeParam = (searchParams.get("type") || "airtime").toLowerCase();
+  const typeLabel = useMemo(() => {
+    if (typeParam === "data") return "Data";
+    if (typeParam === "electricity") return "Electricity";
+    if (typeParam === "cable") return "Cable Subscription";
+    return "Airtime";
+  }, [typeParam]);
 
-  // Table columns for Recharge Transaction Report
-  const columnsRecharge = [
-    {
-      key: "index",
-      label: "S/N",
-      render: (_row: any, idx: number) => (currentPage - 1) * pageSize + idx + 1,
-    },
-    { key: "date", label: "DATE" },
-    { key: "time", label: "TIME" },
-    { key: "biller", label: "BILLER" },
-    { key: "amountRecharge", label: "AMOUNT RECHARGE (NGN)", sum: true },
-    { key: "commission", label: "COMMISSION" },
-    { key: "commissionProfit", label: "COMMISSION/PROFIT (NGN)", sum: true },
-    { key: "customerPhone", label: "CUSTOMER PHONE NUMBER" },
-    { key: "paymentChannel", label: "PAYMENT CHANNEL" },
-  ];
+  // Build API base URL based on type
+  const baseUrl = useMemo(() => {
+    switch (typeParam) {
+      case "airtime":
+        return "https://staging.ajiroba.ng/v1/admin/airtime_transaction_report/";
+      case "data":
+        return "https://staging.ajiroba.ng/v1/admin/data_transaction_report/";
+      case "electricity":
+        return "https://staging.ajiroba.ng/v1/admin/electricity_transaction_report/";
+      case "cable":
+        return "https://staging.ajiroba.ng/v1/admin/cable_transaction_report/";
+      default:
+        return "https://staging.ajiroba.ng/v1/admin/airtime_transaction_report/";
+    }
+  }, [typeParam]);
 
-  // Filter and sort the data
+  // Compute filter params for API
+  const buildQueryString = () => {
+    const params = new URLSearchParams();
+    if (dateFilter === "last_week" || dateFilter === "last_month" || dateFilter === "last_year") {
+      params.append("filter", dateFilter);
+    } else if (dateFilter === "custom") {
+      if (customDateRange.start && customDateRange.end) {
+        params.append("filter", "custom");
+        params.append("start_date", customDateRange.start);
+        params.append("end_date", customDateRange.end);
+      }
+    } else if (dateFilter === "yesterday") {
+      const y = new Date();
+      y.setDate(y.getDate() - 1);
+      const yyyy = y.getFullYear();
+      const mm = String(y.getMonth() + 1).padStart(2, "0");
+      const dd = String(y.getDate()).padStart(2, "0");
+      const dstr = `${yyyy}-${mm}-${dd}`;
+      params.append("filter", "custom");
+      params.append("start_date", dstr);
+      params.append("end_date", dstr);
+    }
+    params.append("page", String(serverPage));
+    return params.toString();
+  };
+
+  // token already ensured above
+
+  // React Query fetcher with Suspense
+  const fetchRechargeReport = async () => {
+    const finalUrl = `${baseUrl}?${buildQueryString()}`;
+    const resp = await axios.get(finalUrl, { headers: { Authorization: `Token ${token}` } });
+    const root = resp.data || {};
+    const wrapper = root.results ? root : { count: root.count, next: root.next, previous: root.previous, results: root };
+    const results = wrapper.results || {};
+
+    const dataArray: any[] = Array.isArray(results.data) ? results.data : [];
+    const rows = dataArray.map((item: any, idx: number) => {
+      const core = item.airtime_transactions || item.data_transactions || item.electricity_transactions || item.electicity_transactions || item.cable_transactions || item;
+      return {
+        id: item.id || idx,
+        date: core?.date ?? "N/A",
+        time: core?.time ?? "N/A",
+        biller: core?.biller ?? "N/A",
+        amount: Number(core?.amount ?? 0),
+        commission: core?.commission ?? "0%",
+        commission_profit: Number(core?.commission_profit ?? 0),
+        phone_number: core?.phone_number ?? "N/A",
+        channel: core?.channel ?? "N/A",
+        token: core?.token,
+        meter_type: core?.meter_type,
+        iuc_number: core?.iuc_number,
+      };
+    });
+
+    return {
+      rows,
+      count: wrapper.count || (results.data ? results.data.length : 0) || 0,
+      next: wrapper.next || null,
+      previous: wrapper.previous || null,
+      current_datetime: results.current_datetime,
+      total: results.total || null,
+    } as const;
+  };
+
+  type RechargeQueryResult = {
+    rows: any[];
+    count: number;
+    next: string | null;
+    previous: string | null;
+    current_datetime?: string;
+    total: { total_amount?: number; total_commission?: number } | null;
+  };
+
+  const { data: queryData } = useSuspenseQuery<RechargeQueryResult>({
+    queryKey: ["recharge-report", typeParam, dateFilter, customDateRange.start, customDateRange.end, serverPage],
+    queryFn: fetchRechargeReport,
+  });
+
+  useEffect(() => {
+    const anyData: any = queryData as any;
+    if (anyData?.current_datetime) setCurrentTime(anyData.current_datetime);
+  }, [queryData]);
+
+  // Reset to page 1 when type changes
+  useEffect(() => {
+    setServerPage(1);
+  }, [typeParam]);
+
+  // Table columns based on type
+  const columnsRecharge = useMemo(() => {
+    const base = [
+      {
+        key: "index",
+        label: "S/N",
+        render: (_row: any, idx: number) => idx + 1,
+      },
+      { key: "date", label: "DATE" },
+      { key: "time", label: "TIME" },
+      { key: "biller", label: "BILLER" },
+      { key: "amount", label: "AMOUNT (NGN)", sum: true },
+      { key: "commission", label: "COMMISSION" },
+      { key: "commission_profit", label: "COMMISSION/PROFIT (NGN)", sum: true },
+      { key: "phone_number", label: "CUSTOMER PHONE NUMBER" },
+      { key: "channel", label: "PAYMENT CHANNEL" },
+    ];
+    if (typeParam === "electricity") {
+      base.splice(8, 0, { key: "meter_type", label: "METER TYPE" } as any);
+      base.splice(8, 0, { key: "token", label: "TOKEN" } as any);
+    }
+    if (typeParam === "cable") {
+      base.splice(8, 0, { key: "iuc_number", label: "IUC NUMBER" } as any);
+    }
+    return base;
+  }, [typeParam]);
+
+  // Filter the data locally (search + filterBy)
   const getFilteredAndSortedData = () => {
-    let filteredData = [...rechargeData];
+    const anyData: any = queryData as any;
+    let filteredData = [...((anyData?.rows) || [])];
 
     // Apply search filter
     if (search) {
       filteredData = filteredData.filter(item =>
-        item.biller.toLowerCase().includes(search.toLowerCase()) ||
-        item.customerPhone.includes(search) ||
-        item.paymentChannel.toLowerCase().includes(search.toLowerCase()) ||
+        (item.biller || "").toLowerCase().includes(search.toLowerCase()) ||
+        (item.phone_number || "").includes(search) ||
+        (item.channel || "").toLowerCase().includes(search.toLowerCase()) ||
         item.date.includes(search) ||
         item.time.includes(search)
       );
@@ -143,7 +226,7 @@ export default function Page() {
             case 'biller':
               return search ? item.biller.toLowerCase().includes(search.toLowerCase()) : true;
             case 'paymentChannel':
-              return search ? item.paymentChannel.toLowerCase().includes(search.toLowerCase()) : true;
+              return search ? (item.channel || "").toLowerCase().includes(search.toLowerCase()) : true;
             case 'commission':
               return search ? item.commission.includes(search) : true;
             default:
@@ -153,82 +236,15 @@ export default function Page() {
       });
     }
 
-    // Apply date filtering
-    if (dateFilter) {
-      const now = new Date();
-      let startDate: Date | null = null;
-      let endDate: Date | null = null;
-      
-      switch (dateFilter) {
-        case 'yesterday':
-          const yesterday = new Date(now);
-          yesterday.setDate(yesterday.getDate() - 1);
-          startDate = new Date(yesterday.setHours(0, 0, 0, 0));
-          endDate = new Date(yesterday.setHours(23, 59, 59, 999));
-          break;
-        case 'last_week':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          endDate = now;
-          break;
-        case 'last_month':
-          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-          endDate = now;
-          break;
-        case 'last_year':
-          const currentYear = now.getFullYear();
-          const previousYear = currentYear - 1;
-          startDate = new Date(previousYear, 0, 1);
-          endDate = new Date(previousYear, 11, 31, 23, 59, 59, 999);
-          break;
-        case 'custom':
-          if (customDateRange.start && customDateRange.end) {
-            startDate = new Date(customDateRange.start);
-            endDate = new Date(customDateRange.end);
-            endDate.setHours(23, 59, 59, 999);
-          }
-          break;
-        default:
-          return filteredData;
-      }
-      
-      if (startDate && endDate) {
-        filteredData = filteredData.filter(item => {
-          if (item.date === "N/A") return false;
-          const itemDate = new Date(item.date);
-          return itemDate >= startDate! && itemDate <= endDate!;
-        });
-      }
-    }
-
-    // Apply sorting
-    if (sort) {
-      filteredData.sort((a, b) => {
-        switch (sort) {
-          case 'date':
-            if (a.date === "N/A" && b.date === "N/A") return 0;
-            if (a.date === "N/A") return 1;
-            if (b.date === "N/A") return -1;
-            return new Date(b.date).getTime() - new Date(a.date).getTime();
-          case 'amountRecharge':
-            return b.amountRecharge - a.amountRecharge;
-          case 'commissionProfit':
-            return b.commissionProfit - a.commissionProfit;
-          case 'biller':
-            return a.biller.localeCompare(b.biller);
-          default:
-            return 0;
-        }
-      });
-    }
-
     return filteredData;
   };
 
   const displayData = getFilteredAndSortedData();
 
-  // Totals for summary row
-  const totalAmountRecharge = displayData.reduce((sum, item) => sum + (item.amountRecharge || 0), 0);
-  const totalCommissionProfit = displayData.reduce((sum, item) => sum + (item.commissionProfit || 0), 0);
+  // Totals for summary row (fallback to client calc if server not provided)
+  const anyTotals: any = queryData as any;
+  const totalAmount = anyTotals?.total?.total_amount ?? displayData.reduce((sum, item) => sum + (item.amount || 0), 0);
+  const totalCommission = anyTotals?.total?.total_commission ?? displayData.reduce((sum, item) => sum + (item.commission_profit || 0), 0);
 
   // Download handlers (PDF/XLS)
   const handleDownloadPDF = async () => {
@@ -236,16 +252,18 @@ export default function Page() {
       date: item.date,
       time: item.time,
       biller: item.biller,
-      amountRecharge: item.amountRecharge,
+      amount: item.amount,
       commission: item.commission,
-      commissionProfit: item.commissionProfit,
-      customerPhone: item.customerPhone,
-      paymentChannel: item.paymentChannel,
+      commission_profit: item.commission_profit,
+      phone_number: item.phone_number,
+      channel: item.channel,
+      ...(typeParam === 'electricity' ? { token: item.token, meter_type: item.meter_type } : {}),
+      ...(typeParam === 'cable' ? { iuc_number: item.iuc_number } : {}),
     }));
     setShowDownloadModal(false);
     await exportToPDF(exportData, {
-      title: "Recharge Transaction Report - Airtime",
-      fileName: "Recharge_Transaction_Report_Airtime",
+      title: `Recharge Transaction Report - ${typeLabel}`,
+      fileName: `Recharge_Transaction_Report_${typeLabel.replace(/\s+/g, '_')}`,
     });
   };
 
@@ -254,29 +272,39 @@ export default function Page() {
       date: item.date,
       time: item.time,
       biller: item.biller,
-      amountRecharge: item.amountRecharge,
+      amount: item.amount,
       commission: item.commission,
-      commissionProfit: item.commissionProfit,
-      customerPhone: item.customerPhone,
-      paymentChannel: item.paymentChannel,
+      commission_profit: item.commission_profit,
+      phone_number: item.phone_number,
+      channel: item.channel,
+      ...(typeParam === 'electricity' ? { token: item.token, meter_type: item.meter_type } : {}),
+      ...(typeParam === 'cable' ? { iuc_number: item.iuc_number } : {}),
     }));
+    const baseColumns = [
+      { key: 'date', header: 'Date', width: 15 },
+      { key: 'time', header: 'Time', width: 12 },
+      { key: 'biller', header: 'Biller', width: 15 },
+      { key: 'amount', header: 'Amount (NGN)', width: 20 },
+      { key: 'commission', header: 'Commission', width: 12 },
+      { key: 'commission_profit', header: 'Commission/Profit (NGN)', width: 20 },
+      { key: 'phone_number', header: 'Customer Phone Number', width: 20 },
+      { key: 'channel', header: 'Payment Channel', width: 18 },
+    ];
+    if (typeParam === 'electricity') {
+      baseColumns.splice(3, 0, { key: 'token', header: 'Token', width: 25 } as any);
+      baseColumns.splice(4, 0, { key: 'meter_type', header: 'Meter Type', width: 12 } as any);
+    }
+    if (typeParam === 'cable') {
+      baseColumns.splice(3, 0, { key: 'iuc_number', header: 'IUC Number', width: 18 } as any);
+    }
     exportToXLS(exportData, {
-      title: "Recharge Transaction Report - Airtime",
-      fileName: "Recharge_Transaction_Report_Airtime",
-      columns: [
-        { key: 'date', header: 'Date', width: 15 },
-        { key: 'time', header: 'Time', width: 12 },
-        { key: 'biller', header: 'Biller', width: 15 },
-        { key: 'amountRecharge', header: 'Amount Recharge (NGN)', width: 20 },
-        { key: 'commission', header: 'Commission', width: 12 },
-        { key: 'commissionProfit', header: 'Commission/Profit (NGN)', width: 20 },
-        { key: 'customerPhone', header: 'Customer Phone Number', width: 20 },
-        { key: 'paymentChannel', header: 'Payment Channel', width: 18 },
-      ],
+      title: `Recharge Transaction Report - ${typeLabel}`,
+      fileName: `Recharge_Transaction_Report_${typeLabel.replace(/\s+/g, '_')}`,
+      columns: baseColumns as any,
       summaryRows: [
         { label: 'TOTAL', value: '' },
-        { label: 'Amount Recharge', value: totalAmountRecharge.toLocaleString() },
-        { label: 'Commission/Profit', value: totalCommissionProfit.toFixed(2) },
+        { label: 'Amount', value: Number(totalAmount).toLocaleString() },
+        { label: 'Commission/Profit', value: Number(totalCommission).toFixed(2) },
       ],
     });
     setShowDownloadModal(false);
@@ -310,9 +338,7 @@ export default function Page() {
             <h1 className="text-[#111111] text-lg font-Poppins font-semibold">
               Recharge Transaction Report
             </h1>
-            <p className="text-[#666666] text-sm font-Poppins">
-              Airtime
-            </p>
+            <p className="text-[#666666] text-sm font-Poppins">{typeLabel}</p>
           </div>
           <button
             onClick={() => setShowDownloadModal(true)}
@@ -536,20 +562,43 @@ export default function Page() {
         <div className="overflow-x-auto">
           <ReportsTable 
             data={displayData} 
-            columns={columnsRecharge} 
-            currentPage={currentPage}
-            pageSize={pageSize}
-            onPageChange={setCurrentPage}
-            showPagination={true}
+            columns={columnsRecharge as any} 
+            showPagination={false}
             emptyRowCount={8}
           />
+        </div>
+        {/* Server pagination controls */}
+        <div className="flex items-center justify-between px-4 md:px-8 py-4">
+          <button
+            disabled={!((queryData as any)?.previous)}
+            onClick={() => {
+              if ((queryData as any)?.previous) {
+                setServerPage((p) => Math.max(1, p - 1));
+              }
+            }}
+            className={`px-4 py-2 rounded-md text-sm ${(queryData as any)?.previous ? 'bg-gray-100 text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+          >
+            Previous
+          </button>
+          <div className="text-xs text-gray-600">{(queryData as any)?.count ? `Total Records: ${(queryData as any).count}` : ''}</div>
+          <button
+            disabled={!((queryData as any)?.next)}
+            onClick={() => {
+              if ((queryData as any)?.next) {
+                setServerPage((p) => p + 1);
+              }
+            }}
+            className={`px-4 py-2 rounded-md text-sm ${(queryData as any)?.next ? 'bg-gray-100 text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+          >
+            Next
+          </button>
         </div>
         {displayData && displayData.length > 0 && (
           <div className="flex flex-col items-center py-4">
             <div className="text-sm text-gray-600 mb-2">
-              Total: {displayData.length} records
+              Showing: {displayData.length} records
               {(search || filterBy.length > 0 || dateFilter) &&
-                ` | Filtered: ${displayData.length} records`}
+                ` | Filtered (current page): ${displayData.length} records`}
             </div>
             {(search || filterBy.length > 0 || dateFilter) && (
               <button
@@ -558,6 +607,7 @@ export default function Page() {
                   setFilterBy([]);
                   setDateFilter('');
                   setCustomDateRange({ start: '', end: '' });
+                  setServerPage(1);
                 }}
                 className="text-xs text-[#F25E26] hover:underline"
               >
@@ -577,3 +627,11 @@ export default function Page() {
     </section>
   );
 } 
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div className="w-full py-8 text-center text-sm text-gray-600">Loading...</div>}>
+      <RechargeReportPage />
+    </Suspense>
+  );
+}

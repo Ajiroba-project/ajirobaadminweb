@@ -1,9 +1,9 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useStore } from "@/store/nav-store";
 
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
-import { useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import PageLayout from "@/app/components/Layout/PageLayout";
 import { Doughnut } from "react-chartjs-2";
 import {
@@ -33,9 +33,10 @@ import { redirect } from 'next/navigation'
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale);
 
-const Page = () => {
+const ReportsPageContent = () => {
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const formatNaira = (value: number) => {
     if (typeof value !== "number") return "₦0.00";
@@ -139,6 +140,14 @@ const Page = () => {
     useState(false);
   const [showCustomerStatistics, setShowCustomerStatistics] = useState(false);
   const [showRaffleDrawReport, setShowRaffleDrawReport] = useState(false);
+
+  // If navigated with ?showCustomerStatistics=1, open that section by default
+  useEffect(() => {
+    const shouldShow = searchParams.get("showCustomerStatistics");
+    if (shouldShow) {
+      setShowCustomerStatistics(true);
+    }
+  }, [searchParams]);
 
   // Modal content: two large, centered buttons
   const modalButtons = (
@@ -806,9 +815,16 @@ const Page = () => {
           <div className="flex justify-end mb-6">
             <span
               className="text-[#F25E26] text-sm cursor-pointer"
-              onClick={() =>
-                router.push("/dashboard/rechargetransactionreport")
-              }
+              onClick={() => {
+                const tabToType: Record<string, string> = {
+                  Airtime: 'airtime',
+                  Data: 'data',
+                  Electricity: 'electricity',
+                  Cable: 'cable',
+                };
+                const typeParam = tabToType[currentTab] || 'airtime';
+                router.push(`/dashboard/rechargetransactionreport?type=${typeParam}`);
+              }}
             >
               See More &gt;
             </span>
@@ -1255,7 +1271,9 @@ const Page = () => {
     return (
       <section>
         <PageLayout>
-          <RegularDealsReport />
+          <Suspense fallback={<Loading />}>
+            <RegularDealsReport />
+          </Suspense>
         </PageLayout>
       </section>
     );
@@ -1265,7 +1283,9 @@ const Page = () => {
     return (
       <section>
         <PageLayout>
-          <AuctionCustomersReport />
+          <Suspense fallback={<Loading />}>
+            <AuctionCustomersReport />
+          </Suspense>
         </PageLayout>
       </section>
     );
@@ -1275,7 +1295,9 @@ const Page = () => {
     return (
       <section>
         <PageLayout>
-          <RechargeTransactionReport />
+          <Suspense fallback={<Loading />}>
+            <RechargeTransactionReport />
+          </Suspense>
         </PageLayout>
       </section>
     );
@@ -1285,7 +1307,9 @@ const Page = () => {
     return (
       <section>
         <PageLayout>
-          <CustomerStatisticsReport />
+          <Suspense fallback={<Loading />}>
+            <CustomerStatisticsReport />
+          </Suspense>
         </PageLayout>
       </section>
     );
@@ -1295,7 +1319,9 @@ const Page = () => {
     return (
       <section>
         <PageLayout>
-          <RaffleDrawReport />
+          <Suspense fallback={<Loading />}>
+            <RaffleDrawReport />
+          </Suspense>
         </PageLayout>
       </section>
     );
@@ -1308,6 +1334,7 @@ const Page = () => {
   return (
     <section>
       <PageLayout>
+        <Suspense fallback={<Loading />}>
         <div className="w-full px-4 md:w-5/6 md:mx-auto max-w-7xl overflow-hidden">
           <section
             className={` ${
@@ -1762,9 +1789,16 @@ const Page = () => {
           handleCancel={() => setOpenReport(null)}
           content={modalButtons}
         />
+        </Suspense>
       </PageLayout>
     </section>
   );
 };
+
+const Page = () => (
+  <Suspense fallback={<Loading />}>
+    <ReportsPageContent />
+  </Suspense>
+);
 
 export default Page;

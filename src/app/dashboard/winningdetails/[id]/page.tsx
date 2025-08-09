@@ -18,6 +18,7 @@ import { FaSearch } from "react-icons/fa";
 import ModalComponent from "@/app/components/ModalComponent";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 
+
 export default function ProductDetailsAuctionPage() {
     const params = useParams();
     const router = useRouter();
@@ -102,7 +103,7 @@ const {
     const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
     const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
-    if (prodLoading || userLoading) {
+    if (prodLoading || userLoading || winnerLoading) {
         return <Loading />;
     }
 
