@@ -92,7 +92,7 @@ function Page({ params }: PageProps) {
           prodInfo?.data?.status === "failed" ? (
             <div className="flex flex-col items-center justify-center h-screen">
               <h1 className="text-[#E84526] text-lg">{prodInfo?.data?.message}</h1>
-              <h1 onClick={() => router.back()} className="text-[#FFFFFF] mt-2 cursor-pointer rounded-lg border bg-gray-600 p-2 font-Poppins text-sm ">Back</h1>
+              <h1 onClick={() => router.back()} className=" cursor-pointer text-[#FFFFFF] mt-2 cursor-pointer rounded-lg border bg-gray-600 p-2 font-Poppins text-sm ">Back</h1>
             </div>
           )
 
@@ -175,7 +175,7 @@ function Page({ params }: PageProps) {
                     </div>
 
                     <div>
-                      <p className=" text-base font-semibold">N {parseFloat(prodInfo?.data?.data?.amount)}</p>
+                      <p className=" text-base font-semibold">₦ {parseFloat(prodInfo?.data?.data?.amount)}</p>
                     </div>
                   </div>
 
@@ -186,7 +186,7 @@ function Page({ params }: PageProps) {
                     </div>
 
                     <div>
-                      <p className=" text-base font-semibold">N {prodInfo?.data?.data?.delivery_fee || 'N/A'} </p>
+                      <p className=" text-base font-semibold">₦  {prodInfo?.data?.data?.delivery_fee || 'N/A'} </p>
                     </div>
                   </div>
 
@@ -196,7 +196,7 @@ function Page({ params }: PageProps) {
                     </div>
 
                     <div>
-                      <p className=" text-base font-semibold">N {parseFloat(prodInfo?.data?.data?.amount) || 'N/A'}</p>
+                      <p className=" text-base font-semibold">₦ {parseFloat(prodInfo?.data?.data?.amount) || 'N/A'}</p>
                     </div>
                   </div>
 

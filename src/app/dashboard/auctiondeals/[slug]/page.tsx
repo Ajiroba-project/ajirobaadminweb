@@ -155,7 +155,7 @@ function Page({ params }: PageProps) {
                     </div>
 
                     <div>
-                      <p className=" text-base font-semibold">N {prodInfo?.data?.data?.items_price}</p>
+                      <p className=" text-base font-semibold">₦ {prodInfo?.data?.data?.items_price}</p>
                     </div>
                   </div>
 
@@ -166,7 +166,7 @@ function Page({ params }: PageProps) {
                     </div>
 
                     <div>
-                      <p className=" text-base font-semibold">N {prodInfo?.data?.data?.delivery_fee}</p>
+                      <p className=" text-base font-semibold">₦ {prodInfo?.data?.data?.delivery_fee}</p>
                     </div>
                   </div>
 
@@ -176,7 +176,7 @@ function Page({ params }: PageProps) {
                     </div>
 
                     <div>
-                      <p className=" text-base font-semibold">N {prodInfo?.data?.data?.total_price}</p>
+                      <p className=" text-base font-semibold">₦  {prodInfo?.data?.data?.total_price}</p>
                     </div>
                   </div>
 

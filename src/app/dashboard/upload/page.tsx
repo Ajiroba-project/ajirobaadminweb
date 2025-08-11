@@ -54,23 +54,7 @@ const Page = () => {
 
         }} className={` ${isNavbarOpen ? "" : ""}  `}>
             <Upload />
-         {/*  {headingText === "User Details" ? (
-            <UserDetails />
-          ) : headingText === "Upload" ? (
-            <Upload />
-          ) : headingText === "Product" ? (
-            <Product />
-          ) : headingText === "Category" ? (
-            <Categories />
-          ) : headingText === "Analytics" ? (
-            <Analytics />
-          ) : headingText === "Transaction" ? (
-          <Transaction />
-          )
-
-          : (
-            <Transaction />
-          )} */}
+         
         </div>
     </PageLayout>
 
