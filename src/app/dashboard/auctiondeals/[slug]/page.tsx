@@ -93,13 +93,15 @@ function Page({ params }: PageProps) {
               <section className="flex flex-col  px-8">
                 <div className="flex items-center justify-between ">
                   <div className="w-20"></div>
-                  <Image
-                    src={`https://staging.ajiroba.ng/v1${prodInfo?.data?.data?.profile_image}`}
-                    className=" rounded-full border-4 border-[#F25E26]"
-                    width={100}
-                    height={100}
-                    alt="icon"
-                  />
+                  <div className="w-[100px] h-[100px] rounded-full border-4 border-[#F25E26] overflow-hidden">
+                    <Image
+                      src={`https://staging.ajiroba.ng${prodInfo?.data?.data?.profile_image}`}
+                      className="w-full h-full object-cover"
+                      width={100}
+                      height={100}
+                      alt="icon"
+                    />
+                  </div>
                   <div className="rounded-lg border border-[#E84526] py-4 px-4">
                     <h1>Ticket Number</h1>
                     <small className="text-[#E84526] text-sm">{prodInfo?.data?.data?.ticket_number}</small>

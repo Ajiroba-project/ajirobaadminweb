@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import icon from "../../asset/image/icon.svg"
 import Image from 'next/image';
 import chart from '../../asset/image/chart.svg'
@@ -13,10 +13,11 @@ import Cookies from 'js-cookie';
 import { useGetDatanew } from '@/hooks/useGetData';
 import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import Loading from '@/app/components/Loading';
+import { exportToCSV } from '@/utils/exportUtils';
 import "react-datepicker/dist/react-datepicker.css";
 import ajirobalogo from '@/app/asset/logo.svg'
 
-function RechargeDealsTable() {
+function RechargeDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () => void) => void }) {
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const params = useParams();
@@ -35,17 +36,17 @@ function RechargeDealsTable() {
   } = useGetDatanew(url, "get_catandsubcat_details", userToken || " ");
 
   // Mock data for demonstration - replace with actual data structure
-  const mockTransactions = [
-    { id: 1, name: "Olamide Akintan", deviceId: "7603497689", item: "GOTV", amount: "N200", date: "03/02/2024", img: null },
-    { id: 2, name: "Alison David", deviceId: "6789012346", item: "DSTV", amount: "N200", date: "31/01/2024", img: null },
-    { id: 3, name: "Megan Willow", deviceId: "1234567890", item: "Airtime", amount: "N200", date: "27/01/2024", img: null },
-    { id: 4, name: "Janelle Levi", deviceId: "0987654321", item: "GOTV", amount: "N200", date: "26/01/2024", img: null },
-    { id: 5, name: "King Fisher", deviceId: "1122334455", item: "DSTV", amount: "N200", date: "25/01/2024", img: null },
-    { id: 6, name: "Olivia Mahun", deviceId: "5566778899", item: "Airtime", amount: "N200", date: "24/01/2024", img: null },
-    { id: 7, name: "Vivian Kalu", deviceId: "9988776655", item: "GOTV", amount: "N200", date: "23/01/2024", img: null },
-    { id: 8, name: "Douglas Smith", deviceId: "4433221100", item: "DSTV", amount: "N200", date: "22/01/2024", img: null },
-    { id: 9, name: "Kenneth Tarry", deviceId: "6677889900", item: "Airtime", amount: "N200", date: "21/01/2024", img: null },
-  ];
+  // const mockTransactions = [
+  //   { id: 1, name: "Olamide Akintan", deviceId: "7603497689", item: "GOTV", amount: "N200", date: "03/02/2024", img: null },
+  //   { id: 2, name: "Alison David", deviceId: "6789012346", item: "DSTV", amount: "N200", date: "31/01/2024", img: null },
+  //   { id: 3, name: "Megan Willow", deviceId: "1234567890", item: "Airtime", amount: "N200", date: "27/01/2024", img: null },
+  //   { id: 4, name: "Janelle Levi", deviceId: "0987654321", item: "GOTV", amount: "N200", date: "26/01/2024", img: null },
+  //   { id: 5, name: "King Fisher", deviceId: "1122334455", item: "DSTV", amount: "N200", date: "25/01/2024", img: null },
+  //   { id: 6, name: "Olivia Mahun", deviceId: "5566778899", item: "Airtime", amount: "N200", date: "24/01/2024", img: null },
+  //   { id: 7, name: "Vivian Kalu", deviceId: "9988776655", item: "GOTV", amount: "N200", date: "23/01/2024", img: null },
+  //   { id: 8, name: "Douglas Smith", deviceId: "4433221100", item: "DSTV", amount: "N200", date: "22/01/2024", img: null },
+  //   { id: 9, name: "Kenneth Tarry", deviceId: "6677889900", item: "Airtime", amount: "N200", date: "21/01/2024", img: null },
+  // ];
 
   const transactions = transInfo && transInfo?.data?.map((item: any, index: number) => ({
     id: item?.reference || index + 1,
@@ -58,7 +59,7 @@ function RechargeDealsTable() {
     reference: item?.reference,
     deviceId: item?.device_id || `ID${Math.floor(Math.random() * 1000000000)}`,
     item: item?.item || 'N/A',
-  })) || mockTransactions;
+  })) || [];
 
   const [search, setSearch] = useState("");
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
@@ -86,11 +87,30 @@ function RechargeDealsTable() {
     return matchesSearch && matchesSelectedDate;
   });
 
+  // Register CSV exporter with parent using latest data via ref
+  const exportColumns = useMemo(() => ([
+    { key: 'name', header: 'Name' },
+    { key: 'deviceId', header: 'Device ID' },
+    { key: 'item', header: 'Item' },
+    { key: 'amount', header: 'Amount' },
+    { key: 'date', header: 'Date' },
+  ]), []);
+  const latestDataRef = useRef<any[]>([]);
+  useEffect(() => {
+    latestDataRef.current = filteredTransactions || [];
+  }, [filteredTransactions]);
+  useEffect(() => {
+    if (!onRegisterExport) return;
+    onRegisterExport(() => exportToCSV(latestDataRef.current, { fileName: 'Recharge_Transactions', columns: exportColumns }));
+  }, [onRegisterExport, exportColumns]);
+
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = filteredTransactions?.slice(
     startIndex,
     startIndex + itemsPerPage
   );
+  
+
   const totalPages = Math.ceil(filteredTransactions?.length / itemsPerPage);
 
   const isAllSelected =

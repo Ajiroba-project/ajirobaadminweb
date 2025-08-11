@@ -10,7 +10,7 @@ import Loading from '@/app/components/Loading';
 import AuctionDealsTable from '@/app/components/AuctionDealsTable';
 import RechargeDealsTable from './RechargeDealsTable';
 
-function Rechargedeals() {
+function Rechargedeals({ onRegisterExport }: { onRegisterExport?: (fn: () => void) => void }) {
   const [userToken, setUserToken] = useState(Cookies.get("token"));
 
   let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/transaction_volume/`;
@@ -98,7 +98,7 @@ function Rechargedeals() {
         <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="text-lg font-Poppins font-semibold text-[#1D2739]">Transactions</h2>
         </div>
-        <RechargeDealsTable/>
+        <RechargeDealsTable onRegisterExport={onRegisterExport}/>
       </div>
     </div>
   )

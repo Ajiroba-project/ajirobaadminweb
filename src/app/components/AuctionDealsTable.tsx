@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import icon from "../../asset/image/icon.svg"
 import Image from 'next/image';
 import chart from '../../asset/image/chart.svg'
@@ -13,10 +13,11 @@ import Cookies from 'js-cookie';
 import { useGetDatanew } from '@/hooks/useGetData';
 import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import Loading from '@/app/components/Loading';
+import { exportToCSV } from '@/utils/exportUtils';
 import "react-datepicker/dist/react-datepicker.css";
 import ajirobalogo from '@/app/asset/logo.svg'
 
-function AuctionDealsTable() {
+function AuctionDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () => void) => void }) {
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const params = useParams();
@@ -69,6 +70,23 @@ function AuctionDealsTable() {
 
     return matchesSearch && matchesSelectedDate;
   });
+
+  // Register CSV exporter with parent using latest data via ref
+  const exportColumns = useMemo(() => ([
+    { key: 'name', header: 'Name' },
+    { key: 'email', header: 'Email' },
+    { key: 'status', header: 'Status' },
+    { key: 'item', header: 'Item' },
+    { key: 'date', header: 'Date' },
+  ]), []);
+  const latestDataRef = useRef<any[]>([]);
+  useEffect(() => {
+    latestDataRef.current = filteredTransactions || [];
+  }, [filteredTransactions]);
+  useEffect(() => {
+    if (!onRegisterExport) return;
+    onRegisterExport(() => exportToCSV(latestDataRef.current, { fileName: 'Auction_Transactions', columns: exportColumns }));
+  }, [onRegisterExport, exportColumns]);
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = filteredTransactions?.slice(

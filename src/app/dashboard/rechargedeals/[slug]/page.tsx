@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 import Loading from "@/app/components/Loading";
 import { p } from "framer-motion/m";
 import { ProductsbillCard } from "../../components/ProductsbillCard";
+import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 
 interface PageProps {
   params: any;
@@ -23,6 +24,8 @@ function Page({ params }: PageProps) {
 
   //  console.log(product_id);
   const router = useRouter();
+  
+  useAuthMiddleware(router)
 
 
   /*       const params = useParams();
@@ -92,7 +95,7 @@ function Page({ params }: PageProps) {
           prodInfo?.data?.status === "failed" ? (
             <div className="flex flex-col items-center justify-center h-screen">
               <h1 className="text-[#E84526] text-lg">{prodInfo?.data?.message}</h1>
-              <h1 onClick={() => router.back()} className=" cursor-pointer text-[#FFFFFF] mt-2 cursor-pointer rounded-lg border bg-gray-600 p-2 font-Poppins text-sm ">Back</h1>
+              <h1 onClick={() => router.back()} className=" cursor-pointer text-[#FFFFFF] mt-2 rounded-lg border bg-gray-600 p-2 font-Poppins text-sm ">Back</h1>
             </div>
           )
 
@@ -112,13 +115,15 @@ function Page({ params }: PageProps) {
               <section className="flex flex-col  px-8">
                 <div className="flex items-center justify-between ">
                   <div className="w-20"></div>
-                  <Image
-                    src={`https://staging.ajiroba.ng/v1${prodInfo?.data?.data?.profile_image}`}
-                    className=" rounded-full border-4 border-[#F25E26]"
-                    width={100}
-                    height={100}
-                    alt="icon"
-                  />
+                  <div className="w-[100px] h-[100px] rounded-full border-4 border-[#F25E26] overflow-hidden">
+                    <Image
+                      src={`https://staging.ajiroba.ng${prodInfo?.data?.data?.profile_image}`}
+                      className="w-full h-full object-cover"
+                      width={100}
+                      height={100}
+                      alt="icon"
+                    />
+                  </div>
                   <div className="rounded-lg border border-[#E84526] py-4 px-4">
                     <h1>Order Code</h1>
                     <small className="text-[#E84526] text-sm">{prodInfo?.data?.data?.order_id}</small>

@@ -499,8 +499,9 @@ function Page() {
         draggable: true,
         progress: undefined,
         theme: 'light',
-        onClose: () => router.push('/')
+        onClose: () => router.push('/dashboard')
       })
+      router.push('/dashboard')
       
       setAuthCookie(data?.data?.token, 0)
       Cookies.set("token", data?.data?.token, { expires: 1 });

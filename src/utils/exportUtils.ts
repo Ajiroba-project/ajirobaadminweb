@@ -44,6 +44,15 @@ export interface ExcelExportConfig extends ExportConfig {
   }[];
 }
 
+// Interface for CSV export configuration (reuses the columns shape)
+export interface CSVExportConfig extends ExportConfig {
+  columns?: {
+    key: string;
+    header: string;
+    formatter?: (value: any) => string;
+  }[];
+}
+
 // Default configuration
 const defaultConfig: ExportConfig = {
   title: 'Report',
@@ -299,6 +308,68 @@ export const exportToXLS = (
     alert('Failed to generate Excel file. Please try again.');
   }
 };
+
+/**
+ * Export data to CSV
+ * @param data - Array of data objects to export
+ * @param config - Configuration options (columns, filename, title)
+ */
+export const exportToCSV = (
+  data: ExportData[],
+  config: CSVExportConfig = {}
+) => {
+  try {
+    const finalConfig = { ...defaultConfig, ...config } as Required<CSVExportConfig>;
+    const { fileName, columns } = finalConfig;
+
+    if (!data || data.length === 0) {
+      alert('No data to export');
+      return;
+    }
+
+    // Build headers
+    const headers: string[] = columns
+      ? columns.map(c => c.header)
+      : Object.keys(data[0]);
+
+    // Build rows
+    const rows: string[][] = data.map(item => {
+      if (columns) {
+        return columns.map(col => {
+          const raw = item[col.key];
+          const value = col.formatter ? col.formatter(raw) : raw;
+          return csvEscape(value);
+        });
+      }
+      return Object.keys(item).map(key => csvEscape((item as any)[key]));
+    });
+
+    const csvContent = [headers.map(csvEscape).join(','), ...rows.map(r => r.join(','))].join('\n');
+
+    // Prepend BOM to properly open in Excel
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${fileName}_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Error generating CSV:', error);
+    alert('Failed to generate CSV file. Please try again.');
+  }
+};
+
+function csvEscape(value: unknown): string {
+  if (value === null || value === undefined) return '""';
+  const str = String(value);
+  // Escape double quotes by doubling them
+  const escaped = str.replace(/"/g, '""');
+  // Wrap in quotes to preserve commas/newlines
+  return `"${escaped}"`;
+}
 
 // Helper functions
 function createLoadingIndicator(): HTMLDivElement {

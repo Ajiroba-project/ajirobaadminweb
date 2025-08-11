@@ -1,14 +1,26 @@
 import { useStore } from "@/store/nav-store";
 import { IconButton } from "@/app/component/Button";
 import { MdOutlineFileDownload } from "react-icons/md";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Regulardeals from "./Regulardeals";
 import Recharge from "./Recharge";
 import Auctiondeals from "./Auctiondeals";
 import Rechargedeals from "./Rechargedeals";
+import useAuthMiddleware from "@/hooks/useAuthMiddleware";
+import { useRouter } from "next/navigation";
 
 export const Transaction = () => {
+  const router = useRouter()
   const [active, setActive] = useState(2); // Set Recharge as default active
+  const [exporter, setExporter] = useState<(() => void) | null>(null);
+  const onRegisterExport = useCallback((fn: () => void) => {
+    setExporter(() => fn);
+  }, []);
+  useEffect(() => {
+    // reset exporter when switching tabs
+    setExporter(null);
+  }, [active]);
+  useAuthMiddleware(router)
 
   return (
     <div>
@@ -28,6 +40,13 @@ export const Transaction = () => {
               icon={
                 <MdOutlineFileDownload className="text-base font-Poppins" />
               }
+              handleClick={() => {
+                if (exporter) {
+                  exporter();
+                } else {
+                  alert('No export available for the current view.');
+                }
+              }}
             />
           </div>
         </div>
@@ -64,11 +83,11 @@ export const Transaction = () => {
 
       <div className="py-6 px-12">
         {active == 0 ? (
-          <Regulardeals />
+          <Regulardeals onRegisterExport={onRegisterExport} />
         ) : active == 1 ? (
-          <Auctiondeals />
+          <Auctiondeals onRegisterExport={onRegisterExport} />
         ) : (
-          <Rechargedeals />
+          <Rechargedeals onRegisterExport={onRegisterExport} />
         )}
       </div>
     </div>

@@ -8,7 +8,7 @@ import Cookies from 'js-cookie';
 import { useGetDatanew } from '@/hooks/useGetData';
 import Loading from '@/app/components/Loading';
 
-function Regulardeals() {
+function Regulardeals({ onRegisterExport }: { onRegisterExport?: (fn: () => void) => void }) {
   const [userToken, setUserToken] = useState(Cookies.get("token"));
 
   // Construct URL with dynamic filters
@@ -97,7 +97,7 @@ function Regulardeals() {
         <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="text-lg font-Poppins font-semibold text-[#1D2739]">Transactions</h2>
         </div>
-        <RegularsDealTable/>
+        <RegularsDealTable onRegisterExport={onRegisterExport}/>
       </div>
     </div>
   )
