@@ -26,16 +26,55 @@ interface UserData {
   profile_image?: any
   name?: any
   bills_payment?: any
+  infromation?: any
+  product_info?: any
+  winners_info?: any
+  product_reviews?: any
+  current_datetime?: any
+  delivery_estimation?: any
+  flatMap?: any
+  total_auction_customers_GTV?: any
+  service_uptime?: any
+  total_amount_made?: any
+  total_auction_customers?: any
+  total_auction_trans?: any
+  total_bills_trans?: any
+  total_raffle_winner?: any
+  total_regular_customers?: any
+  total_regular_customers_GTV?: any
+  total_regular_deals_trans?: any
+  total_wallet_balance?: any
+  no_of_customers?: any
+  total_revenue?: any
+  total_discount?: any
+  cost_price_total?: any
+  profit?: any
+  raffle_draw_winning_volume?: any
+  revenue_summary_report?: any
+  // Auction summary fields
+  revenue?: number
+  total_tickets?: number
+  rda?: number
+  eca?: number
 
 }
 
 // Define the interface for the expected response data structure
 interface ResponseData {
   data?: UserData
+  completed?: UserData
   id: number
   title: string
   description: string
   profile_image_url?: any
+  status: string
+  message: string
+  filter?: any
+  slice?: any
+  length?: any
+  results?: any
+  flatMap?: any
+  winners_info?: any
 }
 
 // interface ApiResponse {
@@ -74,7 +113,7 @@ export const useGetDatanew = (
   title: string,
   userToken: string,
   p0?: { cacheTime?: number; staleTime?: number }
-): UseQueryResult<ApiResponse> => {
+): UseQueryResult<ResponseData> => {
   return useQuery({
     queryKey: [title, url],
     queryFn: () => fetchDatanew(url, userToken),
@@ -102,7 +141,7 @@ export const useGetOrderData = (
   url: string,
   title: string,
   userToken: string
-): UseQueryResult<ApiResponse> => {
+): UseQueryResult<ResponseData> => {
   return useQuery({
     queryKey: [title, url],
     queryFn: () => fetchOrderData(url, userToken, title),
@@ -130,7 +169,7 @@ export const useGetPointData = (
   url: string,
   title: string,
   userToken: string
-): UseQueryResult<ApiResponse> => {
+): UseQueryResult<ResponseData> => {
   return useQuery({
     queryKey: [title, url],
     queryFn: () => fetchPointData(url, userToken, title),
@@ -161,7 +200,7 @@ export const useGetProductData = (
   userToken: string,
   order_id: string,
   title: string
-): UseQueryResult<ApiResponse> => {
+): UseQueryResult<ResponseData> => {
   /*  console.log(url, userToken, order_id, title); */
   return useQuery({
     queryKey: [title, url],
@@ -193,7 +232,7 @@ export const useGetBidData = (
   userToken: string,
   order_id: string,
   title: string
-): UseQueryResult<ApiResponse> => {
+): UseQueryResult<ResponseData> => {
   /*  console.log(url, userToken, order_id, title); */
   return useQuery({
     queryKey: [title, url],
@@ -222,7 +261,7 @@ export const useGetOrderWinsData = (
   url: string,
   title: string,
   userToken: string
-): UseQueryResult<ApiResponse> => {
+): UseQueryResult<ResponseData> => {
   return useQuery({
     queryKey: [title, url],
     queryFn: () => fetchOrderwinsData(url, userToken, title),

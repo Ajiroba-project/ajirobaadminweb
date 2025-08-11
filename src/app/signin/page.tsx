@@ -20,7 +20,7 @@ import { useAuthStore } from '@/store/store'
 
 // import 'react-toastify/dist/ReactToastify.css'
 import { useState } from 'react'
- import Cookies from 'js-cookie'
+import Cookies from 'js-cookie'
 
 function Page() {
 
@@ -96,7 +96,7 @@ function Page() {
       })
 
       setAuthCookie(data?.data?.token, 0)
-        Cookies.set("token", data?.data?.token, { expires: 1 });
+      Cookies.set("token", data?.data?.token, { expires: 1 });
 
 
 
@@ -184,112 +184,112 @@ function Page() {
 
 
       <div className="px-4">
-  <nav className="Brand-logo flex justify-center p-6 px-7 md:block lg:block lg:px-14 xl:block 2xl:block">
-    <Link href={"/"}>
-      <Image src={Brand} alt="brand-logo" />
-    </Link>
-  </nav>
+        <nav className="Brand-logo flex justify-center p-6 px-7 md:block lg:block lg:px-14 xl:block 2xl:block">
+          <Link href={"/"}>
+            <Image src={Brand} alt="brand-logo" />
+          </Link>
+        </nav>
 
-  <div className="flex justify-center items-center flex-col min-h-[90vh]">
-    <HeroSubText title="Welcome Back" menu="Sign in to shop on Ajiroba" />
+        <div className="flex justify-center items-center flex-col min-h-[90vh]">
+          <HeroSubText title="Welcome Back" menu="Sign in to shop on Ajiroba" />
 
-    <div className="mb-20 flex justify-center w-full">
-      <form
-        onSubmit={handleSubmit(sumbitForm)}
-        className="w-full max-w-sm p-4 md:p-8"
-      >
-        <div className="mt-4 grid grid-cols-1 gap-8">
-          <div className="flex flex-col">
-            <label className="text-sm" htmlFor="email_or_phone">
-              Email Address/Phone Number*
-            </label>
-            <Controller
-              name="email_or_phone"
-              control={control}
-              render={({ field }) => (
-                <input
-                  type="text"
-                  {...field}
-                  placeholder="Enter your Email or Phone number"
-                  className="text-sm w-full h-auto p-2.5 border rounded-lg font-Inter font-normal focus:outline-none"
-                />
-              )}
-            />
-            <div className="text-xs text-red-700">
-              {errors?.email_or_phone?.message}
-            </div>
-          </div>
-
-          <div className="flex flex-col">
-            <label className="text-sm" htmlFor="password">
-              Password
-            </label>
-            <Controller
-              name="password"
-              control={control}
-              render={({ field }) => (
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    {...field}
-                    placeholder="***********"
-                    className="text-sm w-full h-auto p-2.5 border rounded-lg font-Inter font-normal focus:outline-none"
+          <div className="mb-20 flex justify-center w-full">
+            <form
+              onSubmit={handleSubmit(sumbitForm)}
+              className="w-full max-w-sm p-4 md:p-8"
+            >
+              <div className="mt-4 grid grid-cols-1 gap-8">
+                <div className="flex flex-col">
+                  <label className="text-sm" htmlFor="email_or_phone">
+                    Email Address/Phone Number*
+                  </label>
+                  <Controller
+                    name="email_or_phone"
+                    control={control}
+                    render={({ field }) => (
+                      <input
+                        type="text"
+                        {...field}
+                        placeholder="Enter your Email or Phone number"
+                        className="text-sm w-full h-auto p-2.5 border rounded-lg font-Inter font-normal focus:outline-none"
+                      />
+                    )}
                   />
-                  <div
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 cursor-pointer"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}
+                  <div className="text-xs text-red-700">
+                    {errors?.email_or_phone?.message}
                   </div>
                 </div>
-              )}
-            />
-            <div className="text-xs text-red-700">
-              {errors?.password?.message}
-            </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm" htmlFor="password">
+                    Password
+                  </label>
+                  <Controller
+                    name="password"
+                    control={control}
+                    render={({ field }) => (
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          {...field}
+                          placeholder="***********"
+                          className="text-sm w-full h-auto p-2.5 border rounded-lg font-Inter font-normal focus:outline-none"
+                        />
+                        <div
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 cursor-pointer"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}
+                        </div>
+                      </div>
+                    )}
+                  />
+                  <div className="text-xs text-red-700">
+                    {errors?.password?.message}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-center">
+                <DefaultButton
+                  type="submit"
+                  className="rounded-lg h-10 w-full bg-[#FCDFD4] text-sm hover:bg-[#E84526] hover:text-white"
+                  text={status === "pending" ? "loading..." : "Sign in"}
+                  handleClick={() => console.log("")}
+                />
+              </div>
+
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <input
+                    type="checkbox"
+                    id="agreement"
+                    value="true"
+                    className="text-wdc-inactivebutton mr-2"
+                  />
+                  <span className="text-sm">Remember me</span>
+                </div>
+                <div onClick={() => router.push("forgot-password")}>
+                  <span className="cursor-pointer text-sm">Forgot password?</span>
+                </div>
+              </div>
+
+              <div className="mt-6 flex items-center justify-center">
+                <small className="text-sm text-[#353131] font-normal font-Poppins">
+                  Don’t have an account?
+                  <span
+                    onClick={() => router.push("/signup")}
+                    className="cursor-pointer text-base text-[#F25E26] ml-2"
+                  >
+                    {" "}
+                    Sign up
+                  </span>
+                </small>
+              </div>
+            </form>
           </div>
         </div>
-
-        <div className="mt-4 flex items-center justify-center">
-          <DefaultButton
-            type="submit"
-            className="rounded-lg h-10 w-full bg-[#FCDFD4] text-sm hover:bg-[#E84526] hover:text-white"
-            text={status === "pending" ? "loading..." : "Sign in"}
-            handleClick={() => console.log("")}
-          />
-        </div>
-
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <input
-              type="checkbox"
-              id="agreement"
-              value="true"
-              className="text-wdc-inactivebutton mr-2"
-            />
-            <span className="text-sm">Remember me</span>
-          </div>
-          <div onClick={() => router.push("forgot-password")}>
-            <span className="cursor-pointer">Forgot password?</span>
-          </div>
-        </div>
-
-        <div className="mt-6 flex items-center justify-center">
-          <small className="text-sm text-[#353131] font-normal font-Poppins">
-            Don’t have an account?
-            <span
-              onClick={() => router.push("/signup")}
-              className="cursor-pointer text-base text-[#F25E26] ml-2"
-            >
-              {" "}
-              Sign up
-            </span>
-          </small>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+      </div>
 
     </>
   )

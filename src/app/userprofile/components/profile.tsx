@@ -5,10 +5,11 @@ import photo from "../../asset/image/photo.png";
 // import { ProfileContent } from './ProfileContent';
 import { IoIosCamera } from "react-icons/io";
 import { userProfile, useAuthStore, profilePhoto } from "@/store/store";
-import { LuMenuSquare } from "react-icons/lu";
+// import { LuMenuSquare } from "react-icons/lu";
 import { useGetDatanew } from "@/hooks/useGetData";
 import Cookies from "js-cookie";
 import { ProfileContent } from "./ProfileContent";
+import { CiMenuBurger } from "react-icons/ci";
 
 export const Profile = () => {
   const [sideNav, setSideNav] = useState<boolean>(false);
@@ -61,7 +62,10 @@ export const Profile = () => {
   }, [isLoggedIn, userInfo, setProfileurl]);
 
   const userData = isLoggedIn ? userInfo?.data : userDetails;
-  const userphoto = profileurl || userDetails?.profile_image_url || "";
+  const userphoto = userInfo?.profile_image_url || "";
+
+
+  // console.log(userInfo?.profile_image_url, "userInfo")
 
   const menu = ["my profile"];
 
@@ -76,7 +80,8 @@ export const Profile = () => {
         className={`absolute left-0 top-0 cursor-pointer text-[#f25e26] lg:hidden `}
         onClick={() => setSideNav(!sideNav)}
       >
-        <LuMenuSquare className="text-2xl" />
+        {/* <LuMenuSquare className="text-2xl" /> */}
+        <CiMenuBurger className="text-2xl" />
       </span>
 
       <div className="flex 2xl:flex-row xl:flex-row lg:flex-row md:flex-row flex-row gap-10  flex-wrap justify-between">
@@ -86,7 +91,7 @@ export const Profile = () => {
             <div
               className={`${activeMenu === "my order" || activeMenu === "wallet" || activeMenu === "wallet" || activeMenu === "community" ? "border rounded  flex flex-col  px-2" : " flex flex-col  px-2"}`}
             >
-               <div className="relative justify-center flex items-center mt-2 ">
+              <div className="relative justify-center flex items-center mt-2 ">
                 <Image
                   src={userphoto}
                   width={50}

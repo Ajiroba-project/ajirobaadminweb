@@ -1,4 +1,4 @@
-import React, {SVGProps} from "react";
+import React, { SVGProps } from "react";
 import {
   Table,
   TableHeader,
@@ -28,7 +28,7 @@ export function capitalize(s: string) {
   return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
 }
 
-export const PlusIcon = ({size = 24, width, height, ...props}: IconSvgProps) => {
+export const PlusIcon = ({ size = 24, width, height, ...props }: IconSvgProps) => {
   return (
     <svg
       aria-hidden="true"
@@ -54,7 +54,7 @@ export const PlusIcon = ({size = 24, width, height, ...props}: IconSvgProps) => 
   );
 };
 
-export const VerticalDotsIcon = ({size = 24, width, height, ...props}: IconSvgProps) => {
+export const VerticalDotsIcon = ({ size = 24, width, height, ...props }: IconSvgProps) => {
   return (
     <svg
       aria-hidden="true"
@@ -104,7 +104,7 @@ export const SearchIcon = (props: IconSvgProps) => {
   );
 };
 
-export const ChevronDownIcon = ({strokeWidth = 1.5, ...otherProps}: IconSvgProps) => {
+export const ChevronDownIcon = ({ strokeWidth = 1.5, ...otherProps }: IconSvgProps) => {
   return (
     <svg
       aria-hidden="true"
@@ -129,20 +129,20 @@ export const ChevronDownIcon = ({strokeWidth = 1.5, ...otherProps}: IconSvgProps
 };
 
 export const columns = [
-  {name: "ID", uid: "id", sortable: true},
-  {name: "NAME", uid: "name", sortable: true},
-  {name: "AGE", uid: "age", sortable: true},
-  {name: "ROLE", uid: "role", sortable: true},
-  {name: "TEAM", uid: "team"},
-  {name: "EMAIL", uid: "email"},
-  {name: "STATUS", uid: "status", sortable: true},
-  {name: "ACTIONS", uid: "actions"},
+  { name: "ID", uid: "id", sortable: true },
+  { name: "NAME", uid: "name", sortable: true },
+  { name: "AGE", uid: "age", sortable: true },
+  { name: "ROLE", uid: "role", sortable: true },
+  { name: "TEAM", uid: "team" },
+  { name: "EMAIL", uid: "email" },
+  { name: "STATUS", uid: "status", sortable: true },
+  { name: "ACTIONS", uid: "actions" },
 ];
 
 export const statusOptions = [
-  {name: "Active", uid: "active"},
-  {name: "Paused", uid: "paused"},
-  {name: "Vacation", uid: "vacation"},
+  { name: "Active", uid: "active" },
+  { name: "Paused", uid: "paused" },
+  { name: "Vacation", uid: "vacation" },
 ];
 
 export const users = [
@@ -396,7 +396,7 @@ export default function App() {
     }
 
     return filteredUsers;
-  }, [users, filterValue, statusFilter, hasSearchFilter]);
+  }, [filterValue, statusFilter, hasSearchFilter]);
 
   const pages = Math.ceil(filteredItems.length / rowsPerPage);
 
@@ -424,7 +424,7 @@ export default function App() {
       case "name":
         return (
           <User
-            avatarProps={{radius: "lg", src: user.avatar}}
+            avatarProps={{ radius: "lg", src: user.avatar }}
             description={user.email}
             name={cellValue}
           >
@@ -580,8 +580,7 @@ export default function App() {
     visibleColumns,
     onSearchChange,
     onRowsPerPageChange,
-    users.length,
-    hasSearchFilter,
+    onClear,
   ]);
 
   const bottomContent = React.useMemo(() => {
@@ -611,7 +610,7 @@ export default function App() {
         </div>
       </div>
     );
-  }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
+  }, [selectedKeys, filteredItems.length, page, pages, onNextPage, onPreviousPage]);
 
   return (
     <Table

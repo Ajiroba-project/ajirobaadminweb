@@ -6,6 +6,7 @@ import { AuctionLists } from "@/app/data";
 import Cookies from "js-cookie";
 import { useGetDatanew } from "@/hooks/useGetData";
 import Loading from "@/app/components/Loading";
+import { ListFilterAuction } from "./ListFilterAuction";
 
 export const AuctionList = (() => {
   // filter by name
@@ -16,7 +17,7 @@ export const AuctionList = (() => {
   const [endDate, setEndDate] = useState<string | null>(null);
 
 
-   const [userToken, setUserToken] = useState(Cookies.get("token"));
+  const [userToken, setUserToken] = useState(Cookies.get("token"));
 
   // Construct URL with dynamic filters
   let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_auctions/`;
@@ -36,7 +37,7 @@ export const AuctionList = (() => {
 
   // Filter function (Search + Date)
   const handleSearch = useCallback((searchVal: string, start: string | null, end: string | null) => {
-     setSearchTerm(searchVal);
+    setSearchTerm(searchVal);
     setStartDate(start);
     setEndDate(end);
 
@@ -52,13 +53,13 @@ export const AuctionList = (() => {
   }, [productInfo]);
 
 
-      if (productLoading){
+  if (productLoading) {
     return <Loading />
   }
 
   return (
     <section className="flex flex-col">
-      <ListFilter onSearch={handleSearch} />
+      <ListFilterAuction data={filteredData} onSearch={handleSearch} />
 
       <div className="my-4">
         <AuctionListCard object={filteredData} />

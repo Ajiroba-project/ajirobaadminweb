@@ -39,7 +39,7 @@ type handleProp = {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
-    const toggleNavbar = useStore((state) => state.toggleNavbar);
+  const toggleNavbar = useStore((state) => state.toggleNavbar);
   const clearAuthCookies = useAuthStore((state) => state.clearAuthCookies);
   const user = useAuthStore((state) => state.user);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
@@ -59,12 +59,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     userToken || " ",
   );
 
-  //  console.log(userInfo, 'usss')
+  // console.log(userInfo?.profile_image_url, 'usss')
 
   const handleClick = ({
     val,
     index,
-  }: handleProp & { val: { name: string, url: string  } }) => {
+  }: handleProp & { val: { name: string, url: string } }) => {
     setActive(active === index ? null : index);
     setHeadingText(val.name);
     router.push(`/dashboard/${val.url}`)
@@ -95,7 +95,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
   const sumbitForm = async () => {
     mutate({
-      url: "api/signout/",
+      url: "/api/signout/",
       payload: {}, // Add an empty payload object
     });
   };
@@ -104,7 +104,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
   const pathname = usePathname();
 
-//
+  //
 
   //   const isActive = (path: string) => location.pathname === path;
   const isActive = (path: string) => {
@@ -121,89 +121,88 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
   return (
     <aside
-      className={`sidebarcard fixed top-0 left-0 h-full w-[278px]  bg-[#F6F6F6]  border-r dark:border-[#1A1924] border-[#D8DEE4] shadow-lg flex flex-col z-50 transform ${
-        isOpen ? "translate-x-0" : "-translate-x-full"
-      } transition-transform duration-300 md:translate-x-0 md:relative`}
+      className={`sidebarcard fixed top-0 left-0 h-full w-[278px]  bg-[#F6F6F6]  border-r dark:border-[#1A1924] border-[#D8DEE4] shadow-lg flex flex-col z-50 transform ${isOpen ? "translate-x-0" : "-translate-x-full"
+        } transition-transform duration-300 md:translate-x-0 md:relative`}
     >
 
       <div className="py-8 flex items-center justify-center bg-[#F6F6F6]  shadowCard rounded-none border-none h-[4rem]">
         <div className=" flex items-center justify-center bg-[#F6F6F6]  shadowCard rounded-none border-none h-[4rem]">
 
 
-           <Link href="/">
-              <Image src={Brand} alt="brand logo" />
-            </Link>
+          <Link href="/">
+            <Image src={Brand} alt="brand logo" />
+          </Link>
         </div>
       </div>
 
 
-       <nav style={{
+      <nav style={{
 
-          overflow: "scroll",
-        }}
-          className={`flex flex-col py-10 gap-20 container ${isNavbarOpen ? "hidden lg:block" : "block"}`}
-        >
-          <div className="mx-6 flex items-center">
+        overflow: "scroll",
+      }}
+        className={`flex flex-col py-10 gap-20 container ${isNavbarOpen ? "hidden lg:block" : "block"}`}
+      >
+        <div className="mx-6 flex items-center">
 
 
-          </div>
-          <div>
-            <ul>
-              {SideNavMenu.map((val, index) => (
-                <li
-                  key={index}
-                  onClick={() => handleClick({ val, index })}
-                  className={`${
-                   pathname === val.path ? "bg-[#FCDFD4] ring-[#E84526]" : ""
+        </div>
+        <div>
+          <ul>
+            {SideNavMenu.map((val, index) => (
+              <li
+                key={index}
+                onClick={() => handleClick({ val, index })}
+                className={`${pathname === val.path ? "bg-[#FCDFD4] ring-[#E84526]" : ""
                   } py-4 hover:ring-[#E84526] hover:ring-2 hover:bg-[#FCDFD4] px-6`}
-                >
-                  <Link href={val.path} className="flex gap-3 items-center">
-                    <Image src={val.icon} alt={val.name} /> <p>{val.name}</p>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="flex flex-col gap-3 items-center justify-center">
-            <div className="flex gap-3 pb-4 items-center">
-              <div className="rounded-full h-8 w-8 bg-[#FCDFD4] ring-[#F25E26]">
-                <Image src={user_img} alt="dp" />
-              </div>
-              <div>
-                <h2 className="text-[#2A2A2A]">{`${userInfo?.data?.first_name}`}</h2>
-                <p className="text-sm">{`${userInfo?.data?.email}`}</p>
-              </div>
+              >
+                <Link href={val.path} className="flex gap-3 items-center">
+                  <Image src={val.icon} alt={val.name} /> <p>{val.name}</p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="flex flex-col gap-3 items-center justify-center">
+          <div className="flex gap-3 pb-4 items-center">
+            <div className="rounded-full h-8 w-8 bg-[#FCDFD4] ring-[#F25E26]">
+              <Image src={userInfo?.profile_image_url || user_img} alt="dp" width={50} height={50} />
             </div>
-            <div
-              className="cursor-pointer flex gap-2 items-center text-[#F25E26]"
-              onClick={openModal}
-            >
-              <CiLogout className="text-2xl text-[#F25E26]" />
-              <p className="">Sign Out</p>
+            {/*   {console.log(userInfo?.data)} */}
+            <div>
+              <h2 className="text-[#2A2A2A]">{`${userInfo?.data?.first_name}`}</h2>
+              <p className="text-sm">{`${userInfo?.data?.email}`}</p>
             </div>
           </div>
-        </nav>
-
-
-
- {signout && (
-          <div className="flex absolute top-0">
-            <Modal
-              title="Are you sure you want to sign out"
-              subtitle="you will be logged out of the system"
-              buttoncount={2}
-              buttontext={status == "Pending" ? "Signing out..." : "Yes"}
-              button2text="No"
-              buttonclass="bg-[#FCDFD4] p-5 rounded-lg text-sm hover:shadow w-full px-14"
-              button2class="p-4 rounded-lg border-2 border-[#F25E26] px-14"
-              buttontype="submit"
-              button2type="submit"
-              handleEvent={() => handleSignout(true)}
-              handleEvent2={() => handleSignout(false)}
-              icon={signoutImage}
-            />
+          <div
+            className="cursor-pointer flex gap-2 items-center text-[#F25E26]"
+            onClick={openModal}
+          >
+            <CiLogout className="text-2xl text-[#F25E26]" />
+            <p className="">Sign Out</p>
           </div>
-        )}
+        </div>
+      </nav>
+
+
+
+      {signout && (
+        <div className="flex absolute top-0">
+          <Modal
+            title="Are you sure you want to sign out"
+            subtitle="you will be logged out of the system"
+            buttoncount={2}
+            buttontext={status == "Pending" ? "Signing out..." : "Yes"}
+            button2text="No"
+            buttonclass="bg-[#FCDFD4] p-5 rounded-lg text-sm hover:shadow w-full px-14"
+            button2class="p-4 rounded-lg border-2 border-[#F25E26] px-14"
+            buttontype="submit"
+            button2type="submit"
+            handleEvent={() => handleSignout(true)}
+            handleEvent2={() => handleSignout(false)}
+            icon={signoutImage}
+          />
+        </div>
+      )}
     </aside>
   );
 };

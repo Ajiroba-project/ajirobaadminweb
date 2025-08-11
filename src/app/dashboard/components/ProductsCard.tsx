@@ -37,7 +37,7 @@ export const ProductsCard = ({ cardInfo }: ProductsCardProps) => {
 
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12; // adjust this value to change the number of items per page
-    const totalPages = cardInfo &&  Math.ceil(cardInfo?.length / itemsPerPage);
+    const totalPages = cardInfo && Math.ceil(cardInfo?.length / itemsPerPage);
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -60,11 +60,11 @@ export const ProductsCard = ({ cardInfo }: ProductsCardProps) => {
 
                 {paginatedCardInfo?.map((value, index) => (
                     <div onClick={() => router.push(`/categories/productdetails/${value.id}`)} className=' border border-white shadow-sm ' key={index}>
-                      {/*   {console.log(value, 'value')} */}
+                        {/*   {console.log(value, 'value')} */}
                         <div className='py-2 bg-[#F6F6F6]'>
                             <div className='flex items-center justify-center'>
                                 <Image
-                                    src={`https://ajiroba.onrender.com${value?.images[0]?.image}`}
+                                    src={`https://staging.ajiroba.ng/v1${value?.images[0]?.image}`}
                                     alt="product"
                                     className=""
                                     width={120}
@@ -81,9 +81,9 @@ export const ProductsCard = ({ cardInfo }: ProductsCardProps) => {
                                         <p className=' font-Poppins text-[13px] font-bold'>{value.name}</p>
                                     </div>
 
-                                     <div className='justify-start'>
+                                    <div className='justify-start'>
                                         {/* <p className="text-sm" >Ticket Price:</p> */}
-                                        <p  className=' font-Poppins text-[13px] font-semibold flex justify-end text-[#F25E26] '>
+                                        <p className=' font-Poppins text-[13px] font-semibold flex justify-end text-[#F25E26] '>
                                             ₦&nbsp;{value.ticket_price}
                                             <span className='font-semibold '></span>
                                         </p>
@@ -92,7 +92,7 @@ export const ProductsCard = ({ cardInfo }: ProductsCardProps) => {
                                 <div className='flex justify-between'>
 
                                     <p className='flex justify-end text-left'>
-                                       {/*  {Array.from({ length: value?.product_reviews?.average_ratings }, (_, index) => (
+                                        {/*  {Array.from({ length: value?.product_reviews?.average_ratings }, (_, index) => (
                                             <span key={index}>
                                                 <FaStar className="text-[#F25E26]" />
                                             </span>
@@ -101,16 +101,16 @@ export const ProductsCard = ({ cardInfo }: ProductsCardProps) => {
                                     </p>
 
 
-                                      <div className='justify-start'>
-                                       {/*  <p className='w-max text-[10px] font-normal font-Poppins  text-[#242423]'>
+                                    <div className='justify-start'>
+                                        {/*  <p className='w-max text-[10px] font-normal font-Poppins  text-[#242423]'>
                                            ({value?.product_reviews?.total_reviews})
                                             <span className='font-semibold '></span>
                                         </p> */}
                                     </div>
                                 </div>
                                 <p className='text-[13px] font-Poppins  text-[#2A2A2A] '>
-                                 {/*   w - {value?.weight || 'NA'} */}
-                                 Ergonomics Wired Mouse
+                                    {/*   w - {value?.weight || 'NA'} */}
+                                    Ergonomics Wired Mouse
                                 </p>
                             </div>
                         </div>
@@ -123,7 +123,7 @@ export const ProductsCard = ({ cardInfo }: ProductsCardProps) => {
 
             </div>
 
-          {/*   <div className='flex justify-center items-center mb-20 ' >
+            {/*   <div className='flex justify-center items-center mb-20 ' >
 
 
             </div> */}

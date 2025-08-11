@@ -51,7 +51,7 @@ export const Auction = () => {
       return URL.createObjectURL(file);
     });
 
-    console.log(ImgArray);
+    /*  console.log(ImgArray); */
     setSelectedImg((prevImg: string[]) => prevImg.concat(ImgArray));
   };
 
@@ -122,7 +122,7 @@ export const Auction = () => {
   };
 
 
- const [selectedOption, setSelectedOption] = useState("Upload Now");
+  const [selectedOption, setSelectedOption] = useState("Upload Now");
 
   const handleSelection = (value: SetStateAction<string>) => {
     setSelectedOption(value);
@@ -132,9 +132,8 @@ export const Auction = () => {
     <>
       <ToastContainer closeOnClick />
       <section
-        className={`my-10 px-20 ${
-          isNavbarOpen ? "justify-center items-center " : ""
-        } flex-col flex`}
+        className={`my-10 px-20 ${isNavbarOpen ? "justify-center items-center " : ""
+          } flex-col flex`}
       >
         <h1
           className={`xl:text-2xl 2xl:text-2xl md:text-2xl text-base font-normal pb-4 leading-tight tracking-tight underline p-3`}
@@ -182,23 +181,23 @@ export const Auction = () => {
               </div>
 
 
-  <div className="flex gap-12 mb-4 flex-col lg:flex-row md:flex-row ">
-              <CheckboxField
-        label=""
-        name="topdeals"
-        register={register}
-        errors={errors}
-        options={["Top Deals"]}
-        classname="mt-4"
-      />
-                 <CheckboxField
-        label=""
-        name="featured"
-        register={register}
-        errors={errors}
-        options={["Featured"]}
-        classname="mt-4"
-      />
+              <div className="flex gap-12 mb-4 flex-col lg:flex-row md:flex-row ">
+                <CheckboxField
+                  label=""
+                  name="topdeals"
+                  register={register}
+                  errors={errors}
+                  options={["Top Deals"]}
+                  classname="mt-4"
+                />
+                <CheckboxField
+                  label=""
+                  name="featured"
+                  register={register}
+                  errors={errors}
+                  options={["Featured"]}
+                  classname="mt-4"
+                />
               </div>
 
               <div className="flex gap-2  flex-col lg:flex-row md:flex-row ">
@@ -206,20 +205,20 @@ export const Auction = () => {
                   name="cost_price"
                   label="Cost Price"
                   type="text"
-                   placeholder="₦1234"
+                  placeholder="₦1234"
                   register={register}
                   errors={errors}
 
-            classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
-                 <InputField
+                <InputField
                   name="ticket_price"
                   label="Ticket Price"
                   type="text"
                   placeholder="₦1234"
                   register={register}
                   errors={errors}
-                 classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
               </div>
               <div className="flex gap-2 py-2 flex-col lg:flex-row md:flex-row ">
@@ -230,7 +229,7 @@ export const Auction = () => {
                   placeholder="50kg"
                   register={register}
                   errors={errors}
-                 classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
 
               </div>
@@ -257,7 +256,7 @@ export const Auction = () => {
                   errors={errors}
                   options={categories}
 
-                 classname={`text-sm  xl:w-[298px] 2xl:w-[298px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  classname={`text-sm  xl:w-[298px] 2xl:w-[298px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
                 <SelectField
                   name="sub_category"
@@ -265,7 +264,7 @@ export const Auction = () => {
                   register={register}
                   errors={errors}
                   options={subcategories}
-                 classname={`text-sm  xl:w-[298px] 2xl:w-[298px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  classname={`text-sm  xl:w-[298px] 2xl:w-[298px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
 
 
                 />
@@ -275,7 +274,7 @@ export const Auction = () => {
                   register={register}
                   errors={errors}
                   placeholder={"Describe your product here..."}
-                     classname={`resize-none px-5 h-24 focus:text-black border rounded w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] p-4`}
+                  classname={`resize-none px-5 h-24 focus:text-black border rounded w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] p-4`}
                 />
               </div>
             </div>
@@ -287,63 +286,59 @@ export const Auction = () => {
 
 
 
-      <div className="flex items-center space-x-8 mb-8">
-      {/* Upload Now Option */}
-      <label className="flex items-center space-x-2 cursor-pointer">
-        <input
-          type="radio"
-          name="uploadOption"
-          value="Upload Now"
-          className="hidden"
-          checked={selectedOption === "Upload Now"}
-          onChange={() => setSelectedOption("Upload Now")}
-        />
-        <div
-          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-            selectedOption === "Upload Now" ? "border-[#D55842]" : "border-gray-400"
-          }`}
-        >
-          {selectedOption === "Upload Now" && (
-            <div className="w-3 h-3 rounded-full bg-[#D55842]"></div>
-          )}
-        </div>
-        <span
-          className={`text-sm ${
-            selectedOption === "Upload Now" ? "text-black" : "text-gray-400"
-          }`}
-        >
-          Upload Now
-        </span>
-      </label>
+          <div className="flex items-center space-x-8 mb-8">
+            {/* Upload Now Option */}
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="radio"
+                name="uploadOption"
+                value="Upload Now"
+                className="hidden"
+                checked={selectedOption === "Upload Now"}
+                onChange={() => setSelectedOption("Upload Now")}
+              />
+              <div
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedOption === "Upload Now" ? "border-[#D55842]" : "border-gray-400"
+                  }`}
+              >
+                {selectedOption === "Upload Now" && (
+                  <div className="w-3 h-3 rounded-full bg-[#D55842]"></div>
+                )}
+              </div>
+              <span
+                className={`text-sm ${selectedOption === "Upload Now" ? "text-black" : "text-gray-400"
+                  }`}
+              >
+                Upload Now
+              </span>
+            </label>
 
-      {/* Schedule Upload Option */}
-      <label className="flex items-center space-x-2 cursor-pointer">
-        <input
-          type="radio"
-          name="uploadOption"
-          value="Schedule Upload"
-          className="hidden"
-          checked={selectedOption === "Schedule Upload"}
-          onChange={() => setSelectedOption("Schedule Upload")}
-        />
-        <div
-          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-            selectedOption === "Schedule Upload" ? "border-[#D55842]" : "border-gray-400"
-          }`}
-        >
-          {selectedOption === "Schedule Upload" && (
-            <div className="w-3 h-3 rounded-full bg-[#D55842]"></div>
-          )}
-        </div>
-        <span
-          className={`text-sm ${
-            selectedOption === "Schedule Upload" ? "text-black" : "text-gray-400"
-          }`}
-        >
-          Schedule Upload
-        </span>
-      </label>
-    </div>
+            {/* Schedule Upload Option */}
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="radio"
+                name="uploadOption"
+                value="Schedule Upload"
+                className="hidden"
+                checked={selectedOption === "Schedule Upload"}
+                onChange={() => setSelectedOption("Schedule Upload")}
+              />
+              <div
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedOption === "Schedule Upload" ? "border-[#D55842]" : "border-gray-400"
+                  }`}
+              >
+                {selectedOption === "Schedule Upload" && (
+                  <div className="w-3 h-3 rounded-full bg-[#D55842]"></div>
+                )}
+              </div>
+              <span
+                className={`text-sm ${selectedOption === "Schedule Upload" ? "text-black" : "text-gray-400"
+                  }`}
+              >
+                Schedule Upload
+              </span>
+            </label>
+          </div>
 
 
 

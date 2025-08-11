@@ -23,6 +23,9 @@ import { div } from "framer-motion/m";
 import { tr } from "framer-motion/client";
 import { useQueryData } from "@/hooks/useQueryDataCat";
 import { setLocalStoreData } from "@/hooks/useLocalStorage";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { Controller } from "react-hook-form";
 
 
 interface Subcategory {
@@ -56,12 +59,12 @@ export const Auction = () => {
   const [selectedImg, setSelectedImg] = useState<any>([]);
   const [selectedImgName, setSelectedImgName] = useState<any>([]);
   const [showModal, setShowModal] = useState(false);
-    const [previews, setPreviews] = useState<string[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
 
   const setproduct = useNewProductStore((state) => state.setproduct);
 
 
-    const { data: catInfo, isLoading: catnLoading } =
+  const { data: catInfo, isLoading: catnLoading } =
     useQueryData<CategoryResponse>(
       `${process.env.NEXT_PUBLIC_BASE_URL}/commerce/categories_and_subcategories/`,
       ["get categories_and_subcategories"],
@@ -91,7 +94,7 @@ export const Auction = () => {
   } = useForm({
     mode: "all",
     resolver: yupResolver(ActionUploadSchema),
-     context: { isdisabled: isDisabled }
+    context: { isdisabled: isDisabled }
   });
 
   interface FileChangeEvent extends React.ChangeEvent<HTMLInputElement> {
@@ -143,7 +146,7 @@ export const Auction = () => {
       setPreviews([]);
       reset();
     } else if (data.status === 400 || data.status === 409) {
-            setPreviews([]);
+      setPreviews([]);
       toast.error(`${data?.data?.message}`, {
         position: "top-right",
         autoClose: 5000,
@@ -156,8 +159,8 @@ export const Auction = () => {
       });
       reset();
     } else {
-            setPreviews([]);
-  toast.error(`${data?.data?.message}`, {
+      setPreviews([]);
+      toast.error(`${data?.data?.message}`, {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -189,12 +192,52 @@ export const Auction = () => {
     handleError,
   );
 
-const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-GB");  // Formats as DD/MM/YYYY
-};
+  const formatTime = (timeString: string) => {
+    if (!timeString) {
+      return '';
+    }
 
-const sumbitForm = (data: any) => {
+    // If the time string already contains AM or PM, return it as-is
+    if (typeof timeString === 'string' && (timeString.includes('AM') || timeString.includes('PM'))) {
+      return timeString;
+    }
+
+    if (!timeString.includes(':')) {
+      return '';
+    }
+
+    const [hours, minutes] = timeString.split(':');
+    let h = parseInt(hours, 10);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12;
+    h = h ? h : 12; // Handle midnight (0) as 12
+    const hStr = h < 10 ? '0' + h : String(h);
+    return `${hStr}:${minutes} ${ampm}`;
+  };
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.toLocaleString('en-US', { month: 'long' });
+    const year = date.getFullYear();
+    return `${day} ${month}, ${year}`;
+  };
+
+
+  function convertTo24Hour(time12h: string) {
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    if (hours === '12') {
+      hours = '00';
+    }
+    if (modifier === 'PM') {
+      hours = String(parseInt(hours, 10) + 12);
+    }
+    return `${hours.padStart(2, '0')}:${minutes}`;
+  }
+
+  const sumbitForm = (data: any) => {
     // Prepare FormData to handle file uploads
     const formData = new FormData();
 
@@ -203,42 +246,46 @@ const sumbitForm = (data: any) => {
     formData.append("auction_category", data.auction_category);
     formData.append("sub_category", data.sub_category);
     formData.append("cost_price", data.cost_price);
+    formData.append("quantity", data.quantity);
     formData.append("ticket_price", data.ticket_price);
     formData.append("start_date", formatDate(data.auction_date));  // Formatted date
-    formData.append("start_time", data.auction_starttime);
-    formData.append("end_time", data.auction_endtime);
+    formData.append("start_time", formatTime(data.auction_starttime));
+    formData.append("end_time", formatTime(data.auction_endtime));
     formData.append("description", data.description);
+    formData.append("weight", data.weight);
 
     // Append files if they exist
     const auctionMedia = data.auction_media as File[];
     auctionMedia.forEach((file, index) => {
-        formData.append(`auction_media[${index}]`, file);
+      formData.append(`auction_media[${index}]`, file);
     });
 
     // Create a clean payload for the request
     const Payload = {
-        name: data.auction_name,
-        category: data.auction_category,
-        subcategory: data.sub_category,
-        const_price: data.cost_price,
-        ticket_price: data.ticket_price,
-        start_date: formatDate(data.auction_date),
-        start_time: data.auction_starttime,
-        end_time: data.auction_endtime,
-        description: data.description,
-        auction_images: auctionMedia  // Use file names for payload
+      name: data.auction_name,
+      category: data.auction_category,
+      subcategory: data.sub_category,
+      const_price: data.cost_price,
+      quantity: data.quantity,
+      weight: `${data.weight}KG`,
+      ticket_price: data.ticket_price,
+      start_date: formatDate(data.auction_date),
+      start_time: formatTime(data.auction_starttime),
+      end_time: formatTime(data.auction_endtime),
+      description: data.description,
+      auction_images: auctionMedia  // Use file names for payload
     };
 
-    // console.log(Payload, "Payload");
+ /*     console.log(Payload, "Payload") */;
 
      mutate({
-         url: "/api/uploadauction",
-         payload: Payload,
+       url: "/api/uploadauction",
+       payload: Payload,
      });
 
      localStorage.setItem("auction-details", JSON.stringify(Payload));
 
-};
+  };
 
 
   const [selectedOption, setSelectedOption] = useState("Upload Now");
@@ -251,9 +298,8 @@ const sumbitForm = (data: any) => {
     <>
       <ToastContainer closeOnClick />
       <section
-        className={`my-10 px-20 ${
-          isNavbarOpen ? "justify-center items-center " : ""
-        } flex-col flex`}
+        className={`my-10 px-20 ${isNavbarOpen ? "justify-center items-center " : ""
+          } flex-col flex`}
       >
         <h1
           className={`xl:text-2xl 2xl:text-2xl md:text-2xl text-base font-normal pb-4 leading-tight tracking-tight underline p-3`}
@@ -300,7 +346,7 @@ const sumbitForm = (data: any) => {
               </div>
 
 
-         <div className="flex gap-2 mt-4 flex-wrap">
+              <div className="flex gap-2 mt-4 flex-wrap">
                 {previews.map((src, index) => (
                   <Image
                     key={index}
@@ -373,7 +419,17 @@ const sumbitForm = (data: any) => {
                   errors={errors}
                   classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
+                <InputField
+                  name="quantity"
+                  label="Quantity"
+                  type="text"
+                  placeholder="100"
+                  register={register}
+                  errors={errors}
+                  classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                />
               </div>
+              
             </div>
 
             <div className="flex items-center">
@@ -387,7 +443,7 @@ const sumbitForm = (data: any) => {
                   errors={errors}
                   classname={`text-sm w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
-                 <SelectField
+                <SelectField
                   name="auction_category"
                   label="Category"
                   register={register}
@@ -427,198 +483,127 @@ const sumbitForm = (data: any) => {
 
           <hr className="w-full h-2 border-[#D2D2D2] rounded"></hr>
 
-           {/*    <div className="flex items-center space-x-8 mb-8">
 
-            <label className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="radio"
-                name="uploadOption"
-                value="Upload Now"
-                className="hidden"
-                checked={selectedOption === "Upload Now"}
-                onChange={() => setSelectedOption("Upload Now")}
+
+          <div>
+            <div className="flex gap-4  flex-col lg:flex-row md:flex-row border border-gray-300 rounded-lg px-4 py-4 ">
+
+              <div className="">
+                <div className="">
+                  <label htmlFor="auction_date" className="text-sm font-medium text-gray-700">Start Date</label>
+                  <div>
+                    <Controller
+                      control={control}
+                      name="auction_date"
+                      render={({ field }) => (
+                        <DatePicker
+                          selected={field.value ? new Date(field.value) : null}
+                          onChange={date => {
+                            if (date) {
+                              const day = date.getDate();
+                              const month = date.toLocaleString('default', { month: 'long' });
+                              const year = date.getFullYear();
+                              const formatted = `${day} ${month}, ${year}`;
+                              field.onChange(formatted);
+                            } else {
+                              field.onChange("");
+                            }
+                          }}
+                          dateFormat="d MMMM, yyyy"
+                          placeholderText="22 June, 2025"
+                          className="px-5 h-12 focus:text-black border rounded w-full"
+                        />
+                      )}
+                    />
+                    <p className="text-xs text-rose-500 pt-1" >{errors?.auction_date?.message}</p>
+                  </div>
+                </div>
+              </div>
+
+
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Start Time</label>
+                  <Controller
+                    control={control}
+                    name="auction_starttime"
+
+                    render={({ field }) => (
+                      <DatePicker
+                        selected={
+                          field.value && /^\d{2}:\d{2} (AM|PM)$/.test(field.value)
+                            ? new Date(`1970-01-01T${convertTo24Hour(field.value)}`)
+                            : null
+                        }
+                        onChange={date => {
+                          const formatted = date
+                            ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase()
+                            : "";
+                          field.onChange(formatted);
+                        }}
+                        showTimeSelect
+                        showTimeSelectOnly
+                        timeIntervals={15}
+                        timeCaption="Time"
+                        dateFormat="hh:mm aa"
+                        placeholderText="HH:MM AM/PM"
+                        className="px-5 h-12 focus:text-black border rounded w-full"
+                      />
+                    )}
+                  />
+                  <p className="text-xs text-rose-500 pt-1" >{errors?.auction_starttime?.message}</p>
+                </div>
+
+              </div>
+
+
+              <div className="grid grid-cols-2 gap-4">
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700">End Time</label>
+                  <Controller
+                    control={control}
+                    name="auction_endtime"
+
+                    render={({ field }) => (
+                      <DatePicker
+                        selected={
+                          field.value && /^\d{2}:\d{2} (AM|PM)$/.test(field.value)
+                            ? new Date(`1970-01-01T${convertTo24Hour(field.value)}`)
+                            : null
+                        }
+                        onChange={date => {
+                          const formatted = date
+                            ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase()
+                            : "";
+                          field.onChange(formatted);
+                        }}
+                        showTimeSelect
+                        showTimeSelectOnly
+                        timeIntervals={15}
+                        timeCaption="Time"
+                        dateFormat="hh:mm aa"
+                        placeholderText="HH:MM AM/PM"
+                        className="px-5 h-12 focus:text-black border rounded w-full"
+                      />
+                    )}
+                  />
+                  <p className="text-xs text-rose-500 pt-1" >{errors?.auction_endtime?.message}</p>
+                </div>
+              </div>
+
+            </div>
+
+
+            <div className={`py-4`}>
+              <DefaultButton
+                text={status === "pending" ? "loading..." : "Upload"}
+                type="submit"
+                handleClick={() => null}
+                className=" bg-[#FCDFD4] p-4 text-sm w-[10em] hover:bg-[#F25E26] hover:text-white rounded-lg"
               />
-              <div
-                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                  selectedOption === "Upload Now"
-                    ? "border-[#D55842]"
-                    : "border-gray-400"
-                }`}
-              >
-                {selectedOption === "Upload Now" && (
-                  <div className="w-3 h-3 rounded-full bg-[#D55842]"></div>
-                )}
-              </div>
-              <span
-                className={`text-sm ${
-                  selectedOption === "Upload Now"
-                    ? "text-black"
-                    : "text-gray-400"
-                }`}
-              >
-                Upload Now
-              </span>
-            </label>
-
-            <label className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="radio"
-                name="uploadOption"
-                value="Schedule Upload"
-                className="hidden"
-                checked={selectedOption === "Schedule Upload"}
-                onChange={() => setSelectedOption("Schedule Upload")}
-              />
-              <div
-                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                  selectedOption === "Schedule Upload"
-                    ? "border-[#D55842]"
-                    : "border-gray-400"
-                }`}
-              >
-                {selectedOption === "Schedule Upload" && (
-                  <div className="w-3 h-3 rounded-full bg-[#D55842]"></div>
-                )}
-              </div>
-              <span
-                className={`text-sm ${
-                  selectedOption === "Schedule Upload"
-                    ? "text-black"
-                    : "text-gray-400"
-                }`}
-              >
-                Schedule Upload
-              </span>
-            </label>
-          </div>
-
-      {selectedOption === "Upload Now" ? (
-            <div>
-              <h1 className=" text-sm font-Poppins text-gray-400 mb-4">
-                Date & Time
-              </h1>
-              <div className="flex gap-4  flex-col lg:flex-row md:flex-row border border-gray-300 rounded-lg px-4 py-4 ">
-                <InputField
-                  name="auction_date"
-                  label="Date"
-                  type="date"
-                  placeholder="Start Date"
-                  isdisabled={true}
-                  register={register}
-                  errors={errors}
-                  classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-                />
-                <InputField
-                  name="auction_starttime"
-                  label="Start Time"
-                  type="time"
-                  isdisabled={true}
-                  placeholder="End Date"
-                  register={register}
-                  errors={errors}
-                  classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-                />
-                <InputField
-                  name="auction_endtime"
-                  label="End Time"
-                  type="time"
-                  placeholder="End Date"
-                  register={register}
-                  errors={errors}
-                  classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-                />
-              </div>
-              <h1 className=" py-4 flex  justify-center items-center text-sm font-Poppins text-gray-400 mb-4">
-                Duration: 2hr: 00 mins
-              </h1>
             </div>
-          ) : (
-            <div>
-              <div className="flex gap-4  flex-col lg:flex-row md:flex-row border border-gray-300 rounded-lg px-4 py-4 ">
-                <InputField
-                  name="auction_date"
-                  label="Date"
-                  type="date"
-                  placeholder="Start Date"
-                  isdisabled={false}
-                  register={register}
-                  errors={errors}
-                  classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-                />
-                <InputField
-                  name="auction_starttime"
-                  label="Start Time"
-                  type="time"
-                  isdisabled={false}
-                  placeholder="End Date"
-                  register={register}
-                  errors={errors}
-                  classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-                />
-                <InputField
-                  name="auction_endtime"
-                  label="End Time"
-                  type="time"
-                  placeholder="End Date"
-                  register={register}
-                  errors={errors}
-                  classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-                />
-              </div>
-              <h1 className=" py-4 flex  justify-center items-center text-sm font-Poppins text-gray-400 mb-4">
-                Duration: 2hr: 00 mins
-              </h1>
-            </div>
-          )} */}
-
-
-             <div>
-              <div className="flex gap-4  flex-col lg:flex-row md:flex-row border border-gray-300 rounded-lg px-4 py-4 ">
-                <InputField
-                  name="auction_date"
-                  label="Date"
-                  type="date"
-                  placeholder="Start Date"
-                  isdisabled={false}
-                  register={register}
-                  errors={errors}
-                  classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-                />
-                <InputField
-                  name="auction_starttime"
-                  label="Start Time"
-                  type="text"
-                  isdisabled={false}
-                  placeholder="12AM or 12PM"
-                  register={register}
-                  errors={errors}
-                pattern="^(0?[1-9]|1[0-2])(AM|PM)$"
-                  classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-                />
-                <InputField
-                  name="auction_endtime"
-                  label="End Time"
-                  type="text"
-                placeholder="12AM or 12PM"
-                  register={register}
-                  errors={errors}
-                pattern="^(0?[1-9]|1[0-2])(AM|PM)$"
-                  classname="text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none"
-                />
-              </div>
-             {/*  <h1 className=" py-4 flex  justify-center items-center text-sm font-Poppins text-gray-400 mb-4">
-                Duration: 2hr: 00 mins
-              </h1> */}
-            </div>
-
-
-          <div className={`py-4`}>
-            <DefaultButton
-              text={status === "pending" ? "loading..." : "Upload"}
-              type="submit"
-              handleClick={() => null}
-              className=" bg-[#FCDFD4] p-4 text-sm w-[10em] hover:bg-[#F25E26] hover:text-white rounded-lg"
-            />
           </div>
         </form>
 

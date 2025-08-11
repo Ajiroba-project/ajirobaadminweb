@@ -4,11 +4,7 @@ import { useRouter } from "next/navigation";
 import { SideNav } from "@/app/components/SideNav";
 import { Header } from "@/app/components/Header";
 import { useStore } from "@/store/nav-store";
-// import { UserDetails } from "./components/UserDetails";
-// import { Upload } from "./components/Upload";
-// import { Product } from "./components/Product";
-// import { Categories } from "./components/Categories";
-// import { Transaction } from "./components/Transaction";
+
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 import { useEffect } from "react";
 import { section } from "framer-motion/client";
@@ -21,12 +17,12 @@ const Page = () => {
   const router = useRouter();
   const isNavbarOpen = useStore((state) => state.isNavbarOpen);
   const headingText = useStore((state) => state.headingText);
-    useAuthMiddleware(router);
+  useAuthMiddleware(router);
 
-    const setNavbarOpen = useStore((state) => state.setNavbarOpen);
+  const setNavbarOpen = useStore((state) => state.setNavbarOpen);
 
 
-    useEffect(() => {
+  useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
         setNavbarOpen(false); // Automatically close navbar on larger screens
@@ -45,15 +41,15 @@ const Page = () => {
   return (
 
 
-<section>
+    <section>
 
-    <PageLayout>
+      <PageLayout>
 
-       <div style={{
+        <div style={{
 
         }} className={` ${isNavbarOpen ? "" : ""}  `}>
-             <UserDetails />
-         {/*  {headingText === "User Details" ? (
+          <UserDetails />
+          {/*  {headingText === "User Details" ? (
             <UserDetails />
           ) : headingText === "Upload" ? (
             <Upload />
@@ -71,9 +67,9 @@ const Page = () => {
             <Transaction />
           )} */}
         </div>
-    </PageLayout>
+      </PageLayout>
 
-</section>
+    </section>
 
 
 

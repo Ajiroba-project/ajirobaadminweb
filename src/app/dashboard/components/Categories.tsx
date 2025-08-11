@@ -77,7 +77,7 @@ export const Categories = () => {
   // console.log(catandsubInfo);
 
 
-    const catnew = catandsubInfo?.data?.map((cat: { category: any; id: any; subcategories: any; }) => ({
+  const catnew = catandsubInfo?.data?.map((cat: { category: any; id: any; subcategories: any; }) => ({
     label: cat.category,
     value: cat.id,
     id: cat.id,
@@ -135,49 +135,48 @@ export const Categories = () => {
 
 
   const [selectedSubcategories, setSelectedSubcategories] = useState<{
-  [key: number]: string[];
-}>({});
+    [key: number]: string[];
+  }>({});
 
 
-const handleCheckboxChange = (
-  event: React.ChangeEvent<HTMLInputElement>,
-  categoryId: number,
-  subcategoryId: string
-) => {
-  setSelectedSubcategories((prev) => {
-    const updated = { ...prev };
+  const handleCheckboxChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    categoryId: number,
+    subcategoryId: string
+  ) => {
+    setSelectedSubcategories((prev) => {
+      const updated = { ...prev };
 
-    if (event.target.checked) {
-      // Add subcategory ID if checked
-      updated[categoryId] = [...(updated[categoryId] || []), subcategoryId];
-    } else {
-      // Remove subcategory ID if unchecked
-      updated[categoryId] = updated[categoryId]?.filter((id) => id !== subcategoryId) || [];
-    }
+      if (event.target.checked) {
+        // Add subcategory ID if checked
+        updated[categoryId] = [...(updated[categoryId] || []), subcategoryId];
+      } else {
+        // Remove subcategory ID if unchecked
+        updated[categoryId] = updated[categoryId]?.filter((id) => id !== subcategoryId) || [];
+      }
 
-    return updated;
-  });
-};
+      return updated;
+    });
+  };
 
-const handleEditClick = (categoryId: number) => {
-  console.log("Category ID:", categoryId);
-  console.log("Selected Subcategories:", selectedSubcategories[categoryId] || []);
-  setEditModal(!editmodal);
-};
+  const handleEditClick = (categoryId: number) => {
+    /*  console.log("Category ID:", categoryId);
+     console.log("Selected Subcategories:", selectedSubcategories[categoryId] || []); */
+    setEditModal(!editmodal);
+  };
 
 
 
-if (catLoading) {
- return <Loading/>
-}
+  if (catLoading) {
+    return <Loading />
+  }
 
 
   return (
     <>
       <section
-        className={`my-10 px-20 ${
-          isNavbarOpen ? "justify-center items-center " : ""
-        } flex-col flex`}
+        className={`my-10 px-20 ${isNavbarOpen ? "justify-center items-center " : ""
+          } flex-col flex`}
       >
         {categoryswitch === "list" ? (
           <>
@@ -227,19 +226,19 @@ if (catLoading) {
                       val: {
                         id: number;
                         category:
-                          | string
-                          | number
-                          | bigint
-                          | boolean
-                          | React.ReactElement<
-                              any,
-                              string | React.JSXElementConstructor<any>
-                            >
-                          | Iterable<React.ReactNode>
-                          | React.ReactPortal
-                          | Promise<React.AwaitedReactNode>
-                          | null
-                          | undefined;
+                        | string
+                        | number
+                        | bigint
+                        | boolean
+                        | React.ReactElement<
+                          any,
+                          string | React.JSXElementConstructor<any>
+                        >
+                        | Iterable<React.ReactNode>
+                        | React.ReactPortal
+                        | Promise<React.AwaitedReactNode>
+                        | null
+                        | undefined;
                         subcategories: any[];
                       },
                       index: number,
@@ -263,7 +262,7 @@ if (catLoading) {
                                   name={`check${index}-${i}`}
                                   id={`check${index}-${i}`}
                                   className="outline-[#F25E26] mr-2"
-                                   onChange={(e) => handleCheckboxChange(e, val.id, sub.id)}
+                                  onChange={(e) => handleCheckboxChange(e, val.id, sub.id)}
                                 />
                                 <label htmlFor={`check${index}-${i}`}>
                                   {sub.subcategory}
@@ -274,8 +273,8 @@ if (catLoading) {
                           <div className="flex gap-2 w-full items-end place-content-end mt-2">
                             <p
                               className="text-[#F25E26] cursor-pointer"
-                            /*   onClick={() => setEditModal(!editmodal)} */
-                            onClick={() => handleEditClick(val.id)}
+                              /*   onClick={() => setEditModal(!editmodal)} */
+                              onClick={() => handleEditClick(val.id)}
                             >
                               Edit
                             </p>
@@ -299,9 +298,8 @@ if (catLoading) {
                   (_, i) => (
                     <button
                       key={i}
-                      className={`mx-2 px-3 py-1 border ${
-                        currentPage === i + 1 ? "bg-[#F25E26] text-white" : ""
-                      }`}
+                      className={`mx-2 px-3 py-1 border ${currentPage === i + 1 ? "bg-[#F25E26] text-white" : ""
+                        }`}
                       onClick={() => handlePageChange(i + 1)}
                     >
                       {i + 1}
@@ -344,7 +342,7 @@ if (catLoading) {
         }
         isModalOpen={categoryOpen}
         showModal={togglecategory}
-        handleOk={() => {}}
+        handleOk={() => { }}
         handleCancel={togglecategory}
       />
 
@@ -358,7 +356,7 @@ if (catLoading) {
         }
         isModalOpen={subcategoryOpen}
         showModal={toggleSubcategory}
-        handleOk={() => {}}
+        handleOk={() => { }}
         handleCancel={toggleSubcategory}
       />
 
@@ -372,7 +370,7 @@ if (catLoading) {
         }
         isModalOpen={updateCategory}
         showModal={handleUpdateSubCategory}
-        handleOk={() => {}}
+        handleOk={() => { }}
         handleCancel={() => setUpdateCategory(false)}
       />
 
@@ -404,7 +402,7 @@ if (catLoading) {
         }
         isModalOpen={modal}
         showModal={modalEvent}
-        handleOk={() => {}}
+        handleOk={() => { }}
         handleCancel={() => setModal(false)}
       />
 
@@ -418,7 +416,7 @@ if (catLoading) {
         }
         isModalOpen={editmodal}
         showModal={modalEdit}
-        handleOk={() => {}}
+        handleOk={() => { }}
         handleCancel={() => setEditModal(false)}
       />
     </>
