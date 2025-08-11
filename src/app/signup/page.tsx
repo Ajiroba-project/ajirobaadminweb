@@ -1,211 +1,3 @@
-// "use client";
-// import { useRouter } from "next/navigation";
-// import { RegistrationHeader, HeaderTitle } from "../components/Header";
-// import { SignUpValidationSchema } from "@/helper/validation";
-// import { useMutateData } from "@/hooks/useMutateData";
-// import { InputField } from "../components/FormField";
-// import { DefaultButton } from "../components/Button";
-// import { useForm } from "react-hook-form";
-// import { yupResolver } from "@hookform/resolvers/yup";
-// import { ToastContainer, toast } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
-
-// type dataProps = {
-//   first_name: string;
-//   last_name: string;
-//   email: string;
-//   phone: string;
-//   password: string;
-//   address: string;
-//   city: string;
-// };
-
-// // page rendered
-// const Page = () => {
-//   const router = useRouter();
-
-//   const {
-//     reset,
-//     register,
-//     control,
-//     handleSubmit,
-//     formState: { errors },
-//     trigger,
-//     watch,
-//     setValue,
-//   } = useForm({
-//     mode: "all",
-//     resolver: yupResolver(SignUpValidationSchema),
-//   });
-
-//   const handleSuccess = (data: any) => {
-//     if (data.status === 201) {
-//       toast.success(`${data?.data?.message}`, {
-//         position: "top-right",
-//         autoClose: 5000,
-//         hideProgressBar: false,
-//         closeOnClick: true,
-//         pauseOnHover: true,
-//         draggable: true,
-//         progress: undefined,
-//         theme: "light",
-//         onClose: () => router.push("/otpverification"),
-//       });
-//       reset();
-//     } else if (data.status === 400 || data.status === 409) {
-//       toast.error(`${data?.data?.message}`, {
-//         position: "top-right",
-//         autoClose: 5000,
-//         hideProgressBar: false,
-//         closeOnClick: true,
-//         pauseOnHover: true,
-//         draggable: true,
-//         progress: undefined,
-//         theme: "light",
-//       });
-//       reset();
-//     } else {
-//       toast.error(`${"An Error Occured"}`, {
-//         position: "top-right",
-//         autoClose: 5000,
-//         hideProgressBar: false,
-//         closeOnClick: true,
-//         pauseOnHover: true,
-//         draggable: true,
-//         progress: undefined,
-//         theme: "light",
-//       });
-//       reset();
-//     }
-//   };
-//   const handleError = (error: any) => {
-//     toast.error(`${"An Error Occured"}`, {
-//       position: "top-right",
-//       autoClose: 5000,
-//       hideProgressBar: false,
-//       closeOnClick: true,
-//       pauseOnHover: true,
-//       draggable: true,
-//       progress: undefined,
-//       theme: "light",
-//     });
-//     reset();
-//   };
-//   const { data, error, isError, isSuccess, mutate, status } = useMutateData(
-//     "signup",
-//     handleSuccess,
-//     handleError
-//   );
-
-//   const sumbitForm = (data: dataProps) => {
-//     mutate({
-//       url: "/api/auth",
-//       payload: data,
-//     });
-//   };
-
-//   return (
-//     <section>
-//       <ToastContainer closeOnClick />
-//       {/* <RegistrationHeader/> */}
-//       <HeaderTitle
-//         title="Register"
-//         subtitle="Create an account kindly provide your details below"
-//       />
-
-//       <div className=" flex justify-center mb-20  my-4">
-//         <form onSubmit={handleSubmit(sumbitForm)}>
-//           <div className="grid xl:grid-cols-2 lg:grid-cols-2 md:grid-cols-2 2xl:grid-cols-2 grid-cols-1 gap-8 px-3 mt-12">
-//             <InputField
-//               name="first_name"
-//               label="First Name*"
-//               placeholder="Enter Firstname"
-//               type="text"
-//               register={register}
-//               errors={errors}
-//             />
-//             <InputField
-//               name="last_name"
-//               label="Last Name*"
-//               placeholder="Enter Lastname"
-//               type="text"
-//               register={register}
-//               errors={errors}
-//             />
-//             <InputField
-//               name="email"
-//               label="Email*"
-//               placeholder="Enter Email"
-//               type="email"
-//               register={register}
-//               errors={errors}
-//             />
-//             <InputField
-//               name="phone"
-//               label="Phone Number*"
-//               placeholder="Enter Phone Number"
-//               type="text"
-//               register={register}
-//               errors={errors}
-//             />
-//             <InputField
-//               name="password"
-//               label="Password*"
-//               placeholder="Enter Password"
-//               type="password"
-//               register={register}
-//               errors={errors}
-//             />
-//             <InputField
-//               name="address"
-//               label="Address*"
-//               placeholder="Enter Address"
-//               type="text"
-//               register={register}
-//               errors={errors}
-//             />
-//             <InputField
-//               name="city"
-//               label="City*"
-//               placeholder="Enter City"
-//               type="text"
-//               register={register}
-//               errors={errors}
-//             />
-//           </div>
-//           <div className="flex justify-center items-center mt-12">
-//             <DefaultButton
-//               type="submit"
-//               className=" w-full bg-[#FCDFD4] py-4 text-sm"
-//               handleClick={() => null}
-//               text={status === "pending" ? "loading..." : "Create Account"}
-//             />
-//           </div>
-//           <div className="flex justify-center items-center mt-8">
-//             <nav className="flex gap-2">
-//               <small className="text-base text-sm">
-//                 Already Have an Account?
-//               </small>
-//               <small className="text-base">
-//                 <button
-//                   onClick={() => router.push("/signin")}
-//                   className="text-[#F25E26] text-sm"
-//                 >
-//                   Sign in
-//                 </button>
-//               </small>
-//             </nav>
-//           </div>
-//         </form>
-//       </div>
-//     </section>
-//   );
-// };
-
-// export default Page;
-
-
-
 "use client";
 import Link from "next/link";
 import Brand from "../asset/logo.svg";
@@ -225,10 +17,11 @@ import { Input } from "@nextui-org/react";
 
 import { Select, SelectSection, SelectItem } from "@nextui-org/select";
 
-import { state_and_LGA } from '@/app/static-data'
+import { state_and_LGA } from "../../app/static-data";
 import { useState } from "react";
 import { ModalProfile, ModalTerms } from "../profile/components/ModalProfile";
 import { IoIosClose } from "react-icons/io";
+import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 
 function Page() {
   type dataProps = {
@@ -248,23 +41,43 @@ function Page() {
   const router = useRouter();
 
   const schema = yup.object().shape({
-    first_name: yup.string().required("Firstname is required"),
-    last_name: yup.string().required("Surname is required"),
+    first_name: yup
+      .string()
+      .required("Firstname is required")
+      .matches(/^[A-Za-z\s]+$/, "Firstname can only contain letters"),
+    last_name: yup
+      .string()
+      .required("Surname is required")
+      .matches(/^[A-Za-z\s]+$/, "Surname can only contain letters"),
     email: yup
       .string()
+      .email("Please enter a valid email address")
       .matches(
-        /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,3}))$/,
-        "Valid email is required",
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        "Please enter a valid email address"
       )
       .required("Email is required"),
-    phone: yup.string().required("Mobile number is required"),
-    address: yup.string().required("address is required"),
-    state: yup.string().required("State is required"),
-    lga: yup.string().required("LGA is required"),
+    phone: yup
+      .string()
+      .matches(/^[0-9]+$/, "Phone number must contain only numbers")
+      .min(10, "Phone number must be at least 10 digits")
+      .max(11, "Phone number cannot exceed 11 digits")
+      .required("Mobile number is required"),
+    address: yup
+      .string()
+      .required("Address is required")
+      .min(10, "Address must be at least 10 characters long")
+      .matches(/^[a-zA-Z0-9\s,.-]+$/, "Address can only contain letters, numbers, spaces, commas, periods, and hyphens"),
+    state: yup.string().required("State is required").notOneOf([''], "Please select a state"),
+    lga: yup.string().required("LGA is required").notOneOf([''], "Please select an LGA"),
     password: yup
       .string()
       .required("Password is required")
-      .min(6, "Can't be lesser than 6 digits"),
+      .min(8, "Password must be at least 8 characters")
+      .matches(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/,
+        "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+      ),
     gender: yup.boolean().required("Gender is required"),
     // agree_terms: yup
     //   .boolean()
@@ -287,9 +100,8 @@ function Page() {
   });
 
   const handleSuccess = (data: any) => {
-    setValue('first_name', '')
     if (data.status === 201) {
-      reset()
+      reset();
       toast.success(`${data?.data?.message}`, {
         position: "top-right",
         autoClose: 2000,
@@ -301,9 +113,7 @@ function Page() {
         theme: "light",
         onClose: () => router.push("/otpverification"),
       });
-      reset();
     } else if (data.status === 400 || data.status === 409) {
-        reset()
       toast.error(`${data?.data?.message}`, {
         position: "top-right",
         autoClose: 2000,
@@ -314,11 +124,8 @@ function Page() {
         progress: undefined,
         theme: "light",
       });
-      reset();
     } else {
-        reset()
-      toast.error(`${data?.data?.message}`, {
-
+      toast.error(`${"An Error Occured"}`, {
         position: "top-right",
         autoClose: 2000,
         hideProgressBar: false,
@@ -328,14 +135,10 @@ function Page() {
         progress: undefined,
         theme: "light",
       });
-      reset();
     }
   };
 
   const handleError = (error: any) => {
-        setValue('first_name', '')
-        console.log(error , 'errr')
-      reset()
     toast.error(`${"An Error Occured"}`, {
       position: "top-right",
       autoClose: 2000,
@@ -346,7 +149,6 @@ function Page() {
       progress: undefined,
       theme: "light",
     });
-    reset();
   };
 
   const { data, error, isError, isSuccess, mutate, status } = useMutateData(
@@ -356,8 +158,22 @@ function Page() {
   );
 
   const sumbitForm = (data: dataProps) => {
-    // console.log(data, 'datat')
-     mutate({
+    // Validate email before submission
+    const emailIsValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(data.email);
+    if (!emailIsValid) {
+      toast.error("Please enter a valid email address", {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      return;
+    }
+    mutate({
       url: "/api/auth",
       payload: data,
     });
@@ -370,6 +186,8 @@ function Page() {
     setSelectedState(value);
     const selectedState = state_and_LGA.find((state) => state.state === value);
     setLgas(selectedState ? selectedState.lgas : []);
+    // Clear the LGA selection when state changes
+    setValue('lga', '');
   };
 
   const [isModalOpen, setModalOpen] = useState(false);
@@ -377,6 +195,8 @@ function Page() {
   const handleCloseModal = () => {
     setModalOpen(false);
   };
+
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <>
@@ -459,6 +279,7 @@ function Page() {
                         {...field}
                         placeholder="Enter email"
                         className="text-sm w-full h-auto p-2.5 border rounded-lg font-Inter font-normal focus:outline-none"
+                        onBlur={() => trigger("email")}
                       />
                     </div>
                   )}
@@ -478,10 +299,16 @@ function Page() {
                   render={({ field }) => (
                     <div>
                       <input
-                        type="text"
+                        type="tel"
                         {...field}
                         placeholder="Enter phone number"
                         className="text-sm w-full h-auto p-2.5 border rounded-lg font-Inter font-normal focus:outline-none"
+                        maxLength={15}
+                        onKeyPress={(e) => {
+                          if (!/[0-9]/.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
                       />
                     </div>
                   )}
@@ -499,13 +326,24 @@ function Page() {
                   name="password"
                   control={control}
                   render={({ field }) => (
-                    <div>
+                    <div className="relative">
                       <input
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         {...field}
                         placeholder="***********"
-                        className="text-sm w-full h-auto p-2.5 border rounded-lg font-Inter font-normal focus:outline-none"
+                        className="text-sm w-full h-auto p-2.5 border rounded-lg font-Inter font-normal focus:outline-none pr-10"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      >
+                        {showPassword ? (
+                          <IoEyeOffOutline size={20} />
+                        ) : (
+                          <IoEyeOutline size={20} />
+                        )}
+                      </button>
                     </div>
                   )}
                 />
@@ -569,17 +407,18 @@ function Page() {
                     <div>
                       <select
                         className="text-sm w-full h-auto p-2.5 border rounded-lg font-Inter font-normal pr-12"
-                        {...field}
                         style={{
                           border: "1px solid #D9D9D9",
                           borderRadius: "0.25rem",
                         }}
+                        value={field.value || ''}
                         onChange={(event) => {
                           const value = event.target.value;
                           field.onChange(value);
                           handleStateChange(value);
                         }}
                       >
+                        <option value="">Select State</option>
                         {state_and_LGA.map((state) => (
                           <option key={state.state} value={state.state}>
                             {state.state}
@@ -610,11 +449,13 @@ function Page() {
                           borderRadius: "0.25rem",
                         }}
                         disabled={!selectedState}
+                        value={field.value || ''}
                         onChange={(event) => {
                           const value = event.target.value;
                           field.onChange(value);
                         }}
                       >
+                        <option value="">Select LGA</option>
                         {lgas.map((lga) => (
                           <option key={lga} value={lga}>
                             {lga}
@@ -704,7 +545,7 @@ function Page() {
               </div>
             </div>
 
-         {/*    <div className="flex justify-center items-center mt-4">
+            {/* <div className="flex justify-center items-center mt-4">
               <input
                 type="checkbox"
                 id="agreement"
@@ -751,13 +592,13 @@ function Page() {
           >
             <div className=" cursor-pointer" onClick={handleCloseModal}
 
-             style={{
-        backgroundImage: "url('/ajirobabg.svg')",  // Add your image path here
-       backgroundSize: "33.33%",
-        backgroundPosition: "center",
-        backgroundRepeat: "repeat-x",
-   /*       backgroundPosition: "top", */
-      }}
+              style={{
+                backgroundImage: "url('/ajirobabg.svg')",  // Add your image path here
+                backgroundSize: "33.33%",
+                backgroundPosition: "center",
+                backgroundRepeat: "repeat-x",
+                /*       backgroundPosition: "top", */
+              }}
             >
               <div className="bg-[#F6F6F6] items-center cursor-pointer p-8">
                 <div className="flex justify-between items-center">
@@ -818,40 +659,40 @@ function Page() {
                   <div>
                     <p className="text-sm font-Poppins text-[#2A2A2A] font-normal">
                       There is no refund for any ticket already bought on the
-                      platofm as every ticket is deemed to be use or loose
+                      platform as every ticket is deemed to be use or loose
                     </p>
                   </div>
                 </div>
 
 
-                 <div>
+                <div>
                   <div>
                     <h1 className="text-[#2A2A2A] font-Poppins font-semibold text-lg">
-                     Auction Winning
+                      Auction Winning
                     </h1>
                   </div>
 
                   <div>
                     <p className="text-sm font-Poppins text-[#2A2A2A] font-normal">
-                     There is no guarantee that you win the item you bid for as the auction
-                     process is purely a game of chance with everyone as represented by every ticket has equal winning opportunity. However, you may increase your chances of winning by buying as many tickets as possible for your item of choice on auction.
+                      There is no guarantee that you win the item you bid for as the auction
+                      process is purely a game of chance with everyone as represented by every ticket has equal winning opportunity. However, you may increase your chances of winning by buying as many tickets as possible for your item of choice on auction.
                     </p>
                   </div>
                 </div>
 
 
-                   <div>
+                <div>
                   <div>
                     <h1 className="text-[#2A2A2A] font-Poppins font-semibold text-lg">
-                     Winning Redemption
+                      Winning Redemption
                     </h1>
                   </div>
 
                   <div>
                     <p className="text-sm font-Poppins text-[#2A2A2A] font-normal">
-                     Any item won on the platform can be redeemed through physical delivery of
-                     the items to you or through a gift voucher which can be redeemed at any of our designated stores or in some instances through cash tranfer to the winner where cash transfer
-                     remains the only efficient and feasible option
+                      Any item won on the platform can be redeemed through physical delivery of
+                      the items to you or through a gift voucher which can be redeemed at any of our designated stores or in some instances through cash tranfer to the winner where cash transfer
+                      remains the only efficient and feasible option
                     </p>
                   </div>
                 </div>

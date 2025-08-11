@@ -6,13 +6,14 @@ type ButtonProps = {
     className: string;
     type: "submit" | "reset" | "button" | undefined
     icon?:any
+    disabled?: boolean;
 }
 
 
-export const DefaultButton = ({ text, type, handleClick, className }: ButtonProps) => {
+export const DefaultButton = ({ text, type, handleClick, className, disabled }: ButtonProps) => {
     return (
         <>
-            <button className={`${className}`} type={type} onClick={handleClick}>
+            <button className={`${className}`} type={type} onClick={handleClick} disabled={disabled}>
                 {text}
             </button>
 
