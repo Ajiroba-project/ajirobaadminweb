@@ -41,7 +41,7 @@ export const UserSearch: React.FC = () => {
   useEffect(() => {
     if (userdetails) {
 
-      console.log(userdetails?.data?.data?.users, 'userdetails') 
+      // console.log(userdetails?.data?.data?.users, 'userdetails') 
 
       const usersdata: User[] = userdetails?.data?.data?.users.map((user: any) => ({
         first_name: user.first_name,
