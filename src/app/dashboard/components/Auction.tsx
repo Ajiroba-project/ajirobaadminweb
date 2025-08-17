@@ -265,7 +265,7 @@ export const Auction = () => {
       name: data.auction_name,
       category: data.auction_category,
       subcategory: data.sub_category,
-      const_price: data.cost_price,
+      cost_price: data.cost_price,
       quantity: data.quantity,
       weight: `${data.weight}KG`,
       ticket_price: data.ticket_price,

@@ -129,7 +129,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         <div className=" flex items-center justify-center bg-[#F6F6F6]  shadowCard rounded-none border-none h-[4rem]">
 
 
-          <Link href="/">
+          <Link href="/signin">
             <Image src={Brand} alt="brand logo" />
           </Link>
         </div>

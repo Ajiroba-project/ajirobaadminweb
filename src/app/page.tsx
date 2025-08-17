@@ -1,17 +1,22 @@
 
 'use client'
-import {useAuthStore} from '@/store/nav-store';
 import { useRouter } from 'next/navigation'
-import {useEffect} from "react";
-import useAuthMiddleware from "@/hooks/useAuthMiddleware"
+import { useEffect } from "react"
 
 export default function Home() {
   const router = useRouter()
-  useAuthMiddleware(router)
+  
+  useEffect(() => {
+    // Redirect to signin page as the default landing page
+    router.replace('/signin')
+  }, [router])
 
   return (
-    <main className="flex">
-    <h1>Admin Page</h1>
+    <main className="flex min-h-screen items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl font-semibold mb-4">Redirecting to Sign In...</h1>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+      </div>
     </main>
   );
 }

@@ -57,7 +57,7 @@ export const RegistrationHeader = () => {
   return (
     <>
       <nav className="container p-2 lg:px-14 px-7 md:block   flex justify-center">
-        <Link href="/">
+        <Link href="/signin">
           <Image src={Brand} alt="Ajiroba Logo" />
         </Link>
       </nav>
@@ -70,7 +70,7 @@ export const ProfileHeader = () => {
   return (
     <>
       <nav className="container p-4 lg:px-14 px-7 md:block   flex justify-center">
-        <Link href="/">
+        <Link href="/signin">
           <Image src={Brand} alt="Ajiroba Logo" />
         </Link>
       </nav>
