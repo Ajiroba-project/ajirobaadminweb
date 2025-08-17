@@ -55,9 +55,9 @@ export const RegularCompleted = () => {
     }
 
     return (
-        <section className="flex flex-col">
+        <section className="flex flex-col space-y-4 lg:space-y-6">
             <ListFilter onSearch={handleSearch} />
-            <div className="">
+            <div className="w-full">
                 {/* <h1 className=" items-center text-center text-lg my-8 text-orange-400 font-Poppins" >No Data Available Yet</h1> */}
                  <ProductListCard object={filteredData} /> 
             </div>

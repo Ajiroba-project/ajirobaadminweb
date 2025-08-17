@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Header } from "../Header";
 import { HeaderNavMenu } from "@/app/data";
 import { GoBell } from "react-icons/go";
-
+import { FiMenu } from "react-icons/fi";
 
 interface NavbarProps {
   toggleSidebar: () => void;
@@ -32,17 +32,17 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, navtitle }) => {
   const [active, setActive] = useState <activeProps>(null)
 
   return (
-    <header className="h-[4rem] flex justify-between items-center p-4 bg-[#F6F6F6] shadow-lg z-10 border   rounded-none  w-full">
+    <header className="h-16 lg:h-20 flex justify-between items-center px-4 lg:px-6 bg-[#F6F6F6] shadow-lg z-30 border rounded-none w-full">
 
-      <Link href="" className="text-base font-bold text-[#30313D] txtNormal">
+      <Link href="" className="text-sm lg:text-base font-bold text-[#30313D] txtNormal truncate">
 
         {navtitle}
       </Link>
-        <div className="flex items-center space-x-6">
-            <ul className="flex gap-6 justify-evenly">
+        <div className="hidden md:flex items-center space-x-4 lg:space-x-6">
+            <ul className="flex gap-4 lg:gap-6 justify-evenly">
         {HeaderNavMenu.map((val, index)=>(
           <li className="text-[#A09F9F] font-Poppins " key={index} onClick={() => setActive(index)}>
-            <Link href={val.path} className={`lg:text-md text-sm ${active === index? "text-[#F25E26]":null}`}>
+            <Link href={val.path} className={`text-sm lg:text-base transition-colors duration-200 ${active === index? "text-[#F25E26]": "hover:text-[#E84526]"}`}>
               {val.name}
             </Link>
           </li>
@@ -51,10 +51,10 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, navtitle }) => {
       </ul>
         </div>
 
-      <nav className="hidden md:flex items-center space-x-6">
+      <nav className="hidden md:flex items-center space-x-4 lg:space-x-6">
 
-         <div className="relative mx-6">
-        <GoBell className="text-xl"/>
+         <div className="relative mx-4 lg:mx-6">
+        <GoBell className="text-lg lg:text-xl cursor-pointer hover:text-[#F25E26] transition-colors duration-200"/>
         <span className="absolute"></span>
 
       </div>
@@ -64,9 +64,10 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, navtitle }) => {
 
       <button
         onClick={toggleSidebar}
-        className="md:hidden flex items-center text-gray-700 focus:outline-none"
+        className="md:hidden flex items-center justify-center w-10 h-10 text-gray-700 hover:text-[#F25E26] focus:outline-none focus:ring-2 focus:ring-[#F25E26] rounded-lg transition-all duration-200"
+        aria-label="Toggle sidebar"
       >
-        ☰
+        <FiMenu className="text-xl" />
       </button>
     </header>
   );

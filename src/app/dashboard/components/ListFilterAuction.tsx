@@ -86,88 +86,96 @@ export const ListFilterAuction: React.FC<ListFilterProps> = ({ onSearch, data })
     }
 
     return (
-        <section className="flex justify-between items-center mt-6 ">
-            <div className="relative ">
-                <span className="absolute mr-6 mt-3">
-                    <CiSearch className="text-xl mx-2" />
+        <section className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 lg:gap-6 mt-4 lg:mt-6">
+            {/* Search Input */}
+            <div className="relative w-full lg:w-auto">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                    <CiSearch className="text-lg lg:text-xl" />
                 </span>
                 <input
                     type="text"
                     name="Search here..."
                     id="search"
                     placeholder="Search here..."
-                    className=" pl-8 py-2 text-sm focus:text-black focus:outline-[#FCDFD4] border rounded-lg w-auto xl:w-[300px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px]"
+                    className="w-full lg:w-64 xl:w-80 pl-10 pr-4 py-2 lg:py-3 text-sm lg:text-base focus:text-black focus:outline-none focus:ring-2 focus:ring-[#FCDFD4] border border-gray-300 rounded-lg transition-all duration-200"
                     value={searchVal}
                     onChange={handleSearchInputChange}
                     autoComplete="off"
                 />
             </div>
 
-            <div className="flex gap-2 items-center">
-                <div className="w-full md:w-auto">
-                    <div>
-                        <LocalizationProvider dateAdapter={AdapterDateFns}>
-                            <DatePicker
-                                desktopModeMediaQuery="@media (min-width: 0px)"
-                                open={calendarOpen}
-                                onOpen={() => setCalendarOpen(true)}
-                                onClose={() => setCalendarOpen(false)}
-                                value={tempDate}
-                                onChange={(date: Date | null) => setTempDate(date)}
-                                slots={{
-                                    day: ({ day, selected, ...rest }) => {
-                                        const isAuctionDay = auctionDatesParsed.some(
-                                            (d: Date) =>
-                                                d.getDate() === day.getDate() &&
-                                                d.getMonth() === day.getMonth() &&
-                                                d.getFullYear() === day.getFullYear()
-                                        );
-                                        return (
-                                            <button
-                                                type="button"
-                                                tabIndex={rest.tabIndex}
-                                                aria-label={rest['aria-label']}
-                                                style={{
-                                                    width: 40,
-                                                    height: 40,
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    borderRadius: '50%',
-                                                    margin: 2,
-                                                    background: isAuctionDay ? '#F25E26' : 'transparent',
-                                                    color: isAuctionDay ? '#fff' : '#222',
-                                                    fontWeight: isAuctionDay ? 700 : 400,
-                                                    fontSize: 18,
-                                                    cursor: 'pointer',
-                                                    border: 'none',
-                                                }}
-                                                onClick={() => setTempDate(day)}
-                                            >
-                                                {day.getDate()}
-                                            </button>
-                                        );
-                                    },
-                                    layout: CustomDatePickerLayout,
-                                }}
-                                slotProps={{
-                                    textField: {
-                                        variant: 'outlined',
-                                        fullWidth: true,
-                                        sx: {
-                                            '& input': { padding: 2, borderRadius: 2, fontSize: 18 }
+            {/* Date Picker */}
+            <div className="w-full lg:w-auto">
+                <div className="w-full sm:w-48">
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <DatePicker
+                            desktopModeMediaQuery="@media (min-width: 0px)"
+                            open={calendarOpen}
+                            onOpen={() => setCalendarOpen(true)}
+                            onClose={() => setCalendarOpen(false)}
+                            value={tempDate}
+                            onChange={(date: Date | null) => setTempDate(date)}
+                            slots={{
+                                day: ({ day, selected, ...rest }) => {
+                                    const isAuctionDay = auctionDatesParsed.some(
+                                        (d: Date) =>
+                                            d.getDate() === day.getDate() &&
+                                            d.getMonth() === day.getMonth() &&
+                                            d.getFullYear() === day.getFullYear()
+                                    );
+                                    return (
+                                        <button
+                                            type="button"
+                                            tabIndex={rest.tabIndex}
+                                            aria-label={rest['aria-label']}
+                                            style={{
+                                                width: 40,
+                                                height: 40,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                borderRadius: '50%',
+                                                margin: 2,
+                                                background: isAuctionDay ? '#F25E26' : 'transparent',
+                                                color: isAuctionDay ? '#fff' : '#222',
+                                                fontWeight: isAuctionDay ? 700 : 400,
+                                                fontSize: 18,
+                                                cursor: 'pointer',
+                                                border: 'none',
+                                            }}
+                                            onClick={() => setTempDate(day)}
+                                        >
+                                            {day.getDate()}
+                                        </button>
+                                    );
+                                },
+                                layout: CustomDatePickerLayout,
+                            }}
+                            slotProps={{
+                                textField: {
+                                    variant: 'outlined',
+                                    fullWidth: true,
+                                    sx: {
+                                        '& input': { 
+                                            padding: '8px 12px', 
+                                            borderRadius: '8px', 
+                                            fontSize: '14px',
+                                            border: '1px solid #d1d5db',
+                                            '&:focus': {
+                                                outline: 'none',
+                                                borderColor: '#FCDFD4',
+                                                boxShadow: '0 0 0 2px rgba(252, 223, 212, 0.2)'
+                                            }
                                         }
-                                    },
-                                    popper: {
-                                        sx: { pb: 6 }
                                     }
-                                }}
-                            />
-                        </LocalizationProvider>
-                    </div>
+                                },
+                                popper: {
+                                    sx: { pb: 6 }
+                                }
+                            }}
+                        />
+                    </LocalizationProvider>
                 </div>
-
-
             </div>
         </section>
     );

@@ -28,6 +28,8 @@ export const UserSearch: React.FC = () => {
   const [userToken, setUserToken] = useState(Cookies.get('token'));
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
 
+ /*  console.log(filteredUsers, 'filteredUsers') */
+
   const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_profile/`;
 
   const { data: userdetails, isLoading: userLoading } = useGetDatanew(
@@ -38,6 +40,8 @@ export const UserSearch: React.FC = () => {
 
   useEffect(() => {
     if (userdetails) {
+
+      console.log(userdetails?.data?.data?.users, 'userdetails') 
 
       const usersdata: User[] = userdetails?.data?.data?.users.map((user: any) => ({
         first_name: user.first_name,
@@ -51,6 +55,8 @@ export const UserSearch: React.FC = () => {
         photo: user.profile_image || user_img,
         id: user.id,
       }));
+
+      console.log(usersdata, 'usersdata')
       setFilteredUsers(usersdata);
       if (usersdata.length > 0) {
         setUserInfo(usersdata[0]);
@@ -146,7 +152,7 @@ export const UserSearch: React.FC = () => {
                   }}
                 >
                   <Image
-                    src={`https://staging.ajiroba.ng/${val.photo}`}
+                    src={val.photo && typeof val.photo === 'string' && val.photo.includes('/media/users/') ? `https://staging.ajiroba.ng/${val.photo}` : user_img}
                     alt={val.first_name}
                     className="rounded-full w-10 h-10"
                     width={50}
@@ -168,7 +174,7 @@ export const UserSearch: React.FC = () => {
         {userInfo && (
           <div className="p-6 flex flex-col gap-5">
 
-            <Image src={`https://staging.ajiroba.ng/${userInfo.photo}`} alt={userInfo?.first_name} className="rounded-full w-20 h-20"
+            <Image src={userInfo.photo && typeof userInfo.photo === 'string' && userInfo.photo.includes('/media/users/') ? `https://staging.ajiroba.ng/${userInfo.photo}` : user_img} alt={userInfo?.first_name} className="rounded-full w-20 h-20"
               width={50}
               height={50} />
             <div className="grid lg:grid-cols-2 md:grid-cols-2 grid-cols-1 gap-2 items-center mt-3">

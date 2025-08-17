@@ -36,18 +36,6 @@ export const UserDetails = () => {
 
 
 
-  interface UserInfoType {
-    data: {
-      data: {
-        regular: {
-          users_count: number;
-          total_sales: number;
-          amount_generated: number;
-          pending_sales: number;
-        };
-      };
-    };
-  }
 
   interface Detail {
     icon: string;
@@ -137,7 +125,7 @@ export const UserDetails = () => {
 
     <div>
 
-      <div className="bg-[#F6F6F6] border border-b-[#e9dddd] h-32 flex justify-center items-center sticky top-0 ">
+      <div className="bg-[#F6F6F6] border border-b-[#e9dddd] h-24 z-10 flex justify-center items-center sticky top-0 ">
         <h1 className="xl:text-2xl 2xl:text-2xl md:text-2xl text-base  leading-tight tracking-tight font-Poppins">User Details</h1>
       </div>
 

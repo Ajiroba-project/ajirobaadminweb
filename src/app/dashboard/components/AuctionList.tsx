@@ -58,10 +58,10 @@ export const AuctionList = (() => {
   }
 
   return (
-    <section className="flex flex-col">
+    <section className="flex flex-col space-y-4 lg:space-y-6">
       <ListFilterAuction data={filteredData} onSearch={handleSearch} />
 
-      <div className="my-4">
+      <div className="w-full">
         <AuctionListCard object={filteredData} />
       </div>
     </section>

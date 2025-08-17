@@ -13,7 +13,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import GeoGrapghy from './GeoData'
+import GeoGraph from './GeoData'
 import ReactTooltip from "react-tooltip";
 import { useGetDatanew } from '@/hooks/useGetData';
 import Cookies from 'js-cookie';
@@ -183,6 +183,8 @@ const BarChart: React.FC = () => {
     userToken || " ",
   );
 
+   console.log(analyticsInfo?.data?.infromation?.customer_by_location, 'analyticsInfo')
+
 
   if (anaLoading) {
     return <div>Loading...</div>;
@@ -237,7 +239,7 @@ const BarChart: React.FC = () => {
 
 
         <div>
-          <GeoGrapghy
+          <GeoGraph
             setTooltipContent={setContent}
             customerByLocation={analyticsInfo?.data?.infromation?.customer_by_location}
           />

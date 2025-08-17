@@ -112,9 +112,9 @@ export const ProductList = () => {
   }
 
   return (
-    <section className="flex flex-col">
+    <section className="flex flex-col space-y-4 lg:space-y-6">
       <ListFilter onSearch={handleSearch} />
-      <div className="">
+      <div className="w-full">
         <ProductListCard object={filteredData} />
       </div>
     </section>

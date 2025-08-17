@@ -175,86 +175,75 @@ export const Categories = () => {
   return (
     <>
       <section
-        className={`my-10 px-20 ${isNavbarOpen ? "justify-center items-center " : ""
+        className={`my-10 px-4 lg:px-8 xl:px-20 ${isNavbarOpen ? "justify-center items-center " : ""
           } flex-col flex`}
       >
         {categoryswitch === "list" ? (
           <>
-            <div className="flex justify-between md:mt-3 lg:mt-1 mt-5">
-              <p className="font-semimbold"> Category List</p>
-              <div className="flex gap-2">
-                <div>
-                  <button
-                    className="bg-[#FCDFD4] p-2 px-5 rounded"
-                    onClick={togglecategory}
-                  >
-                    Create Category
-                  </button>
-                </div>
+            {/* Header Section - Matches Image Layout */}
+            <div className="flex flex-wrap justify-between items-center mb-8">
+              <h2 className="text-xl font-semibold text-gray-800">Categories List</h2>
+              
+              {/* Action Buttons - Exact Layout from Image */}
+              <div className="flex gap-3 flex-wrap">
+                <button
+                  className="bg-[#FCDFD4] hover:bg-[#F25E26] hover:text-white px-5 py-2 rounded transition-all duration-200 text-sm font-medium"
+                  onClick={togglecategory}
+                >
+                  Create Category
+                </button>
 
-                <div>
-                  <button
-                    className="bg-[#ffffff] text-[#2A2A2A] font-Poppins border border-[#E84526] p-2 px-5 rounded"
-
-                    onClick={toggleSubcategory}
-                  >
-                    Create Subcategories
-                  </button>
-                </div>
+                <button
+                  className="bg-white text-[#2A2A2A] font-Poppins border border-[#E84526] hover:bg-[#E84526] hover:text-white px-5 py-2 rounded transition-all duration-200 text-sm font-medium"
+                  onClick={toggleSubcategory}
+                >
+                  Create Subcategories
+                </button>
               </div>
             </div>
 
-            <div className="container mx-auto w-full mt-5">
+            {/* Table Container - Exact Layout from Image */}
+            <div className="container mx-auto w-full overflow-x-auto">
               <table className="table-auto w-full text-center">
                 <thead className="bg-[#FCDFD4] py-5">
                   <tr>
-                    <th className="px-4 py-5 border-r-1 border-[#6E6E6E] sm:text-sm md:text-md lg:text-md ">
+                    <th className="px-4 py-5 border-r border-[#6E6E6E] text-sm font-medium">
                       S/N
                     </th>
-                    <th className="px-4 py-5 sm:text-sm md:text-md border-r-1 border-[#6E6E6E]  lg:text-md">
+                    <th className="px-4 py-5 border-r border-[#6E6E6E] text-sm font-medium">
                       CATEGORIES
                     </th>
-                    <th className="px-4 py-5 sm:text-sm md:text-md lg:text-md">
-                      SUBCATEGORIES
+                    <th className="px-4 py-5 text-sm font-medium">
+                      SUB-CATEGORIES
                     </th>
                   </tr>
                 </thead>
 
-                <tbody className="bg-gray-50 my-1">
+                <tbody className="bg-white">
                   {currentItems?.map(
                     (
                       val: {
                         id: number;
-                        category:
-                        | string
-                        | number
-                        | bigint
-                        | boolean
-                        | React.ReactElement<
-                          any,
-                          string | React.JSXElementConstructor<any>
-                        >
-                        | Iterable<React.ReactNode>
-                        | React.ReactPortal
-                        | Promise<React.AwaitedReactNode>
-                        | null
-                        | undefined;
+                        category: any;
                         subcategories: any[];
                       },
                       index: number,
                     ) => (
                       <tr
                         key={index + indexOfFirstItem}
-                        className="border border-b-[#bebdbd] bg-[#F6F6F6]"
+                        className="border-b border-gray-200"
                       >
-                        <td className="text-center align-middle justify-center px-4 py-4">
+                        <td className="text-center align-middle justify-center px-4 py-4 text-sm">
                           {index + indexOfFirstItem + 1}
                         </td>
                         <td className="text-center align-middle justify-center px-4 py-4">
-                          {val?.category}
+                          <div className="text-left">
+                            <div className="font-semibold text-gray-800">{val?.category}</div>
+                            <div className="text-sm text-gray-500 mt-1">Description will appear here</div>
+                          </div>
                         </td>
                         <td className="text-center align-middle justify-center px-4 py-4">
-                          <div className="flex flex-col gap-2">
+                          <div className="flex flex-col gap-2 items-start">
                             {val.subcategories.map((sub, i) => (
                               <div key={i} className="flex items-center">
                                 <input
@@ -264,26 +253,25 @@ export const Categories = () => {
                                   className="outline-[#F25E26] mr-2"
                                   onChange={(e) => handleCheckboxChange(e, val.id, sub.id)}
                                 />
-                                <label htmlFor={`check${index}-${i}`}>
+                                <label htmlFor={`check${index}-${i}`} className="text-sm text-gray-700">
                                   {sub.subcategory}
                                 </label>
                               </div>
                             ))}
                           </div>
-                          <div className="flex gap-2 w-full items-end place-content-end mt-2">
-                            <p
-                              className="text-[#F25E26] cursor-pointer"
-                              /*   onClick={() => setEditModal(!editmodal)} */
+                          <div className="flex gap-3 justify-end mt-3">
+                            <button
+                              className="text-[#F25E26] hover:text-[#E84526] cursor-pointer text-sm font-medium transition-colors duration-200"
                               onClick={() => handleEditClick(val.id)}
                             >
                               Edit
-                            </p>
-                            <p
-                              className="text-[#F25E26] cursor-pointer"
+                            </button>
+                            <button
+                              className="text-[#F25E26] hover:text-[#E84526] cursor-pointer text-sm font-medium transition-colors duration-200"
                               onClick={() => setModal(!modal)}
                             >
                               Delete
-                            </p>
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -292,40 +280,46 @@ export const Categories = () => {
                 </tbody>
               </table>
 
-              <div className="flex justify-center mt-4">
-                {Array.from(
-                  { length: Math.ceil(catandsubInfo?.data?.length / itemsPerPage) },
-                  (_, i) => (
-                    <button
-                      key={i}
-                      className={`mx-2 px-3 py-1 border ${currentPage === i + 1 ? "bg-[#F25E26] text-white" : ""
+              {/* Pagination - Clean Layout */}
+              <div className="flex justify-center mt-8">
+                <div className="flex gap-2">
+                  {Array.from(
+                    { length: Math.ceil(catandsubInfo?.data?.length / itemsPerPage) },
+                    (_, i) => (
+                      <button
+                        key={i}
+                        className={`px-3 py-2 text-sm border rounded transition-all duration-200 ${
+                          currentPage === i + 1 
+                            ? "bg-[#F25E26] text-white border-[#F25E26]" 
+                            : "border-gray-300 text-gray-700 hover:bg-gray-50"
                         }`}
-                      onClick={() => handlePageChange(i + 1)}
-                    >
-                      {i + 1}
-                    </button>
-                  ),
-                )}
+                        onClick={() => handlePageChange(i + 1)}
+                      >
+                        {i + 1}
+                      </button>
+                    ),
+                  )}
+                </div>
               </div>
             </div>
           </>
         ) : categoryswitch === "create" ? (
           <>
             <p
-              className="lg:px-14 px-7  text-[#F25E26] underline cursor-pointer "
+              className="px-4 lg:px-14 text-[#F25E26] underline cursor-pointer hover:text-[#E84526] transition-colors duration-200 text-sm mb-4"
               onClick={() => setCategorySwitch("list")}
             >
-              Back
+              ← Back
             </p>
             <CreateCategory func={handleCreateCategory} />
           </>
         ) : (
           <>
             <p
-              className="lg:px-14 px-7  text-[#F25E26] underline cursor-pointer "
+              className="px-4 lg:px-14 text-[#F25E26] underline cursor-pointer hover:text-[#E84526] transition-colors duration-200 text-sm mb-4"
               onClick={() => setCategorySwitch("list")}
             >
-              Back
+              ← Back
             </p>
             <CategoryEdit func={handleEditCategory} />
           </>
@@ -377,23 +371,23 @@ export const Categories = () => {
       <ModalComponent
         content={
           <div className="flex flex-col justify-center">
-            <div className="flex justify-center items-center flex-col">
-              <p className="text-[#2A2A2A] font-bold text-xl font-Poppins">
+            <div className="flex flex-col items-center gap-4 py-4">
+              <p className="text-[#2A2A2A] font-bold text-lg lg:text-xl font-Poppins text-center">
                 Are you sure you want to delete this category?
               </p>
             </div>
 
-            <div className="flex flex-col items-center gap-8 py-4 mt-10">
+            <div className="flex flex-col sm:flex-row items-center gap-4 py-4 mt-6">
               <DefaultButton
-                text={`${"Yes"}`}
-                className="rounded-md bg-[#FCDFD4] p-2 px-4 text-[#2A2A2A] w-1/2"
-                type={"button"}
+                text="Yes"
+                className="w-full sm:w-auto rounded-lg bg-[#FCDFD4] hover:bg-[#F25E26] hover:text-white p-3 px-6 text-[#2A2A2A] transition-all duration-200"
+                type="button"
                 handleClick={() => setModal(false)}
               />
 
               <DefaultButton
                 text="No"
-                className="rounded-md border-2 border-[#F25E26] bg-white p-2 text-[#2A2A2A] w-1/2"
+                className="w-full sm:w-auto rounded-lg border-2 border-[#F25E26] bg-white hover:bg-[#F25E26] hover:text-white p-3 px-6 text-[#2A2A2A] transition-all duration-200"
                 type="button"
                 handleClick={() => setModal(false)}
               />
