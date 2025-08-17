@@ -59,11 +59,11 @@ function Page() {
   }))
 
   // Check if user is already logged in and redirect to dashboard
-  useEffect(() => {
-    if (isLoggedIn) {
-      router.replace('/dashboard/userdetails')
-    }
-  }, [isLoggedIn, router])
+  // useEffect(() => {
+  //   if (isLoggedIn) {
+  //     router.replace('/dashboard/userdetails')
+  //   }
+  // }, [isLoggedIn, router])
 
   const {
     reset,

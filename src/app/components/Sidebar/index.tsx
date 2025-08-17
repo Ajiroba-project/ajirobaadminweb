@@ -79,6 +79,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
   const handleSuccess = () => {
     clearAuthCookies();
+    localStorage.removeItem("user");
+    localStorage.clear();
     router.replace("/signin");
   };
   const handleError = () => {
@@ -193,6 +195,27 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       </div>
 
       {/* ... existing modal code ... */}
+
+
+      {signout && (
+        <div className="flex absolute top-0">
+          <Modal
+            title="Are you sure you want to sign out"
+            subtitle="you will be logged out of the system"
+            buttoncount={2}
+            buttontext={status == "Pending" ? "Signing out..." : "Yes"}
+            button2text="No"
+            buttonclass="bg-[#FCDFD4] p-5 rounded-lg text-sm hover:shadow w-full px-14"
+            button2class="p-4 rounded-lg border-2 border-[#F25E26] px-14"
+            buttontype="submit"
+            button2type="submit"
+            handleEvent={() => handleSignout(true)}
+            handleEvent2={() => handleSignout(false)}
+            icon={signoutImage}
+          />
+        </div>
+      )}
+
     </aside>
   );
 };
