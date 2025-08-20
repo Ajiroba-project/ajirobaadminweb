@@ -261,6 +261,7 @@ function Page() {
   });
 
   const handleSuccess = (data: any) => {
+  /*   console.log(data, 'data') */
     if (data.status === 200) {
       toast.success(`${data?.data?.message}`, {
         position: "top-right",

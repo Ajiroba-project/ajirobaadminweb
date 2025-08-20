@@ -332,7 +332,7 @@ function Page() {
         </nav>
 
         <div className="flex justify-center items-center flex-col min-h-[90vh]">
-          <HeroSubText title="Welcome Back" menu="Sign in to shop on Ajiroba" />
+          <HeroSubText title="Welcome Back" menu="Kindly enter your login details" />
 
           <div className="mb-20 flex justify-center w-full">
             <form
@@ -391,15 +391,6 @@ function Page() {
                 </div>
               </div>
 
-              <div className="mt-4 flex items-center justify-center">
-                <DefaultButton
-                  type="submit"
-                  className="rounded-lg h-10 w-full bg-[#FCDFD4] text-sm hover:bg-[#E84526] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                  text={status === "pending" ? "loading..." : "Sign in"}
-                  handleClick={() => console.log("")}
-                  disabled={!watch('email_or_phone') || !watch('password') || status === "pending"}
-                />
-              </div>
 
               <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
                 <div>
@@ -418,6 +409,18 @@ function Page() {
                   <span className="cursor-pointer text-sm">Forgot password?</span>
                 </div>
               </div>
+
+              <div className="mt-4 flex items-center justify-center">
+                <DefaultButton
+                  type="submit"
+                  className="rounded-lg h-10 w-full bg-[#FCDFD4] text-sm hover:bg-[#E84526] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  text={status === "pending" ? "loading..." : "Sign in"}
+                  handleClick={() => console.log("")}
+                  disabled={!watch('email_or_phone') || !watch('password') || status === "pending"}
+                />
+              </div>
+
+             
 
               <div className="mt-6 flex items-center justify-center">
                 <small className="text-sm text-[#353131] font-normal font-Poppins">
