@@ -51,7 +51,7 @@ export const ProductUploadSchema = Yup.object().shape({
   description: Yup.string().required("Product Description is required"),
   selling_price: Yup.string().required("selling Price is required"),
   discount: Yup.string().required("discount Price is required"),
-  quantity: Yup.number().required("Quantity is required"),
+  quantity: Yup.number().min(1, "Quantity must be at least 1").required("Quantity is required"),
   weight: Yup.string().required("Weight is required"),
 
   // topdeals: Yup.boolean()
@@ -77,7 +77,7 @@ export const ProductEditUploadSchema = Yup.object().shape({
   description: Yup.string().required("Product Description is required"),
   selling_price: Yup.string().required("selling Price is required"),
   discount: Yup.string().required("discount Price is required"),
-  quantity: Yup.number().required("Quantity is required"),
+  quantity: Yup.number().min(1, "Quantity must be at least 1").required("Quantity is required"),
   weight: Yup.string().required("Weight is required"),
 
   // topdeals: Yup.boolean()

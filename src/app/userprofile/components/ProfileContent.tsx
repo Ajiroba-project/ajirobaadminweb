@@ -38,23 +38,7 @@ export const ProfileContent = () => {
 
   <ProfileDetails />
 
-     {/*  {activeMenu === 'my profile' ? (
-        <ProfileDetails />
-      ) : activeMenu === 'auction win' ? (
-        <AuctionDetails />
-      ) : activeMenu === 'my order' ? (
-        <OrderDetails />
-      ) : activeMenu === 'wallet' ? (
-        <WalletDetails />
-      ) :  activeMenu === 'community' ? (
-
-      <MainLayout/>
-      ) :
-
-
-      (
-        ''
-      )} */}
+    
     </section>
   )
 }

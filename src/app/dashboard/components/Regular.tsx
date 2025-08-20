@@ -319,6 +319,7 @@ export const Regular = () => {
                     name="quantity"
                     label="Quantity"
                     type="number"
+                    min={1}
                     register={register}
                     errors={errors}
                     classname="text-sm w-full px-4 h-12 border border-gray-300 rounded-lg font-Poppins font-normal focus:outline-none focus:border-[#FCDFD4] focus:ring-1 focus:ring-[#FCDFD4]"

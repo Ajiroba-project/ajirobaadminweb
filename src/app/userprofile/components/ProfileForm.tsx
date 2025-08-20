@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import { InputField} from './FormField';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal } from './Modal';
 import { DefaultButton } from '@/app/component/Button';
 import { userProfile } from '@/store/store';
@@ -23,7 +23,7 @@ type ProfileFormValues = {
   last_name: string;
   email: string;
   Phone: string;
-  gender?: boolean;
+  gender: boolean;
   pass?: string;
   address: string;
   state: string;
@@ -31,7 +31,11 @@ type ProfileFormValues = {
   residential?: string;
 }
 
-export const ProfileForm: React.FC = () => {
+interface ProfileFormProps {
+  userData?: any;
+}
+
+export const ProfileForm: React.FC<ProfileFormProps> = ({ userData }) => {
   const {
     successModal,
     setSuccessModal,
@@ -60,8 +64,22 @@ export const ProfileForm: React.FC = () => {
     state: yup.string().required('State is required'),
     lga: yup.string().required('Local Government Area is required'),
     gender: yup.boolean().required("Gender is required"),
+    residential: yup.string().optional(),
   });
 
+
+  // Prepare default values from userData
+  const defaultValues = {
+    first_name: userData?.first_name || userData?.firstname || '',
+    last_name: userData?.last_name || userData?.lastname || '',
+    email: userData?.email || '',
+    Phone: userData?.phone || '',
+    gender: userData?.gender !== undefined ? Boolean(userData?.gender) : false,
+    address: userData?.address || '',
+    state: userData?.state || '',
+    lga: userData?.lga || '',
+    residential: userData?.residential || userData?.residency || '',
+  };
 
   const {
     reset,
@@ -69,13 +87,14 @@ export const ProfileForm: React.FC = () => {
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm({
+    setValue,
+  } = useForm<ProfileFormValues>({
     mode: "all",
     resolver: yupResolver(ProfileSchema),
+    defaultValues,
   });
 
-
-  const [selectedState, setSelectedState] = useState("");
+  const [selectedState, setSelectedState] = useState(userData?.state || "");
   const [lgas, setLgas] = useState<string[]>([]);
 
   const handleStateChange = (value: string) => {
@@ -84,12 +103,24 @@ export const ProfileForm: React.FC = () => {
     setLgas(selectedState ? selectedState.lgas : []);
   };
 
+  // Initialize LGAs when component mounts with existing userData
+  useEffect(() => {
+    if (userData?.state) {
+      const selectedStateData = state_and_LGA.find(state => state.state === userData.state);
+      if (selectedStateData) {
+        setLgas(selectedStateData.lgas);
+      }
+    }
+  }, [userData]);
+
 
   const handleSuccess = (data: any) => {
   /*   console.log(data, 'datttataaa', error) */
 
+ /*  console.log(data, 'datttataaa') */
+
     if (data.status === 201 || data.status === 200) {
-      setSuccessModal(!successModal)
+    /*   setSuccessModal(!successModal) */
       toast.success(`${data?.data?.message}`, {
         position: "top-right",
         autoClose: 2000,
@@ -99,7 +130,7 @@ export const ProfileForm: React.FC = () => {
         draggable: true,
         progress: undefined,
         theme: "light",
-        onClose: () => router.push('/profile')
+        onClose: () => router.push('/userprofile')
       });
       reset();
     } else if (data.status === 400 || data.status === 409) {
@@ -116,6 +147,18 @@ export const ProfileForm: React.FC = () => {
       reset();
     } else if (data.status === 401) {
       toast.error(`${data?.data?.message || 'Authentication error'} `, {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      reset();
+    } else if (data.status === 500) {
+      toast.error(`${data?.data?.message || 'Internal Server Error'} `, {
         position: "top-right",
         autoClose: 2000,
         hideProgressBar: false,
@@ -188,10 +231,11 @@ export const ProfileForm: React.FC = () => {
 
 
   return (
-    <div className='flex flex-col'>
+    <div className='flex flex-col w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8'>
     {/*   <ToastContainer closeOnClick /> */}
-      <form onSubmit={handleSubmit(submitForm)} className='flex flex-col'>
-        <div className='flex flex-col gap-4 lg:flex-row lg:gap-10'>
+      <form onSubmit={handleSubmit(submitForm)} className='flex flex-col w-full space-y-6'>
+        {/* First Name and Last Name Row */}
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8'>
           <InputField
             label='First Name*'
             name='first_name'
@@ -209,7 +253,9 @@ export const ProfileForm: React.FC = () => {
             errors={errors}
           />
         </div>
-        <div className='flex flex-col gap-4 lg:flex-row lg:gap-10'>
+
+        {/* Email and Phone Row */}
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8'>
           <InputField
             label='Email Address*'
             name='email'
@@ -228,71 +274,72 @@ export const ProfileForm: React.FC = () => {
           />
         </div>
 
-        <div className="flex flex-col   mt-2">
-          <label className='  mb-2 text-sm text-[#111111] font-Poppins font-medium'>Gender</label>
-          <div className="flex gap-4" >
-
+        {/* Gender Section */}
+        <div className="flex flex-col space-y-3">
+          <label className='text-sm sm:text-base text-[#111111] font-Poppins font-medium'>Gender*</label>
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6" >
             <div className="flex items-center">
-              <label
-                htmlFor="male"
-                className=" mr-2 text-sm text-wdc-inactivebuttons"
-              >
-                Male
-              </label>
               <input
                 type="radio"
                 id="male"
                 {...register("gender", { required: true })}
                 value="true"
-                className="mr-2 text-wdc-inactivebutton"
+                className="mr-3 w-4 h-4 text-[#F25E26] focus:ring-[#F25E26]"
               />
-
+              <label
+                htmlFor="male"
+                className="text-sm sm:text-base text-[#111111] cursor-pointer"
+              >
+                Male
+              </label>
             </div>
 
-
-
-            <div className="flex items-center mb-0">
-              <label
-                htmlFor="female"
-                className=" mr-2 text-sm text-wdc-inactivebuttons"
-              >
-                Female
-              </label>
+            <div className="flex items-center">
               <input
                 type="radio"
                 id="female"
                 {...register("gender", { required: true })}
                 value="false"
-                className=" text-wdc-inactivebutton"
+                className="mr-3 w-4 h-4 text-[#F25E26] focus:ring-[#F25E26]"
               />
-
+              <label
+                htmlFor="female"
+                className="text-sm sm:text-base text-[#111111] cursor-pointer"
+              >
+                Female
+              </label>
             </div>
           </div>
-
+          {errors?.gender?.message && (
+            <div className="text-xs sm:text-sm text-red-700 py-1">
+              {String(errors.gender.message)}
+            </div>
+          )}
         </div>
 
-        <div className="text-xs text-red-700 py-1">
-          {errors?.gender?.message}
-        </div>
-
-        <div className='flex lg:items-center lg:flex-row flex-col py-2 lg:py-0'>
-          <InputField
-            name='pass'
-            type='text'
-            placeholder='********'
-            register={register}
-            errors={errors}
-            label='Password*'
-            isdisabled
-            classname='lg:p-3 bg-transparent outline-none lg:w-1/2 w-full'
-          />
-          <div>
-            <p className='brand1 cursor-pointer w-fit lg:text-md text-xs' onClick={setEditPassword}>
+        {/* Password Section */}
+        <div className='flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6'>
+          <div className='flex-1'>
+            <InputField
+              name='pass'
+              type='text'
+              placeholder='********'
+              register={register}
+              errors={errors}
+              label='Password*'
+              isdisabled
+              classname='w-full p-3 bg-transparent outline-none'
+            />
+          </div>
+          <div className='flex-shrink-0'>
+            <p className='brand1 cursor-pointer w-fit text-sm sm:text-base hover:underline' onClick={setEditPassword}>
               Change password
             </p>
           </div>
         </div>
-        <div className='flex flex-col gap-4 lg:flex-row lg:gap-10'>
+
+        {/* Address and State Row */}
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8'>
           <InputField
             label='Address*'
             name='address'
@@ -306,9 +353,8 @@ export const ProfileForm: React.FC = () => {
             name="state"
             control={control}
             render={({ field }) => (
-
-              <div className='relative flex flex-col'>
-                {<label className='py-2 text-sm'>{'State*'} </label>}
+              <div className='flex flex-col'>
+                <label className='py-2 text-sm sm:text-base font-medium text-[#111111]'>State*</label>
                 <select
                   {...register('state', { required: true })}
                   onChange={(event) => {
@@ -316,106 +362,101 @@ export const ProfileForm: React.FC = () => {
                     field.onChange(value);
                     handleStateChange(value);
                   }}
-                  className={`xl-[300px] h-12 w-auto rounded border px-5 focus:text-black md:w-[300px] lg:w-[300px] xl:w-[350px] 2xl:w-[300px]`}
+                  className='w-full h-12 rounded border px-3 sm:px-4 focus:text-black focus:border-[#F25E26] focus:outline-none transition-colors'
                 >
-                  <option value='' className='text-wdc-textbody'>
+                  <option value='' className='text-gray-500'>
                     Select a state
                   </option>
-
                   {state_and_LGA.map((state) => (
-
-                    <option key={state.state} className='text-wdc-textbody' value={state.state}>
+                    <option key={state.state} className='text-[#111111]' value={state.state}>
                       {state.state}
                     </option>
                   ))}
-
-
                 </select>
-                <div className='pt-1 text-xs text-rose-500'>
-                  {errors?.state?.message}
-                </div>
+                {errors?.state?.message && (
+                  <div className='pt-1 text-xs sm:text-sm text-red-700'>
+                    {String(errors.state.message)}
+                  </div>
+                )}
               </div>
-
             )}
           />
         </div>
-        <div className='flex flex-col gap-4 pt-2 lg:flex-row lg:gap-10'>
 
+        {/* LGA and Residential Row */}
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8'>
           <Controller
             name="lga"
             control={control}
             render={({ field }) => (
-
-              <div className='relative flex flex-col'>
-                {<label className='py-2 text-sm'>{'Local Government Area(LGA)*'} </label>}
+              <div className='flex flex-col'>
+                <label className='py-2 text-sm sm:text-base font-medium text-[#111111]'>Local Government Area (LGA)*</label>
                 <select
                   {...register('lga', { required: true })}
                   onChange={(event) => {
                     const value = event.target.value;
                     field.onChange(value);
-                    // handleStateChange(value);
                   }}
-                  className={`xl-[300px] h-12 w-auto rounded border px-5 focus:text-black md:w-[300px] lg:w-[300px] xl:w-[350px] 2xl:w-[300px]`}
+                  className='w-full h-12 rounded border px-3 sm:px-4 focus:text-black focus:border-[#F25E26] focus:outline-none transition-colors'
                 >
-                  <option value='' className='text-wdc-textbody'>
-                    Select lga
+                  <option value='' className='text-gray-500'>
+                    Select LGA
                   </option>
-
                   {lgas.map((lga) => (
-
-                    <option key={lga} value={lga} className='text-wdc-textbody' >
+                    <option key={lga} value={lga} className='text-[#111111]'>
                       {lga}
                     </option>
                   ))}
-
-
                 </select>
-                <div className='pt-1 text-xs text-rose-500'>
-                  {errors?.lga?.message}
-                </div>
+                {errors?.lga?.message && (
+                  <div className='pt-1 text-xs sm:text-sm text-red-700'>
+                    {String(errors.lga.message)}
+                  </div>
+                )}
               </div>
-
-
             )}
           />
 
-
-          <div>
+          <div className='flex flex-col'>
             <InputField
               type='text'
               placeholder='Enter R.A Number'
               name='residential'
               register={register}
               errors={errors}
-              label='Residential Agency Number(optional)'
+              label='Residential Agency Number (optional)'
             />
-            <p className='text-sm italic text-gray-300'>
+            <p className='text-xs sm:text-sm italic text-gray-500 mt-1'>
               (such as LASRRA etc.)
             </p>
           </div>
         </div>
-        <div className='mt-8 flex w-full justify-center'>
+
+        {/* Submit Button */}
+        <div className='flex justify-center pt-6 sm:pt-8'>
           <DefaultButton
-            text={status === 'pending' ? 'loading...' : "Update Profile"}
+            text={status === 'pending' ? 'Updating...' : "Update Profile"}
             type='submit'
-            className='w-[80%] rounded-md bg-[#FCDFD4] p-4 hover:bg-[#F25E26] hover:text-white'
+            className='w-full sm:w-auto px-8 py-3 sm:py-4 rounded-md bg-[#FCDFD4] hover:bg-[#F25E26] hover:text-white transition-colors duration-200 text-sm sm:text-base font-medium'
           />
         </div>
       </form>
 
-      <div className={`${successModal ? 'absolute left-0 top-0' : 'hidden'}`}>
+      {/* Success Modal */}
+      <div className={`${successModal ? 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50' : 'hidden'}`}>
         <Modal
           buttoncount={1}
           title='Profile Updated Successfully'
           icon={verify}
           buttontype='button'
-          buttonclass='w-full rounded-md bg-[#FCDFD4] p-4 hover:bg-[#F25E26] hover:text-white'
+          buttonclass='w-full rounded-md bg-[#FCDFD4] p-3 sm:p-4 hover:bg-[#F25E26] hover:text-white transition-colors duration-200'
           buttontext='Proceed to Profile'
           handleEvent={setSuccessModal}
         />
       </div>
 
-      <div className={`${editPassword ? 'absolute left-0 top-0' : 'hidden'}`}>
+      {/* Change Password Modal */}
+      <div className={`${editPassword ? 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50' : 'hidden'}`}>
         <ChangePassword />
       </div>
     </div>

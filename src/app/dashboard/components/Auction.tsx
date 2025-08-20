@@ -422,7 +422,8 @@ export const Auction = () => {
                 <InputField
                   name="quantity"
                   label="Quantity"
-                  type="text"
+                  type="number"
+                  min={1}
                   placeholder="100"
                   register={register}
                   errors={errors}

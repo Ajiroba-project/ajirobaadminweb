@@ -518,6 +518,7 @@ export default function Page() {
               name="quantity"
               label="Quantity:"
               type="number"
+              min={1}
               register={register}
               errors={errors}
               classname="w-full px-5 h-12 border border-gray-300 rounded-lg text-base font-normal focus:text-black focus:border-[#F25E26]"
