@@ -1,27 +1,25 @@
 import { NextResponse } from "next/server";
 
 export async function POST(request) {
+    // console.log(request, 'requestttt')
     try {
         const body = await request.json();
+
         const cacheBuster = `cache=${Date.now()}`;
 
-        console.log(body, 'body')
-
-        const res = await fetch(`${process.env.BASE_URL}/auth/resend_forgot_password_code/?${cacheBuster}`, {
-            method: 'POST',
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/user/comment_on_post/?${cacheBuster}`, {
+            method: "POST",
             maxBodyLength: Infinity,
             headers: {
                 "Content-Type": "application/json",
+                'Authorization': `Token ${body.tkn}`
             },
-            body: JSON.stringify(body),
+            body: JSON.stringify(body.payload),
         });
 
         // Parse response body as JSON
         const data = await res.json();
         const status = res.status;
-
-        console.log(data, 'data')
-        console.log(status, 'status')
 
         // Return JSON response with data and status
         return NextResponse.json({ data, status });

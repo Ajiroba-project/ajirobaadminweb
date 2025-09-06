@@ -173,6 +173,12 @@ function Page() {
       });
       return;
     }
+    // Persist email for OTP resend on verification page
+    try {
+      localStorage.setItem("signup_email", data.email);
+    } catch (e) {
+      // ignore storage errors
+    }
     mutate({
       url: "/api/auth",
       payload: data,

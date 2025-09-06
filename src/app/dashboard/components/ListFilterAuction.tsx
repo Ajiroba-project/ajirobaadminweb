@@ -42,6 +42,17 @@ export const ListFilterAuction: React.FC<ListFilterProps> = ({ onSearch, data })
     const handleOk = () => {
         setSelectedDate(tempDate);
         setCalendarOpen(false);
+
+        // Trigger search with local YYYY-MM-DD (avoid UTC shift)
+        if (tempDate) {
+            const y = tempDate.getFullYear();
+            const m = String(tempDate.getMonth() + 1).padStart(2, '0');
+            const d = String(tempDate.getDate()).padStart(2, '0');
+            const dateString = `${y}-${m}-${d}`;
+            onSearch(searchVal, dateString, dateString);
+        } else {
+            onSearch(searchVal, null, null);
+        }
     };
 
     const handleCancel = () => {
@@ -56,7 +67,10 @@ export const ListFilterAuction: React.FC<ListFilterProps> = ({ onSearch, data })
 
         // Pass the current selected date when searching
         if (selectedDate) {
-            const dateString = selectedDate.toISOString().split('T')[0];
+            const y = selectedDate.getFullYear();
+            const m = String(selectedDate.getMonth() + 1).padStart(2, '0');
+            const d = String(selectedDate.getDate()).padStart(2, '0');
+            const dateString = `${y}-${m}-${d}`;
             onSearch(value, dateString, dateString);
         } else {
             onSearch(value, null, null);

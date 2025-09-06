@@ -15,7 +15,7 @@ export const Upload =()=>{
     </div>
 
     <section className="mt-8">
-        <div className="flex items-center justify-start px-20 gap-4">
+        <div className="flex flex-wrap items-center justify-start px-20 gap-4">
           <div
             className={`${
               active == 0 ? "bg-[#FCDFD4] border-[#FCDFD4]" : "bg-white border-gray-200"

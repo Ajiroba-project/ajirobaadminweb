@@ -16,13 +16,12 @@ export const ListFilter: React.FC<ListFilterProps> = ({ onSearch }) => {
   const handleOkClick = () => {
     setSelectedDate(tempSelectedDate);
     datePickerRef.current?.setOpen(false);
-
-    console.log('Date selected:', tempSelectedDate);
-
-    // Convert the selected date to start and end date format
+  
     if (tempSelectedDate) {
-      const dateString = tempSelectedDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-      console.log('Date string for API:', dateString);
+      const y = tempSelectedDate.getFullYear();
+      const m = String(tempSelectedDate.getMonth() + 1).padStart(2, '0');
+      const d = String(tempSelectedDate.getDate()).padStart(2, '0');
+      const dateString = `${y}-${m}-${d}`;
       onSearch(searchVal, dateString, dateString);
     } else {
       onSearch(searchVal, null, null);
@@ -33,10 +32,12 @@ export const ListFilter: React.FC<ListFilterProps> = ({ onSearch }) => {
   const handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setSearchVal(value);
-
-    // Pass the current selected date when searching
+  
     if (selectedDate) {
-      const dateString = selectedDate.toISOString().split('T')[0];
+      const y = selectedDate.getFullYear();
+      const m = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const d = String(selectedDate.getDate()).padStart(2, '0');
+      const dateString = `${y}-${m}-${d}`;
       onSearch(value, dateString, dateString);
     } else {
       onSearch(value, null, null);

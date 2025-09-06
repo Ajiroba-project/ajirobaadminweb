@@ -19,6 +19,7 @@ import { Modal } from "./Modal";
 import successIcon from "@/app/asset/signout.svg";
 import "react-toastify/dist/ReactToastify.css";
 import Image from "next/image";
+import { AiOutlineClose } from "react-icons/ai";
 import { div } from "framer-motion/m";
 import { tr } from "framer-motion/client";
 import { useQueryData } from "@/hooks/useQueryDataCat";
@@ -91,6 +92,7 @@ export const Auction = () => {
     trigger,
     watch,
     setValue,
+    setError,
   } = useForm({
     mode: "all",
     resolver: yupResolver(ActionUploadSchema),
@@ -133,6 +135,18 @@ export const Auction = () => {
     return () => previews.forEach((url) => URL.revokeObjectURL(url));
   }, [previews]);
 
+  const removePreviewAtIndex = (index: number) => {
+    const currentPreviews = [...previews];
+    const url = currentPreviews[index];
+    if (url) URL.revokeObjectURL(url);
+    const nextPreviews = currentPreviews.filter((_, i) => i !== index);
+    setPreviews(nextPreviews);
+    const currentMedia = (watch("auction_media") as string[]) ?? [];
+    const nextMedia = currentMedia.filter((_, i) => i !== index);
+    setValue("auction_media", nextMedia);
+    trigger("auction_media");
+  };
+
   const RemoveImg = (val: string) => {
     setSelectedImg(selectedImg.filter((e: string) => e !== val));
     URL.revokeObjectURL(val);
@@ -146,7 +160,6 @@ export const Auction = () => {
       setPreviews([]);
       reset();
     } else if (data.status === 400 || data.status === 409) {
-      setPreviews([]);
       toast.error(`${data?.data?.message}`, {
         position: "top-right",
         autoClose: 5000,
@@ -157,9 +170,15 @@ export const Auction = () => {
         progress: undefined,
         theme: "light",
       });
-      reset();
+      // Map server error hints to specific fields
+      const msg: string = data?.data?.message || '';
+      if (msg.toLowerCase().includes('cost') || msg.toLowerCase().includes('price')) {
+        setError('cost_price' as any, { type: 'server', message: 'Please enter a valid amount' } as any);
+      }
+      if (msg.toLowerCase().includes('ticket')) {
+        setError('ticket_price' as any, { type: 'server', message: 'Please enter a valid amount' } as any);
+      }
     } else {
-      setPreviews([]);
       toast.error(`${data?.data?.message}`, {
         position: "top-right",
         autoClose: 5000,
@@ -170,7 +189,6 @@ export const Auction = () => {
         progress: undefined,
         theme: "light",
       });
-      reset();
     }
   };
   const handleError = (error: any) => {
@@ -184,7 +202,7 @@ export const Auction = () => {
       progress: undefined,
       theme: "light",
     });
-    reset();
+    // Keep inputs on error; no reset
   };
   const { data, error, mutate, status } = useMutateData(
     "upload",
@@ -298,7 +316,7 @@ export const Auction = () => {
     <>
       <ToastContainer closeOnClick />
       <section
-        className={`my-10 px-20 ${isNavbarOpen ? "justify-center items-center " : ""
+        className={`my-10 px-4 md:px-10 lg:px-20 ${isNavbarOpen ? "justify-center items-center " : ""
           } flex-col flex`}
       >
         <h1
@@ -313,16 +331,16 @@ export const Auction = () => {
           encType={"multipart/form-data"}
         >
           <div
-            className={`flex gap-8 my-4 lg:flex-row  flex-col-reverse items-center `}
+            className={`flex gap-6 md:gap-8 my-4 md:flex-row flex-col-reverse items-center md:items-start `}
           >
             <div className="">
               <div className="flex flex-col">
                 <label htmlFor="upload-files">
                   <p className="py-2">Product Upload:</p>
-                  <span className="bg-gray-50 relative rounded-md shadow hover:bg-[#FCDFD4] h-[20rem] w-auto flex justify-center items-center cursor-pointer flex-col">
+                  <span className="bg-gray-50 relative rounded-md shadow hover:bg-[#FCDFD4] h-56 md:h-[20rem] w-full md:w-auto flex justify-center items-center cursor-pointer flex-col">
                     <FiUpload className="text-4xl" />
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <p className="mb-2 text-xl text-gray-500 ">
+                      <p className="mb-2 text-lg md:text-xl text-gray-500 ">
                         SelectFile to upload
                       </p>
                       <p className="mb-2 text-xs text-gray-500 ">
@@ -348,15 +366,24 @@ export const Auction = () => {
 
               <div className="flex gap-2 mt-4 flex-wrap">
                 {previews.map((src, index) => (
-                  <Image
-                    key={index}
-                    src={src}
-                    alt={`preview-${index}`}
-                    className="w-20 h-20 object-cover rounded-md shadow"
-                    width={80}
-                    height={80}
-                    priority
-                  />
+                  <div key={index} className="relative">
+                    <Image
+                      src={src}
+                      alt={`preview-${index}`}
+                      className="w-20 h-20 object-cover rounded-md shadow"
+                      width={80}
+                      height={80}
+                      priority
+                    />
+                    <button
+                      type="button"
+                      aria-label="Remove image"
+                      className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow text-gray-600 hover:text-gray-800"
+                      onClick={() => removePreviewAtIndex(index)}
+                    >
+                      <AiOutlineClose className="text-sm" />
+                    </button>
+                  </div>
                 ))}
               </div>
 
@@ -397,7 +424,9 @@ export const Auction = () => {
                   placeholder="₦1234"
                   register={register}
                   errors={errors}
-                  classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  classname={`text-sm w-full md:w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  isAmount
+                  maxLength={20}
                 />
                 <InputField
                   name="ticket_price"
@@ -406,7 +435,9 @@ export const Auction = () => {
                   placeholder="₦1234"
                   register={register}
                   errors={errors}
-                  classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  classname={`text-sm w-full md:w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  isAmount
+                  maxLength={20}
                 />
               </div>
               <div className="flex gap-2 py-2 flex-col lg:flex-row md:flex-row ">
@@ -417,7 +448,8 @@ export const Auction = () => {
                   placeholder="50kg"
                   register={register}
                   errors={errors}
-                  classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  classname={`text-sm w-full md:w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  maxLength={10}
                 />
                 <InputField
                   name="quantity"
@@ -427,13 +459,14 @@ export const Auction = () => {
                   placeholder="100"
                   register={register}
                   errors={errors}
-                  classname={`text-sm w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  classname={`text-sm w-full md:w-auto px-5 h-12  border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  max={999999}
                 />
               </div>
               
             </div>
 
-            <div className="flex items-center">
+            <div className="flex items-stretch md:items-center w-full md:w-auto">
               <div className="flex-col flex gap-3">
                 <InputField
                   name="auction_name"
@@ -442,7 +475,7 @@ export const Auction = () => {
                   placeholder="Rice"
                   register={register}
                   errors={errors}
-                  classname={`text-sm w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  classname={`text-sm w-full md:w-[300px] xl:w-[350px] 2xl:w-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
                 <SelectField
                   name="auction_category"
@@ -453,7 +486,7 @@ export const Auction = () => {
                     label: cat.label,
                     value: cat.value,
                   }))}
-                  classname={`text-sm  xl:w-[298px] 2xl:w-[298px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  classname={`text-sm w-full md:w-[300px] xl:w-[298px] 2xl:w-[298px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
                 <SelectField
                   name="sub_category"
@@ -468,7 +501,7 @@ export const Auction = () => {
                         value: sub.id,
                       })) || []
                   }
-                  classname={`text-sm  xl:w-[298px] 2xl:w-[298px] md:w-[300px] xlw-[300px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
+                  classname={`text-sm w-full md:w-[300px] xl:w-[298px] 2xl:w-[298px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
                 <TextAreaField
                   name="description"
@@ -476,7 +509,8 @@ export const Auction = () => {
                   register={register}
                   errors={errors}
                   placeholder={"Describe your product here..."}
-                  classname={`resize-none px-5 h-24 focus:text-black border rounded w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] p-4`}
+                  classname={`resize-none px-5 h-24 focus:text-black border rounded w-full md:w-[300px] xl:w-[350px] 2xl:w-[300px] lg:w-[300px] p-4`}
+                  maxLength={500}
                 />
               </div>
             </div>
@@ -512,7 +546,9 @@ export const Auction = () => {
                           }}
                           dateFormat="d MMMM, yyyy"
                           placeholderText="22 June, 2025"
-                          className="px-5 h-12 focus:text-black border rounded w-full"
+                          className="w-full min-w-[220px] px-3 h-12 focus:text-black border rounded"
+                          withPortal
+                          popperClassName="z-50"
                         />
                       )}
                     />
@@ -523,7 +559,7 @@ export const Auction = () => {
 
 
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-700">Start Time</label>
                   <Controller
@@ -549,7 +585,9 @@ export const Auction = () => {
                         timeCaption="Time"
                         dateFormat="hh:mm aa"
                         placeholderText="HH:MM AM/PM"
-                        className="px-5 h-12 focus:text-black border rounded w-full"
+                        className="w-full min-w-[220px] px-3 h-12 focus:text-black border rounded"
+                        withPortal
+                        popperClassName="z-50"
                       />
                     )}
                   />
@@ -559,7 +597,7 @@ export const Auction = () => {
               </div>
 
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                 <div>
                   <label className="text-sm font-medium text-gray-700">End Time</label>
@@ -586,7 +624,9 @@ export const Auction = () => {
                         timeCaption="Time"
                         dateFormat="hh:mm aa"
                         placeholderText="HH:MM AM/PM"
-                        className="px-5 h-12 focus:text-black border rounded w-full"
+                        className="w-full min-w-[220px] px-3 h-12 focus:text-black border rounded"
+                        withPortal
+                        popperClassName="z-50"
                       />
                     )}
                   />
@@ -597,12 +637,12 @@ export const Auction = () => {
             </div>
 
 
-            <div className={`py-4`}>
+            <div className={`py-4 w-full`}>
               <DefaultButton
                 text={status === "pending" ? "loading..." : "Upload"}
                 type="submit"
                 handleClick={() => null}
-                className=" bg-[#FCDFD4] p-4 text-sm w-[10em] hover:bg-[#F25E26] hover:text-white rounded-lg"
+                className=" bg-[#FCDFD4] p-4 text-sm w-full md:w-[10em] hover:bg-[#F25E26] hover:text-white rounded-lg"
               />
             </div>
           </div>

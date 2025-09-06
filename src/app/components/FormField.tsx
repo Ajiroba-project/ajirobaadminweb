@@ -16,6 +16,9 @@ type inputProps ={
     isdisabled?:boolean
     pattern?:string
     min?:number
+    isAmount?: boolean
+    maxLength?: number
+    max?: number
 }
 type selectProps ={
     name:inputProps["name"],
@@ -35,6 +38,7 @@ type textareaProps ={
     placeholder:inputProps["placeholder"],
     isdisabled?:boolean
    classname?:any,
+   maxLength?: number,
 }
 type fileUpoadProps ={
     label:string;
@@ -94,25 +98,103 @@ export const CheckboxField = ({
   );
 };
 
-export const InputField =({label, min, type, pattern, placeholder, name, register, errors, showPassword, classname, value, isdisabled}:inputProps)=>{
+export const InputField =({label, min, max, maxLength, type, pattern, placeholder, name, register, errors, showPassword, classname, value, isdisabled, isAmount}:inputProps)=>{
     const [toggle, setToggle] = useState(showPassword)
+    const [displayValue, setDisplayValue] = useState<string>(value || "")
+    const [rawValue, setRawValue] = useState<string>(value || "")
 
     const handleTogglePasswordVisibility=()=>{
         setToggle(!toggle)
     }
 
+    const formatWithCommas = (numStr: string) => {
+        if (numStr === "") return "";
+        const parts = numStr.split('.')
+        const intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+        if (parts.length > 1) {
+            return `${intPart}.${parts[1]}`
+        }
+        return intPart
+    }
+
+    const normalizeNumeric = (raw: string) => {
+        // Keep digits and at most one dot; trim extra decimals to max 2 places
+        let cleaned = raw.replace(/[^0-9.]/g, '')
+        const firstDot = cleaned.indexOf('.')
+        if (firstDot !== -1) {
+            // remove subsequent dots
+            cleaned = cleaned.substring(0, firstDot + 1) + cleaned.substring(firstDot + 1).replace(/\./g, '')
+        }
+        return cleaned
+    }
+
+    const ensureTwoDecimals = (raw: string) => {
+        if (raw === '' || raw === '.') return ''
+        const [i, d = ''] = raw.split('.')
+        const padded = (d + '00').slice(0, 2)
+        return `${i}.${padded}`
+    }
+
+    // Deconstruct register to access RHF handlers and ref
+    const reg = register ? register(name, { required: true }) : undefined
+
     return (
         <>
         <div className="relative flex flex-col">
             <label className="py-2 font-Poppins text-sm text-[#353131]">{label}</label>
-            <input name={name} type={toggle ? "text" :type}
-             placeholder={placeholder}
-             pattern={pattern}
-              className={`${classname ? classname :"px-5 h-12 focus:text-black border rounded  w-full xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] "}`}
-             {...register(name, { required: true })}
-              disabled={isdisabled}
-             min={min}
-             />
+            {!isAmount && (
+              <input name={name} type={toggle ? "text" : type}
+               placeholder={placeholder}
+               pattern={pattern}
+                className={`${classname ? classname :"px-5 h-12 focus:text-black border rounded  w-full xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] "}`}
+               ref={reg?.ref}
+               maxLength={maxLength}
+               onBlur={(e) => {
+                  reg?.onBlur?.(e)
+               }}
+               onChange={(e) => {
+                  reg?.onChange(e)
+               }}
+               disabled={isdisabled}
+               min={min}
+               max={max}
+               />
+            )}
+            {isAmount && (
+              <>
+                {/* Visible formatted input (not registered) */}
+                <input type={toggle ? "text" : "text"}
+                 placeholder={placeholder}
+                 pattern={pattern}
+                  className={`${classname ? classname :"px-5 h-12 focus:text-black border rounded  w-full xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] "}`}
+                 maxLength={maxLength}
+                 onBlur={(e) => {
+                    const raw = normalizeNumeric(e.target.value)
+                    const ensured = ensureTwoDecimals(raw)
+                    const formatted = formatWithCommas(ensured)
+                    setDisplayValue(formatted)
+                    setRawValue(ensured)
+                    // send normalized raw without commas to RHF
+                    reg?.onChange({ target: { name, value: ensured } })
+                    reg?.onBlur?.(e)
+                 }}
+                 onChange={(e) => {
+                    const raw = normalizeNumeric(e.target.value)
+                    const [i, d = ''] = raw.split('.')
+                    const dec = d.slice(0, 2)
+                    const limited = dec.length ? `${i}.${dec}` : i
+                    const formatted = formatWithCommas(limited)
+                    setDisplayValue(formatted)
+                    setRawValue(limited)
+                    reg?.onChange({ target: { name, value: limited } })
+                 }}
+                 value={displayValue}
+                  disabled={isdisabled}
+                 />
+                {/* Hidden raw input registered with RHF */}
+                <input type="hidden" name={name} ref={reg?.ref} value={rawValue} readOnly />
+              </>
+            )}
              {showPassword && (
              <span onClick={handleTogglePasswordVisibility} className={`cursor-pointer absolute top-14 right-3 text-xl transition duration-200 ${toggle ? "text-blue-500" : "text-gray-400"
                 }`}>{toggle ? <FaRegEye /> : <FaRegEyeSlash />}
@@ -163,11 +245,11 @@ export const SelectField = ({
   );
 };
 
-export const TextAreaField =({label, name, register, errors, classname, placeholder}:textareaProps)=>{
+export const TextAreaField =({label, name, register, errors, classname, placeholder, maxLength}:textareaProps)=>{
     return (
         <div className="relative flex flex-col ">
        <label className="py-2 font-Poppins text-sm text-[#353131]">{label} </label>
-            <textarea name={name} className={`${classname ? classname : "resize-none px-5 h-24 focus:text-black border rounded w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] p-4"}  `} {...register(name, { required: true })} placeholder={placeholder}>
+            <textarea name={name} className={`${classname ? classname : "resize-none px-5 h-24 focus:text-black border rounded w-auto xl:w-[350px] 2xl:w-[300px] md:w-[300px] xlw-[300px] lg:w-[300px] p-4"}  `} {...register(name, { required: true })} placeholder={placeholder} maxLength={maxLength}>
 
             </textarea>
             <div className="text-xs text-rose-500 pt-1">

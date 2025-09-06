@@ -20,6 +20,7 @@ import { Modal } from "./Modal";
 import successIcon from "@/app/asset/signout.svg";
 import { setLocalStoreData } from "@/hooks/useLocalStorage";
 import Image from "next/image";
+import { AiOutlineClose } from "react-icons/ai";
 import { useQueryData } from "@/hooks/useQueryDataCat";
 
 interface Subcategory {
@@ -79,6 +80,7 @@ export const Regular = () => {
     trigger,
     watch,
     setValue,
+    setError,
   } = useForm({
     mode: "all",
     resolver: yupResolver(ProductUploadSchema),
@@ -120,6 +122,18 @@ export const Regular = () => {
     return () => previews.forEach((url) => URL.revokeObjectURL(url));
   }, [previews]);
 
+  const removePreviewAtIndex = (index: number) => {
+    const currentPreviews = [...previews];
+    const url = currentPreviews[index];
+    if (url) URL.revokeObjectURL(url);
+    const nextPreviews = currentPreviews.filter((_, i) => i !== index);
+    setPreviews(nextPreviews);
+    const currentMedia = (watch("regular_media") as string[]) ?? [];
+    const nextMedia = currentMedia.filter((_, i) => i !== index);
+    setValue("regular_media", nextMedia);
+    trigger("regular_media");
+  };
+
   const handleSuccess = (data: any) => {
     if (data.status === 200) {
       /* router.push("/dashboard/userdetails"); */
@@ -128,7 +142,6 @@ export const Regular = () => {
       setPreviews([]);
       reset();
     } else if (data.status === 400 || data.status === 409) {
-            setPreviews([]);
       toast.error(`${data?.data?.message}`, {
         position: "top-right",
         autoClose: 5000,
@@ -139,9 +152,20 @@ export const Regular = () => {
         progress: undefined,
         theme: "light",
       });
-      reset();
+      // Attempt to map server validation to fields without clearing form
+      const msg: string = data?.data?.message || '';
+      if (msg.toLowerCase().includes('price')) {
+        if (msg.includes('selling') || msg.includes('price')) {
+          setError('selling_price' as any, { type: 'server', message: 'Please enter a valid amount' } as any);
+        }
+        if (msg.includes('cost')) {
+          setError('cost_price' as any, { type: 'server', message: 'Please enter a valid amount' } as any);
+        }
+        if (msg.includes('discount')) {
+          setError('discount' as any, { type: 'server', message: 'Please enter a valid amount' } as any);
+        }
+      }
     } else {
-            setPreviews([]);
   toast.error(`${data?.data?.message}`, {
         position: "top-right",
         autoClose: 5000,
@@ -152,7 +176,6 @@ export const Regular = () => {
         progress: undefined,
         theme: "light",
       });
-      reset();
     }
   };
   const handleError = (error: any) => {
@@ -166,7 +189,7 @@ export const Regular = () => {
       progress: undefined,
       theme: "light",
     });
-    reset();
+    // Do not reset on error; keep user inputs intact
   };
 
   const { data, error, mutate, status } = useMutateData(
@@ -225,7 +248,7 @@ export const Regular = () => {
     <>
       <ToastContainer closeOnClick />
       <section
-        className={`my-10 px-20 ${
+        className={`my-10 px-4 md:px-10 lg:px-20 ${
           isNavbarOpen ? "justify-center items-center " : ""
         } flex-col flex`}
       >
@@ -239,19 +262,19 @@ export const Regular = () => {
           onSubmit={handleSubmit(sumbitForm)}
           encType={"multipart/form-data"}
         >
-          <div className="flex gap-12 my-8 lg:flex-row flex-col-reverse">
+          <div className="flex gap-8 md:gap-12 my-8 md:flex-row flex-col-reverse">
             {/* Left Column - Product Upload */}
             <div className="flex-1">
               <div className="flex flex-col">
                 <label htmlFor="upload-files">
                   <p className="py-2 font-Poppins font-medium text-gray-700">Product Upload:</p>
-                  <div className="bg-gray-50 relative rounded-lg border-2 border-dashed border-gray-300 hover:border-[#FCDFD4] hover:bg-gray-100 h-[280px] w-full flex justify-center items-center cursor-pointer flex-col transition-all duration-200">
+                  <div className="bg-gray-50 relative rounded-lg border-2 border-dashed border-gray-300 hover:border-[#FCDFD4] hover:bg-gray-100 h-48 md:h-[280px] w-full flex justify-center items-center cursor-pointer flex-col transition-all duration-200">
                     <FiUpload className="text-5xl text-gray-400 mb-4" />
                     <div className="flex flex-col items-center justify-center text-center">
-                      <p className="mb-2 text-lg font-Poppins font-medium text-gray-600">
+                      <p className="mb-2 text-base md:text-lg font-Poppins font-medium text-gray-600">
                         Select files to upload
                       </p>
-                      <p className="text-sm font-Poppins text-gray-500">
+                      <p className="text-xs md:text-sm font-Poppins text-gray-500">
                         You may upload up to 4 images & Videos
                       </p>
                     </div>
@@ -274,15 +297,24 @@ export const Regular = () => {
 
               <div className="flex gap-2 mt-4 flex-wrap">
                 {previews.map((src, index) => (
-                  <Image
-                    key={index}
-                    src={src}
-                    alt={`preview-${index}`}
-                    className="w-20 h-20 object-cover rounded-md shadow"
-                    width={80}
-                    height={80}
-                    priority
-                  />
+                  <div key={index} className="relative">
+                    <Image
+                      src={src}
+                      alt={`preview-${index}`}
+                      className="w-20 h-20 object-cover rounded-md shadow"
+                      width={80}
+                      height={80}
+                      priority
+                    />
+                    <button
+                      type="button"
+                      aria-label="Remove image"
+                      className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow text-gray-600 hover:text-gray-800"
+                      onClick={() => removePreviewAtIndex(index)}
+                    >
+                      <AiOutlineClose className="text-sm" />
+                    </button>
+                  </div>
                 ))}
               </div>
 
@@ -314,12 +346,13 @@ export const Regular = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <InputField
                     name="quantity"
                     label="Quantity"
                     type="number"
                     min={1}
+                    max={999999}
                     register={register}
                     errors={errors}
                     classname="text-sm w-full px-4 h-12 border border-gray-300 rounded-lg font-Poppins font-normal focus:outline-none focus:border-[#FCDFD4] focus:ring-1 focus:ring-[#FCDFD4]"
@@ -332,10 +365,11 @@ export const Regular = () => {
                     register={register}
                     errors={errors}
                     classname="text-sm w-full px-4 h-12 border border-gray-300 rounded-lg font-Poppins font-normal focus:outline-none focus:border-[#FCDFD4] focus:ring-1 focus:ring-[#FCDFD4]"
+                    maxLength={10}
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <InputField
                     name="selling_price"
                     label="Selling Price"
@@ -344,6 +378,8 @@ export const Regular = () => {
                     register={register}
                     errors={errors}
                     classname="text-sm w-full px-4 h-12 border border-gray-300 rounded-lg font-Poppins font-normal focus:outline-none focus:border-[#FCDFD4] focus:ring-1 focus:ring-[#FCDFD4]"
+                    isAmount
+                    maxLength={20}
                   />
                   <InputField
                     name="cost_price"
@@ -353,6 +389,8 @@ export const Regular = () => {
                     register={register}
                     errors={errors}
                     classname="text-sm w-full px-4 h-12 border border-gray-300 rounded-lg font-Poppins font-normal focus:outline-none focus:border-[#FCDFD4] focus:ring-1 focus:ring-[#FCDFD4]"
+                    isAmount
+                    maxLength={20}
                   />
                 </div>
 
@@ -365,6 +403,8 @@ export const Regular = () => {
                     register={register}
                     errors={errors}
                     classname="text-sm w-full px-4 h-12 border border-gray-300 rounded-lg font-Poppins font-normal focus:outline-none focus:border-[#FCDFD4] focus:ring-1 focus:ring-[#FCDFD4]"
+                    isAmount
+                    maxLength={20}
                   />
                 </div>
               </div>
@@ -417,7 +457,8 @@ export const Regular = () => {
                   register={register}
                   errors={errors}
                   placeholder="Lorem ipsum dolor sit amet consectetur. ultricies..."
-                  classname="resize-none px-4 py-3 h-32 focus:text-black border border-gray-300 rounded-lg font-Poppins font-normal focus:outline-none focus:border-[#FCDFD4] focus:ring-1 focus:ring-[#FCDFD4] w-full"
+                  classname="resize-none px-4 py-3 h-28 md:h-32 focus:text-black border border-gray-300 rounded-lg font-Poppins font-normal focus:outline-none focus:border-[#FCDFD4] focus:ring-1 focus:ring-[#FCDFD4] w-full"
+                  maxLength={500}
                 />
               </div>
             </div>
@@ -428,7 +469,7 @@ export const Regular = () => {
               text={status === "pending" ? "Loading..." : "Upload"}
               type="submit"
               handleClick={() => null}
-              className="bg-[#FCDFD4] p-4 text-sm w-[12em] hover:bg-[#F25E26] hover:text-white rounded-lg font-Poppins font-medium transition-all duration-200"
+              className="bg-[#FCDFD4] p-4 text-sm w-full md:w-[12em] hover:bg-[#F25E26] hover:text-white rounded-lg font-Poppins font-medium transition-all duration-200"
             />
           </div>
         </form>

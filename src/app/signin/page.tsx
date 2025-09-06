@@ -260,6 +260,13 @@ function Page() {
       });
       reset()
     } else if (data.status === 403 && data?.data?.message !== "Incorrect login details") {
+      // If account needs verification, persist email (if valid) and include it in redirect
+      const candidate = lastEmailOrPhone.current || '';
+      const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      const isEmail = emailRegex.test(candidate);
+      if (isEmail) {
+        try { localStorage.setItem('signup_email', candidate); } catch (e) { /* ignore */ }
+      }
       toast.error(`${data?.data?.message}`, {
         position: 'bottom-center',
         autoClose: 2000,
@@ -269,7 +276,13 @@ function Page() {
         draggable: true,
         progress: undefined,
         theme: "light",
-        onClose: () => router.push("/otpverification"),
+        onClose: () => {
+          if (isEmail) {
+            router.push(`/otpverification?email=${encodeURIComponent(candidate)}`)
+          } else {
+            router.push("/otpverification")
+          }
+        },
       });
       reset()
     } else {

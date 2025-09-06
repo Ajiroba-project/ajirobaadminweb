@@ -4,15 +4,14 @@ import { FaThumbsUp, FaRegCommentDots, FaShareAlt } from "react-icons/fa";
 import { FiBookmark } from "react-icons/fi";
 import clock from "../../asset/image/clock.svg";
 import { toast } from "react-toastify";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
+ 
 import { useRouter } from "next/navigation";
-import * as yup from "yup";
+ 
 import { useAuthStore } from "@/store/store";
 import { useMutateData } from "@/hooks/useMutateData";
 import { useGetOrderData } from "@/hooks/useGetData";
 import { BsEmojiSmile } from "react-icons/bs";
-import { AiOutlinePicture } from "react-icons/ai";
+import { AiOutlinePicture, AiOutlineClose } from "react-icons/ai";
 import Loading from "@/app/components/Loading";
 import { formatDistanceToNow } from "date-fns";
 import Cookies from "js-cookie";
@@ -66,22 +65,14 @@ const ITEMS_PER_PAGE = 5; // Adjust based on your needs
 const ContentPost = ({ activeTab }: { activeTab: string }) => {
     const router = useRouter();
 
-    const commentSchema = yup.object().shape({
-        comment: yup.string().required('Comment is required'),
-    });
+    
 
-    // State to manage comment input per post
-    const [commentState, setCommentState] = useState({});
+    // Per-post state for comment input, image and errors
+    const [commentByPost, setCommentByPost] = useState<{ [key: string]: string }>({});
+    const [selectedImageByPost, setSelectedImageByPost] = useState<{ [key: string]: string | null }>({});
+    const [errorByPost, setErrorByPost] = useState<{ [key: string]: string | null }>({});
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-        setValue,
-        reset,
-    } = useForm<CommentFormValues>({
-        resolver: yupResolver(commentSchema),
-    });
+    
 
     const handleSuccess = (data?: any) => {
         setComment('');
@@ -97,7 +88,7 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
                 draggable: true,
                 progress: undefined,
                 theme: 'light',
-                onClose: () => router.push('/profile'),
+                onClose: () => router.push('/community'),
             });
             refetch();
         } else if (
@@ -174,17 +165,50 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
     const [comment, setComment] = useState<string>('');
     const [commentImage, setCommentImage] = useState<string>('');
 
-    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = (postId: string, event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
                 const base64String = reader.result as string;
-                setSelectedImage(base64String);
-                setValue('commentImage', base64String);
+                setSelectedImageByPost(prev => ({ ...prev, [postId]: base64String }));
             };
             reader.readAsDataURL(file);
         }
+    };
+
+    const removeImageForPost = (postId: string) => {
+        setSelectedImageByPost(prev => ({ ...prev, [postId]: null }));
+    };
+
+    const handleCommentChange = (postId: string, value: string) => {
+        setCommentByPost(prev => ({ ...prev, [postId]: value }));
+        if (errorByPost[postId]) {
+            setErrorByPost(prev => ({ ...prev, [postId]: null }));
+        }
+    };
+
+    const submitComment = (postId: string) => {
+        const text = (commentByPost[postId] || '').trim();
+        if (!text) {
+            setErrorByPost(prev => ({ ...prev, [postId]: 'Comment is required' }));
+            return;
+        }
+        const image = selectedImageByPost[postId] || '';
+        const payload = {
+            post_id: postId,
+            comment: text,
+            comment_images: [image],
+        };
+        mutate({
+            url: '/api/commentonpost/',
+            payload: { payload, tkn: userToken },
+            token: userToken,
+        });
+        // Optimistically clear per-post inputs
+        setCommentByPost(prev => ({ ...prev, [postId]: '' }));
+        setSelectedImageByPost(prev => ({ ...prev, [postId]: null }));
+        setErrorByPost(prev => ({ ...prev, [postId]: null }));
     };
 
     const {
@@ -207,23 +231,7 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
 
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-    const onSubmit = (data: CommentFormValues) => {
-        const payload = {
-            post_id: data.post_id,
-            comment: data.comment,
-            comment_images: [data.commentImage],
-        };
-
-        mutate({
-            url: '/api/commentonpost/',
-            payload: { payload, tkn: userToken },
-            token: userToken,
-        });
-
-        setComment('');
-        setCommentImage('');
-        reset();
-    };
+    
 
     const { mutate: likedmutate, status: likedstatus } = useMutateData(
         'like_or_unlike_post',
@@ -289,9 +297,12 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
 
     // Conditionally render posts based on active tab
     if (activeTab === 'Liked') {
-        posts = trendingrinfo?.data?.data?.liked_posts || [];
+        const liked = trendingrinfo?.data?.data?.liked_post || [];
+        // API returns { id, post: {...} } — extract the nested post objects
+        posts = liked.map((entry: any) => entry?.post).filter(Boolean);
     } else if (activeTab === 'Bookmarked') {
-        posts = trendingrinfo?.data?.data?.bookmarked_posts || [];
+        const bookmarked = trendingrinfo?.data?.data?.bookmarked_post || [];
+        posts = bookmarked.map((entry: any) => entry?.post).filter(Boolean);
     }
 
     const [paginationState, setPaginationState] = useState<{ [key: string]: number }>({});
@@ -343,7 +354,7 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
                                 <div className="mb-4 flex justify-center">
                                     <div className="w-full max-w-md bg-gray-100 rounded-lg p-8 flex items-center justify-center">
                                         <Image
-                                            src={`https://staging.ajiroba.ng/v1/media/${item?.images?.[0]?.image}`}
+                                            src={`https://staging.ajiroba.ng/media/${item?.images?.[0]?.image}`}
                                             alt="Post image"
                                             width={300}
                                             height={300}
@@ -400,7 +411,7 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
 
                             {/* Comment Input */}
                             <form
-                                onSubmit={handleSubmit((data) => onSubmit({ ...data, post_id: postId }))}
+                                onSubmit={(e) => { e.preventDefault(); submitComment(postId); }}
                                 className="mt-4"
                             >
                                 <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
@@ -410,7 +421,8 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
                                     <input
                                         type="text"
                                         placeholder="Write your comment"
-                                        {...register('comment')}
+                                        value={commentByPost[postId] || ''}
+                                        onChange={(e) => handleCommentChange(postId, e.target.value)}
                                         className="flex-1 bg-transparent border-none outline-none text-sm text-gray-700 placeholder-gray-500"
                                     />
                                     <div className="flex items-center gap-2">
@@ -422,23 +434,38 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
                                             id={`imageUpload-${postId}`}
                                             accept="image/*"
                                             className="hidden"
-                                            onChange={handleImageUpload}
+                                            onChange={(e) => handleImageUpload(postId, e)}
                                         />
+                                        <button
+                                            type="submit"
+                                            disabled={status === 'pending'}
+                                            className="px-3 py-1 rounded-md text-sm text-white bg-[#F56630] hover:bg-[#E84526] disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            Post
+                                        </button>
                                     </div>
                                 </div>
-                                {errors.comment && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.comment.message}</p>
+                                {errorByPost[postId] && (
+                                    <p className="text-red-500 text-xs mt-1">{errorByPost[postId]}</p>
                                 )}
 
-                                {selectedImage && (
-                                    <div className="mt-3">
+                                {selectedImageByPost[postId] && (
+                                    <div className="mt-3 relative inline-block">
                                         <Image
-                                            src={selectedImage}
+                                            src={selectedImageByPost[postId] as string}
                                             alt="Selected"
                                             width={80}
                                             height={80}
                                             className="w-20 h-20 object-cover rounded-lg"
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeImageForPost(postId)}
+                                            className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow text-gray-600 hover:text-gray-800"
+                                            aria-label="Remove image"
+                                        >
+                                            <AiOutlineClose className="text-sm" />
+                                        </button>
                                     </div>
                                 )}
                             </form>
@@ -532,7 +559,7 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
                                 <div className="mb-4 flex justify-center">
                                     <div className="w-full max-w-md bg-gray-100 rounded-lg p-8 flex items-center justify-center">
                                         <Image
-                                            src={`https://staging.ajiroba.ng/v1/media/${item?.images?.[0]?.image}`}
+                                            src={`https://staging.ajiroba.ng/media/${item?.images?.[0]?.image}`}
                                             alt="Post image"
                                             width={300}
                                             height={300}
@@ -603,7 +630,7 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
                                 <div className="mb-4 flex justify-center">
                                     <div className="w-full max-w-md bg-gray-100 rounded-lg p-8 flex items-center justify-center">
                                         <Image
-                                            src={`https://staging.ajiroba.ng/v1/media/${item?.images?.[0]?.image}`}
+                                            src={`https://staging.ajiroba.ng/media/${item?.images?.[0]?.image}`}
                                             alt="Post image"
                                             width={300}
                                             height={300}
