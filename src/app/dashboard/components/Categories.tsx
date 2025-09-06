@@ -74,7 +74,7 @@ export const Categories = () => {
     error: catError,
   } = useGetDatanew(url, "get_catandsubcat_details", userToken || " ");
 
-  // console.log(catandsubInfo);
+  //  console.log(catandsubInfo);
 
 
   const catnew = catandsubInfo?.data?.map((cat: { category: any; id: any; subcategories: any; }) => ({

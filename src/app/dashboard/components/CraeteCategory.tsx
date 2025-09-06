@@ -46,10 +46,12 @@ export const CraeteCategory = ({func}:any) => {
   });
 
 const handleSuccess = (data?: any) => {
-  if (data?.status === 200 || data?.status === 201) {
+  if (data?.status === 200 || data?.data?.status === 'success' || data?.status === 201) {
+    console.log(data, "data");
     toast.success(`${data?.data?.message || "Success!"}`);
    /*  setSubCategoryOpen(false); */
   }
+  refetch?.();
 };
 
   const handleError = (error: any) => {
@@ -67,7 +69,7 @@ const handleSuccess = (data?: any) => {
    /*    setCategoryOpen(false); */
   };
 
-  const { data, error, isError, isSuccess, mutate, status } = useMutateData(
+  const { data, error, isError, isSuccess, mutate, status, refetch } = useMutateData(
     "create-category",
     handleSuccess,
     handleError

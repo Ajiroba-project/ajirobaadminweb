@@ -28,6 +28,7 @@ interface MutationHookResult {
     reset: () => void;
     status: string | null;
     onSuccess: SuccessCallback | undefined;
+    refetch?: () => void;
 }
 
 
