@@ -14,7 +14,10 @@ import { ToastContainer, toast } from "react-toastify";
 // import "react-toastify/dist/ReactToastify.css";
 import { userOTPStore } from '@/store/store'
 
-function Page() {
+
+
+
+const ParentPage = () => {
     const router = useRouter();
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
     const inputRefs = useRef<HTMLInputElement[]>([]);
@@ -373,4 +376,18 @@ function Page() {
     );
 }
 
-export default Page;
+
+
+export default function Page() {
+
+  
+    return (
+      <Suspense fallback={
+        <div className="flex justify-center items-center h-64">
+          <div className="text-lg">Loading...</div>
+        </div>
+      }>
+        <ParentPage />
+      </Suspense>
+    );
+  }

@@ -14,7 +14,7 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
-function Page() {
+const ParentPage = () => {
 
 
 
@@ -417,4 +417,16 @@ function Page() {
     );
 }
 
-export default Page;
+export default function Page() {
+
+  
+    return (
+      <Suspense fallback={
+        <div className="flex justify-center items-center h-64">
+          <div className="text-lg">Loading...</div>
+        </div>
+      }>
+        <ParentPage />
+      </Suspense>
+    );
+  }
