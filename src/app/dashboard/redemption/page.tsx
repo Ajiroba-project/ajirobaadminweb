@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { useStore } from "@/store/nav-store";
 
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PageLayout from "@/app/components/Layout/PageLayout";
 
 import Image from "next/image";
@@ -221,6 +221,50 @@ const Page = () => {
     date_created: item.date_created
   })) : [];
 
+  // Fetch all winners across pages so search/filter works on the whole dataset
+  const [winnersAll, setWinnersAll] = useState<Winner[]>([]);
+  const [loadingAll, setLoadingAll] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchAll() {
+      if (!userToken) return;
+      setLoadingAll(true);
+      try {
+        let nextUrl: string | null = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/winners/?page=1&page_size=100`;
+        const all: Winner[] = [];
+        while (nextUrl) {
+          const res = await fetch(nextUrl, {
+            headers: { 'Authorization': `Token ${userToken}` }
+          });
+          const data: WinnerApiResponse = await res.json();
+          const batch = data.results.map((item) => ({
+            firstName: item.first_name,
+            surname: item.last_name,
+            email: item.email,
+            phone: item.phone,
+            address: item.address,
+            ticket: item.winning_ticket,
+            productId: item.product_no,
+            product: item.product_name,
+            status: item.redemption_status,
+            id: item.product_id,
+            date_created: item.date_created,
+          }));
+          all.push(...batch);
+          nextUrl = data.next;
+        }
+        if (!cancelled) setWinnersAll(all);
+      } catch (e) {
+        // fail silently; fallback to current page data
+      } finally {
+        if (!cancelled) setLoadingAll(false);
+      }
+    }
+    fetchAll();
+    return () => { cancelled = true; };
+  }, [userToken]);
+
   const mockRedeemed = redeemedInfo && 'data' in redeemedInfo && 'redeemed_tickets' in (redeemedInfo as any).data ? 
     (redeemedInfo as any).data.redeemed_tickets?.map((item: {
       id: string;
@@ -405,8 +449,10 @@ const Page = () => {
     },
   ];
 
+  // Choose source: full dataset if available, else current page
+  const winnersSource = winnersAll.length > 0 ? winnersAll : (mockWinners || []);
   // First filter by date, then by search
-  const dateFilteredWinners = filterDataByDate(mockWinners || [], dateFilter);
+  const dateFilteredWinners = filterDataByDate(winnersSource, dateFilter);
   
   const filteredWinners = dateFilteredWinners?.filter(
     (w: { firstName: string; surname: string; email: string; phone: string; address: string; ticket: string; productId: string; product: string; status: string; }) =>
@@ -485,9 +531,6 @@ const Page = () => {
   const handlePageChange = (selectedItem: { selected: number }) => {
     const newPage = selectedItem.selected + 1;
     setCurrentPage(newPage);
-    // Reset search and date filter when page changes
-    setSearch("");
-    setDateFilter("");
   };
 
   // Reset filters when switching tabs
@@ -686,7 +729,7 @@ const Page = () => {
                       columns={columnsB}
                     />
                   </div>
-                  {totalPages > 1 && (
+                  {!search && !dateFilter && totalPages > 1 ? (
                     <div className="flex flex-col items-center py-4">
                       <div className="text-sm text-gray-600 mb-2">
                         Showing page {currentPage} of {totalPages} (Total: {winnerInfo && 'count' in winnerInfo ? (winnerInfo as any).count : 0} records)
@@ -698,6 +741,13 @@ const Page = () => {
                         className="flex items-center gap-2"
                         currentPage={currentPage - 1}
                       />
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center py-4">
+                      <div className="text-sm text-gray-600 mb-2">
+                        Total: {filteredWinners?.length || 0} records
+                        {loadingAll && ' (loading all...)'}
+                      </div>
                     </div>
                   )}
                 </div>

@@ -43,7 +43,7 @@ function AuctionDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =>
     email: order.email,
     status: order?.status || 'N/A',
     amount: order?.ticket_amount || 'N/A',
-    item: order.auction,
+    item: typeof order.auction === 'string' ? order.auction : (order?.auction?.name || ''),
     date: new Date(order.date_created).toLocaleDateString("en-GB"),
     img: order.profile_image ? `https://staging.ajiroba.ng${order.profile_image}` : null,
   }));
@@ -55,16 +55,20 @@ function AuctionDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =>
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const menuWrapperRef = useRef<HTMLDivElement | null>(null);
+  const [showFilter, setShowFilter] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('');
 
   const itemsPerPage = 10;
 
-  const filteredTransactions = transactions?.filter((transaction: { id: string | number; name: string; email: string; item: string; date: string | string[]; }) => {
+  const filteredTransactions = transactions?.filter((transaction: { id: string | number; name: string; email: string; item: any; date: string | string[]; status?: string; }) => {
     const matchesSearch =
       transaction.name.toLowerCase().includes(search.toLowerCase()) ||
       transaction.email.toLowerCase().includes(search.toLowerCase()) ||
-      transaction.item.toLowerCase().includes(search.toLowerCase()) ||
+      String(transaction.item ?? '').toLowerCase().includes(search.toLowerCase()) ||
       transaction.date.includes(search) ||
       String(transaction.id ?? '').toLowerCase().includes(search.toLowerCase());
+
+    const matchesStatus = !statusFilter || (transaction.status || '').toLowerCase() === statusFilter.toLowerCase();
 
     const matchesSelectedDate =
       !selectedDate ||
@@ -78,7 +82,7 @@ function AuctionDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =>
         );
       })();
 
-    return matchesSearch && matchesSelectedDate;
+    return matchesSearch && matchesStatus && matchesSelectedDate;
   });
 
   // Register CSV exporter with parent using latest data via ref
@@ -243,13 +247,30 @@ function AuctionDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =>
               />
             </div>
             
-            <button
-              className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-[#344054] font-Poppins text-sm hover:bg-gray-50 transition-colors duration-200 shrink-0 w-full sm:w-auto justify-center"
-              onClick={() => alert("Filter functionality coming soon!")}
-            >
-              <IoFilter size={16} />
-              Filter
-            </button>
+            <div className="relative">
+              <button
+                className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-[#344054] font-Poppins text-sm hover:bg-gray-50 transition-colors duration-200 shrink-0 w-full sm:w-auto justify-center"
+                onClick={() => setShowFilter((v) => !v)}
+              >
+                <IoFilter size={16} />
+                Filter
+              </button>
+              {showFilter && (
+                <div className="absolute z-20 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-56">
+                  <label className="block text-xs text-gray-500 mb-1">Status</label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="">All</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Delivered">Delivered</option>
+                  </select>
+                </div>
+              )}
+            </div>
           </div>
           
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
@@ -295,6 +316,11 @@ function AuctionDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =>
             </tr>
           </thead>
           <tbody>
+            {paginatedData && paginatedData.length === 0 && (
+              <tr>
+                <td colSpan={8} className="px-6 py-6 text-center text-sm text-gray-500">No data available</td>
+              </tr>
+            )}
             {paginatedData?.map((transaction: any) => (
               <tr
                 key={transaction.id}

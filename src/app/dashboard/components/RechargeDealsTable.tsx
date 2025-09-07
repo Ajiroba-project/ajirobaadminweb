@@ -60,7 +60,7 @@ function RechargeDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =
     img: item.profile_image ? `https://staging.ajiroba.ng${item.profile_image}` : null,
     reference: item?.reference,
     deviceId: item?.device_id || `ID${Math.floor(Math.random() * 1000000000)}`,
-    item: item?.item || 'N/A',
+    item: typeof item?.item === 'string' ? item.item : (item?.item?.name || ''),
   })) || [];
 
   const [search, setSearch] = useState("");
@@ -70,17 +70,21 @@ function RechargeDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const menuWrapperRef = useRef<HTMLDivElement | null>(null);
+  const [showFilter, setShowFilter] = useState(false);
+  const [billerFilter, setBillerFilter] = useState<string>('');
 
   const itemsPerPage = 10;
 
-  const filteredTransactions = transactions?.filter((transaction: { id: string | number; name: string; email: string; item: string; date: string | string[]; deviceId: string; }) => {
+  const filteredTransactions = transactions?.filter((transaction: { id: string | number; name: string; email: string; item: any; date: string | string[]; deviceId: string; biller?: string; }) => {
     const matchesSearch =
       transaction.name.toLowerCase().includes(search.toLowerCase()) ||
       transaction.email.toLowerCase().includes(search.toLowerCase()) ||
-      transaction.item.toLowerCase().includes(search.toLowerCase()) ||
+      String(transaction.item ?? '').toLowerCase().includes(search.toLowerCase()) ||
       transaction.deviceId.toLowerCase().includes(search.toLowerCase()) ||
       transaction.date.includes(search) ||
       String(transaction.id ?? '').toLowerCase().includes(search.toLowerCase());
+
+    const matchesBiller = !billerFilter || (transaction.biller || '').toLowerCase() === billerFilter.toLowerCase();
 
     const matchesSelectedDate =
       !selectedDate ||
@@ -94,7 +98,7 @@ function RechargeDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =
         );
       })();
 
-    return matchesSearch && matchesSelectedDate;
+    return matchesSearch && matchesBiller && matchesSelectedDate;
   });
 
   // Register CSV exporter with parent using latest data via ref
@@ -261,13 +265,32 @@ function RechargeDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =
               />
             </div>
             
-            <button
-              className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-[#344054] font-Poppins text-sm hover:bg-gray-50 transition-colors duration-200 shrink-0 w-full sm:w-auto justify-center"
-              onClick={() => alert("Filter functionality coming soon!")}
-            >
-              <IoFilter size={16} />
-              Filter
-            </button>
+            <div className="relative">
+              <button
+                className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-[#344054] font-Poppins text-sm hover:bg-gray-50 transition-colors duration-200 shrink-0 w-full sm:w-auto justify-center"
+                onClick={() => setShowFilter((v) => !v)}
+              >
+                <IoFilter size={16} />
+                Filter
+              </button>
+              {showFilter && (
+                <div className="absolute z-20 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-56">
+                  <label className="block text-xs text-gray-500 mb-1">Biller</label>
+                  <select
+                    value={billerFilter}
+                    onChange={(e) => { setBillerFilter(e.target.value); setCurrentPage(1); }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="">All</option>
+                    <option value="dstv">DSTV</option>
+                    <option value="gotv">GOTV</option>
+                    <option value="startimes">Startimes</option>
+                    <option value="airtime">Airtime</option>
+                    <option value="electricity">Electricity</option>
+                  </select>
+                </div>
+              )}
+            </div>
           </div>
           
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
@@ -313,6 +336,11 @@ function RechargeDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =
             </tr>
           </thead>
           <tbody>
+            {paginatedData && paginatedData.length === 0 && (
+              <tr>
+                <td colSpan={8} className="px-6 py-6 text-center text-sm text-gray-500">No data available</td>
+              </tr>
+            )}
             {paginatedData?.map((transaction: any) => (
               <tr
                 key={transaction.id}

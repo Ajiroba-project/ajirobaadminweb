@@ -202,7 +202,7 @@ const BarChart: React.FC = () => {
     <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 w-full  mb-8'>
       <div className='bg-white p-6 rounded-lg shadow-lg flex flex-col '>
       <h2 className="text-lg font-semibold mb-4">Revenue Summary Report</h2>
-        <Image onClick={() => router.push('/serviceuptimereport')}
+        <Image onClick={() => router.push('/dashboard/revenuesummaryreport')}
           src={isRevenueHovered ? revenueHoverImg : revenueImg}
           alt="Revenue Summary Report"
           className=" object-contain mb-2 cursor-pointer"
