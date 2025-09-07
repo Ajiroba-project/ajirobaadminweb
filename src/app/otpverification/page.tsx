@@ -317,6 +317,7 @@ function Page() {
     return (
         <>
 
+            <Suspense fallback={<div className="px-8 py-10 text-sm text-gray-500">Loading...</div>}>
             <div className="px-8">
                 {/*      <ToastContainer closeOnClick /> */}
                 <nav className="Brand-logo p-6 lg:px-14 px-7 lg:block xl:block 2xl:block md:block flex justify-center">
@@ -411,6 +412,7 @@ function Page() {
                     </div>
                 </div>
             </div>
+            </Suspense>
         </>
     );
 }
