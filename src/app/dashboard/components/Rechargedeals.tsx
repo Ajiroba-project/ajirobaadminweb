@@ -1,5 +1,5 @@
-'use client'
-import React, { useState } from 'react'
+"use client"
+import React, { Suspense, useState, lazy } from 'react'
 import icon from "../../asset/image/icon.svg"
 import Image from 'next/image';
 import chart from '../../asset/image/chart.svg'
@@ -8,7 +8,7 @@ import Cookies from 'js-cookie';
 import { useGetDatanew } from '@/hooks/useGetData';
 import Loading from '@/app/components/Loading';
 import AuctionDealsTable from '@/app/components/AuctionDealsTable';
-import RechargeDealsTable from './RechargeDealsTable';
+const RechargeDealsTable = lazy(() => import('./RechargeDealsTable'));
 import { formatCurrency } from '@/utils/formatCurrency';
 
 function Rechargedeals({ onRegisterExport }: { onRegisterExport?: (fn: () => void) => void }) {
@@ -99,7 +99,9 @@ function Rechargedeals({ onRegisterExport }: { onRegisterExport?: (fn: () => voi
         <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="text-lg font-Poppins font-semibold text-[#1D2739]">Transactions</h2>
         </div>
-        <RechargeDealsTable onRegisterExport={onRegisterExport}/>
+        <Suspense fallback={<div className="px-6 py-8"><Loading /></div>}>
+          <RechargeDealsTable onRegisterExport={onRegisterExport} />
+        </Suspense>
       </div>
     </div>
   )

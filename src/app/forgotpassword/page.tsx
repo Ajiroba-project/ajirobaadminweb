@@ -2,8 +2,10 @@
 import Link from "next/link";
 import Brand from "../asset/logo.svg";
 import Image from "next/image";
-import AuthHero, { HeroSubText } from "../component/AuthHero";
-import { DefaultButton } from "../component/Button";
+import React, { Suspense, lazy } from "react";
+const AuthHero = lazy(() => import("../component/AuthHero"));
+const HeroSubText = lazy(() => import("../component/AuthHero").then(m => ({ default: m.HeroSubText })));
+const DefaultButton = lazy(() => import("../component/Button").then(m => ({ default: m.DefaultButton })));
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { HiArrowLongLeft } from "react-icons/hi2";
@@ -306,12 +308,14 @@ function Page() {
                         </div>
 
                         <div className="flex justify-center items-center mt-12">
-                            <DefaultButton
-                                type="submit"
-                                className=" rounded-lg w-4/5 bg-[#FCDFD4] h-10 text-sm hover:bg-[#E84526] hover:text-white"
-                                text={status === 'pending' ? 'loading...' : 'Verify'}
-                                handleClick={() => handleVerify()}
-                            />
+                            <Suspense fallback={<div className="w-full py-2 text-center text-sm text-gray-500">Loading...</div>}>
+                                <DefaultButton
+                                    type="submit"
+                                    className=" rounded-lg w-4/5 bg-[#FCDFD4] h-10 text-sm hover:bg-[#E84526] hover:text-white"
+                                    text={status === 'pending' ? 'loading...' : 'Verify'}
+                                    handleClick={() => handleVerify()}
+                                />
+                            </Suspense>
                         </div>
 
                         <div className="flex justify-center items-center mt-4">
@@ -335,12 +339,14 @@ function Page() {
                                         onChange={(e) => setManualEmail(e.target.value)}
                                         className=" shadow border border-gray-300 px-3 h-10 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                     />
-                                    <DefaultButton
-                                        type="button"
-                                        className=" rounded-lg bg-[#FCDFD4] h-10 text-sm  hover:bg-[#E84526] hover:text-white"
-                                        text={resendStatus === 'pending' ? 'Sending...' : 'Send'}
-                                        handleClick={submitManualEmail}
-                                    />
+                                    <Suspense fallback={<div className="py-2 px-4 text-sm text-gray-500">Loading...</div>}>
+                                        <DefaultButton
+                                            type="button"
+                                            className=" rounded-lg bg-[#FCDFD4] h-10 text-sm  hover:bg-[#E84526] hover:text-white"
+                                            text={resendStatus === 'pending' ? 'Sending...' : 'Send'}
+                                            handleClick={submitManualEmail}
+                                        />
+                                    </Suspense>
                                 </div>
                             </div>
                         )}

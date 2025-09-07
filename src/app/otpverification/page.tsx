@@ -2,10 +2,10 @@
 import Link from "next/link";
 import Brand from "../asset/logo.svg";
 import Image from "next/image";
-import AuthHero from "../component/AuthHero";
-import { DefaultButton } from "../component/Button";
+import { Suspense, lazy, useRef, useState, useEffect } from "react";
+const AuthHero = lazy(() => import("../component/AuthHero"));
+const DefaultButton = lazy(() => import("../component/Button").then(m => ({ default: m.DefaultButton })));
 import { useRouter, useSearchParams } from "next/navigation";
-import { useRef, useState, useEffect } from "react";
 import { HiArrowLongLeft } from "react-icons/hi2";
 import { useMutateData } from "@/hooks/useMutateData";
 import { ToastContainer, toast } from "react-toastify";
@@ -325,10 +325,12 @@ function Page() {
                     </Link>
                 </nav>
 
-                <AuthHero
-                    title="OTP Verification"
-                    menu="Please provide the 6-digit security code sents to your e-mail address"
-                />
+                <Suspense fallback={<div className="py-6 text-sm text-gray-500">Loading...</div>}>
+                    <AuthHero
+                        title="OTP Verification"
+                        menu="Please provide the 6-digit security code sents to your e-mail address"
+                    />
+                </Suspense>
 
                 <div className="flex justify-center mb-20 mt-12">
                     <div className="flex flex-col">
@@ -356,17 +358,12 @@ function Page() {
                             </div>
                             {errors.otp && <div className="text-red-500">{errors.otp.message}</div>}
                             <div className="flex justify-center items-center mt-12">
-                                {/* <DefaultButton
-                                    type="submit"
-                                    className="w-full bg-[#FCDFD4] h-10 text-sm hover:bg-[#E84526] hover:text-white"
-                                    text={status === 'pending' ? 'loading...' : 'Verify'}
-                                    handleClick={() => handleVerify()}
-                                /> */}
-                                <DefaultButton type="submit"
-                                    className="w-full bg-[#FCDFD4] h-10 text-sm hover:bg-[#E84526] hover:text-white"
-                                    text={status === 'pending' ? 'loading...' : 'Verify'}
-                                />
-
+                                <Suspense fallback={<div className="w-full py-2 text-center text-sm text-gray-500">Loading...</div>}>
+                                    <DefaultButton type="submit"
+                                        className="w-full bg-[#FCDFD4] h-10 text-sm hover:bg-[#E84526] hover:text-white"
+                                        text={status === 'pending' ? 'loading...' : 'Verify'}
+                                    />
+                                </Suspense>
                             </div>
                         </form>
 
@@ -391,12 +388,14 @@ function Page() {
                                         onChange={(e) => setManualEmail(e.target.value)}
                                         className="shadow-md border border-gray-300 px-3 h-10 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                     />
-                                    <DefaultButton
-                                        type="button"
-                                        className="bg-[#FCDFD4] h-10 text-sm hover:bg-[#E84526] hover:text-white"
-                                        text={resendStatus === 'pending' ? 'Sending...' : 'Send'}
-                                        handleClick={submitManualEmail}
-                                    />
+                                    <Suspense fallback={<div className="py-2 px-4 text-sm text-gray-500">Loading...</div>}>
+                                        <DefaultButton
+                                            type="button"
+                                            className="bg-[#FCDFD4] h-10 text-sm hover:bg-[#E84526] hover:text-white"
+                                            text={resendStatus === 'pending' ? 'Sending...' : 'Send'}
+                                            handleClick={submitManualEmail}
+                                        />
+                                    </Suspense>
                                 </div>
                             </div>
                         )}
