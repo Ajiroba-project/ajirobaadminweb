@@ -22,6 +22,19 @@ function Page({ params }: PageProps) {
   const router = useRouter();
 
   const [userToken, setUserToken] = useState(Cookies.get("token"));
+  const formatCurrency = (value: any) => {
+    if (value === null || value === undefined) return 'N/A';
+    const numeric = typeof value === 'number'
+      ? value
+      : parseFloat(String(value).replace(/[^0-9.\-]/g, ''));
+    if (Number.isNaN(numeric)) return String(value);
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(numeric);
+  };
 
   let url = `/api/fetchauction?product_id=${product_id}`;
 
@@ -30,6 +43,8 @@ function Page({ params }: PageProps) {
     isLoading: prodLoading,
     error: prodError,
   } = useGetDatanew(url, "get_prod_details", userToken || " ");
+
+  // console.log(prodInfo?.data?.data, "prodInfo-----prodInfo");
 
 
 
@@ -157,7 +172,7 @@ function Page({ params }: PageProps) {
                     </div>
 
                     <div>
-                      <p className=" text-base font-semibold">₦ {prodInfo?.data?.data?.items_price}</p>
+                      <p className=" text-base font-semibold">{formatCurrency(prodInfo?.data?.data?.amount?.amount)}</p>
                     </div>
                   </div>
 
@@ -168,19 +183,19 @@ function Page({ params }: PageProps) {
                     </div>
 
                     <div>
-                      <p className=" text-base font-semibold">₦ {prodInfo?.data?.data?.delivery_fee}</p>
+                      <p className=" text-base font-semibold">{formatCurrency(prodInfo?.data?.data?.amount?.delivery)}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center  gap-16 flex-wrap py-2">
+                  {/* <div className="flex items-center  gap-16 flex-wrap py-2">
                     <div className="w-1/2">
                       <h1>Amount Due</h1>
                     </div>
 
                     <div>
-                      <p className=" text-base font-semibold">₦  {prodInfo?.data?.data?.total_price}</p>
+                      <p className=" text-base font-semibold">₦  {prodInfo?.data?.data?.amount?.amount}</p>
                     </div>
-                  </div>
+                  </div> */}
 
 
                   <div className="flex items-center  gap-16 flex-wrap py-2 mt-8">

@@ -190,6 +190,7 @@ const handleSuccess = (data?: any) => {
           register={register}
           errors={errors}
           type="text"
+          maxLength={100}
         />
 
         <div className="py-5">

@@ -327,7 +327,7 @@ const {
 
             <Pagination
                 pageCount={totalPages}
-                onPageChange={({ selected }) => setCurrentPage(currentPage + 1)}
+                onPageChange={({ selected }) => setCurrentPage(selected + 1)}
                 className='my-6 flex items-center justify-center gap-4 '
             />
 

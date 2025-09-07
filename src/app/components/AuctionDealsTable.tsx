@@ -35,6 +35,8 @@ function AuctionDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =>
     error: transError,
   } = useGetDatanew(url, "get_catandsubcat_details", userToken || " ");
 
+  // console.log(transInfo, "transInfo-----transInfo");
+
   const transactions = transInfo && transInfo?.data?.map((order: { ticket_number: any, auction: any, ticket_amount: any, status: any, order_id: any; name: any; email: any; products: any[]; date_created: string | number | Date; profile_image: any; amount: any }, index: number) => ({
     id: order?.ticket_number,
     name: order.name,
@@ -56,17 +58,25 @@ function AuctionDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =>
 
   const itemsPerPage = 10;
 
-  const filteredTransactions = transactions?.filter((transaction: { name: string; email: string; item: string; date: string | string[]; }) => {
+  const filteredTransactions = transactions?.filter((transaction: { id: string | number; name: string; email: string; item: string; date: string | string[]; }) => {
     const matchesSearch =
       transaction.name.toLowerCase().includes(search.toLowerCase()) ||
       transaction.email.toLowerCase().includes(search.toLowerCase()) ||
       transaction.item.toLowerCase().includes(search.toLowerCase()) ||
-      transaction.date.includes(search);
+      transaction.date.includes(search) ||
+      String(transaction.id ?? '').toLowerCase().includes(search.toLowerCase());
 
     const matchesSelectedDate =
       !selectedDate ||
-      new Date((transaction.date as string).split("/").reverse().join("-")).toISOString().split("T")[0] ===
-      selectedDate.toISOString().split("T")[0];
+      (() => {
+        const [dd, mm, yyyy] = (transaction.date as string).split('/').map(Number);
+        const tx = new Date(yyyy, mm - 1, dd);
+        return (
+          tx.getFullYear() === selectedDate.getFullYear() &&
+          tx.getMonth() === selectedDate.getMonth() &&
+          tx.getDate() === selectedDate.getDate()
+        );
+      })();
 
     return matchesSearch && matchesSelectedDate;
   });
@@ -220,21 +230,21 @@ function AuctionDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =>
     <div>
       {/* Search and Filter Bar */}
       <div className="px-6 py-4 border-b border-gray-100">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="relative flex-1 max-w-md">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 min-w-0 w-full">
+            <div className="relative w-full sm:flex-1 sm:max-w-md">
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search here..."
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg font-Poppins text-sm focus:outline-none focus:border-[#FCDFD4] focus:ring-1 focus:ring-[#FCDFD4]"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
               />
             </div>
             
             <button
-              className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-[#344054] font-Poppins text-sm hover:bg-gray-50 transition-colors duration-200"
+              className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-[#344054] font-Poppins text-sm hover:bg-gray-50 transition-colors duration-200 shrink-0 w-full sm:w-auto justify-center"
               onClick={() => alert("Filter functionality coming soon!")}
             >
               <IoFilter size={16} />
@@ -242,11 +252,23 @@ function AuctionDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =>
             </button>
           </div>
           
-          <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-[#344054] font-Poppins text-sm hover:bg-gray-50 transition-colors duration-200">
-              <BsCalendar3 size={16} />
-              Select dates
-            </button>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+            <DatePicker
+              selected={selectedDate}
+              onChange={(date) => { setSelectedDate(date as Date | null); setCurrentPage(1); }}
+              dateFormat="dd/MM/yyyy"
+              placeholderText="Select date"
+              className="px-4 py-2.5 border border-gray-300 rounded-lg text-[#344054] font-Poppins text-sm w-full sm:w-[160px]"
+              isClearable
+            />
+            {selectedDate && (
+              <button
+                className="px-3 py-2 border border-gray-300 rounded-lg text-[#667185] text-sm hover:bg-gray-50 w-full sm:w-auto"
+                onClick={() => { setSelectedDate(null); setCurrentPage(1); }}
+              >
+                Clear
+              </button>
+            )}
           </div>
         </div>
       </div>

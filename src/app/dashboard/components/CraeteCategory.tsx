@@ -47,7 +47,7 @@ export const CraeteCategory = ({func}:any) => {
 
 const handleSuccess = (data?: any) => {
   if (data?.status === 200 || data?.data?.status === 'success' || data?.status === 201) {
-    console.log(data, "data");
+    // console.log(data, "data");
     toast.success(`${data?.data?.message || "Success!"}`);
    /*  setSubCategoryOpen(false); */
   }
@@ -158,6 +158,7 @@ const handleSuccess = (data?: any) => {
           register={register}
           errors={errors}
           type="text"
+          maxLength={100}
         />
 
         <div className="py-5">

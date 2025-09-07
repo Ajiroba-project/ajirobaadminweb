@@ -18,6 +18,7 @@ import ps from "@/app/asset/ps.svg"
 import bid from "@/app/asset/bid.svg"
 import ticket from "@/app/asset/ticket.svg"
 import user_img from "@/app/asset/user.png"
+import { formatCurrency } from "@/utils/formatCurrency";
 
 
 export const UserDetails = () => {
@@ -58,12 +59,12 @@ export const UserDetails = () => {
     {
       icon: ag,
       name: "AMOUNT GENERATED",
-      count: userInfo?.data?.data?.regular.amount_generated || 0,
+      count: formatCurrency(userInfo?.data?.data?.regular.amount_generated || 0),
     },
     {
       icon: ps,
       name: "PENDING SALES",
-      count: userInfo?.data?.data?.regular.pending_sales || 0,
+      count: formatCurrency(userInfo?.data?.data?.regular.pending_sales || 0),
     },
   ];
 
@@ -87,7 +88,7 @@ export const UserDetails = () => {
     {
       icon: ag,
       name: "TOTAL AMOUNT GENERATED",
-      count: userInfo?.data?.data?.auction?.amount_generated || 0
+      count: formatCurrency(userInfo?.data?.data?.auction?.amount_generated || 0)
     },
   ]
 

@@ -85,19 +85,46 @@ function Page() {
         index: number,
         event: React.KeyboardEvent<HTMLInputElement>,
     ) => {
-        if (index > 0 && event.keyCode === 8 && !event.currentTarget.value) {
+        const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+        const isNumber = /^[0-9]$/.test(event.key);
+        const isAllowedKey = allowedKeys.includes(event.key);
+
+        if (!isNumber && !isAllowedKey) {
+            event.preventDefault();
+            return;
+        }
+
+        if (index > 0 && event.key === 'Backspace' && !event.currentTarget.value) {
             inputRefs.current[index - 1]?.focus();
         }
     };
 
-    const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        // Allow only numbers (0-9), backspace, delete, tab, escape, enter
-        const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
-        const isNumber = /^[0-9]$/.test(event.key);
-        const isAllowedKey = allowedKeys.includes(event.key);
-        
-        if (!isNumber && !isAllowedKey) {
-            event.preventDefault();
+    
+
+    // Handle pasting a full OTP into any field
+    const handlePaste = (
+        startIndex: number,
+        event: React.ClipboardEvent<HTMLInputElement>,
+    ) => {
+        const pasted = event.clipboardData.getData('text');
+        const digits = (pasted || '').replace(/\D/g, '').split('');
+        // If only one digit, let default behavior handle it
+        if (digits.length <= 1) return;
+
+        event.preventDefault();
+        const maxLen = 6 - startIndex;
+        const slice = digits.slice(0, maxLen);
+
+        slice.forEach((d, offset) => {
+            const idx = startIndex + offset;
+            setValue(`otp.${idx}`, d);
+            const input = inputRefs.current[idx];
+            if (input) input.value = d;
+        });
+
+        const lastIdx = startIndex + slice.length - 1;
+        if (lastIdx < 5) {
+            inputRefs.current[lastIdx + 1]?.focus();
         }
     };
 
@@ -316,7 +343,7 @@ function Page() {
                                         maxLength={1}
                                         className="shadow-md border w-12 border-gray-300 px-2 h-10 rounded-md mx-1 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
                                         onKeyDown={(e) => handleBackspace(index, e)}
-                                        onKeyPress={handleKeyPress}
+                                        onPaste={(e) => handlePaste(index, e)}
                                         {...register(`otp.${index}`)}
                                         ref={(el) => {
                                             if (el) {

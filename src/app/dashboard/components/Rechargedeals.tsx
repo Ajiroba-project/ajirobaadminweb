@@ -9,6 +9,7 @@ import { useGetDatanew } from '@/hooks/useGetData';
 import Loading from '@/app/components/Loading';
 import AuctionDealsTable from '@/app/components/AuctionDealsTable';
 import RechargeDealsTable from './RechargeDealsTable';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 function Rechargedeals({ onRegisterExport }: { onRegisterExport?: (fn: () => void) => void }) {
   const [userToken, setUserToken] = useState(Cookies.get("token"));
@@ -25,7 +26,7 @@ function Rechargedeals({ onRegisterExport }: { onRegisterExport?: (fn: () => voi
     {
       id: 1,
       title: "Total Sales Today",
-      amount: transInfo?.data?.bills_payment?.today?.today_sales || "N45,823",
+      amount: formatCurrency(transInfo?.data?.bills_payment?.today?.today_sales) || "N45,823",
       comparison: transInfo?.data?.bills_payment?.today?.today_vs_yesterday_diff || "10%",
       comparisonText: "Compared to Yesterday",
       isPositive: false, // Red for decrease
@@ -33,7 +34,7 @@ function Rechargedeals({ onRegisterExport }: { onRegisterExport?: (fn: () => voi
     {
       id: 2,
       title: "Total Sales This Week",
-      amount: transInfo?.data?.bills_payment?.this_week?.this_week_sales || "N45,823",
+      amount: formatCurrency(transInfo?.data?.bills_payment?.this_week?.this_week_sales) || "N45,823",
       comparison: transInfo?.data?.bills_payment?.this_week?.this_week_vs_last_week_diff || "10%",
       comparisonText: "Compared to Last Week",
       isPositive: false, // Red for decrease
@@ -41,7 +42,7 @@ function Rechargedeals({ onRegisterExport }: { onRegisterExport?: (fn: () => voi
     {
       id: 3,
       title: "Total Sales This Month",
-      amount: transInfo?.data?.bills_payment?.this_month?.this_month_sales || "N45,823",
+      amount: formatCurrency(transInfo?.data?.bills_payment?.this_month?.this_month_sales) || "N45,823",
       comparison: transInfo?.data?.bills_payment?.this_month?.this_month_vs_last_month_diff || "10%",
       comparisonText: "Compared to Last Month",
       isPositive: false, // Red for decrease
@@ -84,7 +85,7 @@ function Rechargedeals({ onRegisterExport }: { onRegisterExport?: (fn: () => voi
               <div className='flex justify-between items-end'>
                 <div>
                   <p className="text-2xl font-Poppins font-semibold text-[#1D2739]">
-                    {data.amount}
+                    {formatCurrency(data.amount)}
                   </p>
                 </div>
               </div>

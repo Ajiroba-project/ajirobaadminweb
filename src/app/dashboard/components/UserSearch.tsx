@@ -8,6 +8,7 @@ import { useGetDatanew } from '@/hooks/useGetData'
 import Cookies from 'js-cookie'
 import user_img from "@/app/asset/user.png"
 import Loading from '@/app/components/Loading'
+import { formatCurrency } from '@/utils/formatCurrency'
 
 interface User {
   first_name: string;
@@ -41,7 +42,7 @@ export const UserSearch: React.FC = () => {
   useEffect(() => {
     if (userdetails) {
 
-      // console.log(userdetails?.data?.data?.users, 'userdetails') 
+      //  console.log(userdetails?.data?.data?.users, 'userdetails') 
 
       const usersdata: User[] = userdetails?.data?.data?.users.map((user: any) => ({
         first_name: user.first_name,
@@ -51,12 +52,12 @@ export const UserSearch: React.FC = () => {
         city: user.city || 'N/A',
         address: user.address || 'N/A',
         ticketPurchase: user.tickets || 'N/A',
-        totalAmount: user.total_amount || 'N/A',
+        totalAmount: formatCurrency(user.total_amount) || 'N/A',
         photo: user.profile_image || user_img,
         id: user.id,
       }));
 
-      console.log(usersdata, 'usersdata')
+
       setFilteredUsers(usersdata);
       if (usersdata.length > 0) {
         setUserInfo(usersdata[0]);
@@ -76,7 +77,7 @@ export const UserSearch: React.FC = () => {
         city: user.city || 'N/A',
         address: user.address || 'N/A',
         ticketPurchase: user.tickets || 'N/A',
-        totalAmount: user.total_amount || 'N/A',
+        totalAmount: formatCurrency(user.total_amount) || 'N/A',
         photo: user.profile_image || user_img,
         id: user.id,
       })) || []);
@@ -199,13 +200,14 @@ export const UserSearch: React.FC = () => {
               </p>
               <p>Total Amount:</p>
               <p>
-                ₦
+                {userInfo?.totalAmount}
+               {/*  ₦
                 {userInfo?.totalAmount !== undefined && userInfo?.totalAmount !== null
                   ? Number(userInfo.totalAmount).toLocaleString('en-NG', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })
-                  : '0.00'}
+                  : '0.00'} */}
               </p>
             </div>
           </div>

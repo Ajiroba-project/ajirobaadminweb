@@ -12,6 +12,7 @@ import Loading from "@/app/components/Loading";
 import { p } from "framer-motion/m";
 import { ProductsbillCard } from "../../components/ProductsbillCard";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 interface PageProps {
   params: any;
@@ -45,12 +46,15 @@ function Page({ params }: PageProps) {
     error: prodError,
   } = useGetDatanew(url, "get_prod_details", userToken || " ");
 
+
+  // console.log(prodInfo?.data?.data, "prodInfo-----prodInfo");
+
   const transformedData = {
     id: prodInfo?.data?.data?.reference,
     name: prodInfo?.data?.data?.name,
     profile_image: prodInfo?.data?.data?.profile_image,
     biller: prodInfo?.data?.data?.biller,
-    amount: parseFloat(prodInfo?.data?.data?.amount), // Ensure it's a number
+    amount: (parseFloat(prodInfo?.data?.data?.amount)), // Ensure it's a number
     email: prodInfo?.data?.data?.email,
     address: prodInfo?.data?.data?.address,
     phone: prodInfo?.data?.data?.phone,
@@ -126,7 +130,7 @@ function Page({ params }: PageProps) {
                   </div>
                   <div className="rounded-lg border border-[#E84526] py-4 px-4">
                     <h1>Order Code</h1>
-                    <small className="text-[#E84526] text-sm">{prodInfo?.data?.data?.order_id}</small>
+                    <small className="text-[#E84526] text-sm">{prodInfo?.data?.data?.order_id || 'N/A'} </small>
                   </div>
                 </div>
               </section>
@@ -180,7 +184,7 @@ function Page({ params }: PageProps) {
                     </div>
 
                     <div>
-                      <p className=" text-base font-semibold">₦ {parseFloat(prodInfo?.data?.data?.amount)}</p>
+                      <p className=" text-base font-semibold"> {formatCurrency(parseFloat(prodInfo?.data?.data?.amount))}</p>
                     </div>
                   </div>
 
@@ -191,7 +195,7 @@ function Page({ params }: PageProps) {
                     </div>
 
                     <div>
-                      <p className=" text-base font-semibold">₦  {prodInfo?.data?.data?.delivery_fee || 'N/A'} </p>
+                      <p className=" text-base font-semibold"> {formatCurrency(prodInfo?.data?.data?.delivery_fee || 'N/A')} </p>
                     </div>
                   </div>
 
@@ -201,7 +205,7 @@ function Page({ params }: PageProps) {
                     </div>
 
                     <div>
-                      <p className=" text-base font-semibold">₦ {parseFloat(prodInfo?.data?.data?.amount) || 'N/A'}</p>
+                      <p className=" text-base font-semibold"> {formatCurrency(parseFloat(prodInfo?.data?.data?.amount) || 'N/A')}</p>
                     </div>
                   </div>
 

@@ -9,6 +9,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useGetDatanew } from "@/hooks/useGetData";
 import Cookies from 'js-cookie'
 import RaffleTicket from "../../components/RaffleTicket";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 export default function Page() {
 
@@ -162,7 +163,7 @@ export default function Page() {
                                             </td>
                                         )}
                                         <td className="p-3 border border-gray-300 text-sm text-[#121212] font-Poppins font-medium">{ticket.date}</td>
-                                        <td className="p-3 border border-gray-300 text-sm text-[#121212] font-Poppins font-medium">{ticket.ticket_amount}</td>
+                                        <td className="p-3 border border-gray-300 text-sm text-[#121212] font-Poppins font-medium">{formatCurrency(ticket.ticket_amount)}</td>
                                         <td className="p-3 border border-gray-300 text-sm text-[#121212] font-Poppins font-medium">
                                             {index === 1 ? (
                                                 // Simulate "won" state for the second item
@@ -174,7 +175,7 @@ export default function Page() {
                                                     className="text-green-600 underline font-bold cursor-pointer"
                                                     title="This ticket has won!"
                                                 >
-                                                    {ticket.ticket_number}
+                                                        {ticket.ticket_number}
                                                 </p>
                                             ) : (
                                                 ticket.ticket_number
@@ -222,7 +223,7 @@ export default function Page() {
                                         <span className="text-right font-medium">{ticket.item_purchased}</span>
 
                                         <span className="text-gray-600">Amount:</span>
-                                        <span className="text-right font-medium">{ticket.ticket_amount}</span>
+                                        <span className="text-right font-medium">{formatCurrency(ticket.ticket_amount)}</span>
 
                                         <span className="text-gray-600">Date:</span>
                                         <span className="text-right font-medium">{ticket.date}</span>

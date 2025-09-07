@@ -8,6 +8,7 @@ import Cookies from 'js-cookie';
 import { useGetDatanew } from '@/hooks/useGetData';
 import Loading from '@/app/components/Loading';
 import AuctionDealsTable from '@/app/components/AuctionDealsTable';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 function Auctiondeals({ onRegisterExport }: { onRegisterExport?: (fn: () => void) => void }) {
   const [userToken, setUserToken] = useState(Cookies.get("token"));
@@ -24,7 +25,7 @@ function Auctiondeals({ onRegisterExport }: { onRegisterExport?: (fn: () => void
     {
       id: 1,
       title: "Total Sales Today",
-      amount: transInfo?.data?.auction_deals?.today?.today_sales || "N45,823",
+      amount: formatCurrency(transInfo?.data?.auction_deals?.today?.today_sales) || "N45,823",
       comparison: transInfo?.data?.auction_deals?.today?.today_vs_yesterday_diff || "10%",
       comparisonText: "Compared to Yesterday",
       isPositive: false, // Red for decrease
@@ -32,7 +33,7 @@ function Auctiondeals({ onRegisterExport }: { onRegisterExport?: (fn: () => void
     {
       id: 2,
       title: "Total Sales This Week",
-      amount: transInfo?.data?.auction_deals?.this_week?.this_week_sales || "N45,823",
+      amount: formatCurrency(transInfo?.data?.auction_deals?.this_week?.this_week_sales) || "N45,823",
       comparison: transInfo?.data?.auction_deals?.this_week?.this_week_vs_last_week_diff || "10%",
       comparisonText: "Compared to Last Week",
       isPositive: false, // Red for decrease
@@ -40,7 +41,7 @@ function Auctiondeals({ onRegisterExport }: { onRegisterExport?: (fn: () => void
     {
       id: 3,
       title: "Total Sales This Month",
-      amount: transInfo?.data?.auction_deals?.this_month?.this_month_sales || "N45,823",
+      amount: formatCurrency(transInfo?.data?.auction_deals?.this_month?.this_month_sales) || "N45,823",
       comparison: transInfo?.data?.auction_deals?.this_month?.this_month_vs_last_month_diff || "10%",
       comparisonText: "Compared to Last Month",
       isPositive: false, // Red for decrease
@@ -83,7 +84,7 @@ function Auctiondeals({ onRegisterExport }: { onRegisterExport?: (fn: () => void
               <div className='flex justify-between items-end'>
                 <div>
                   <p className="text-2xl font-Poppins font-semibold text-[#1D2739]">
-                    {data.amount}
+                      {formatCurrency(data.amount)}
                   </p>
                 </div>
               </div>

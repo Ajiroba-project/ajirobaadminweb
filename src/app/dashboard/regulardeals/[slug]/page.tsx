@@ -10,6 +10,7 @@ import { useGetDatanew } from "@/hooks/useGetData";
 import { toast } from "react-toastify";
 import Loading from "@/app/components/Loading";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 interface PageProps {
   params: any;
@@ -179,7 +180,7 @@ function Page({ params }: PageProps) {
                     </div>
 
                     <div>
-                      <p className=" text-base font-semibold">N {prodInfo?.data?.data?.items_price}</p>
+                      <p className=" text-base font-semibold"> {formatCurrency(prodInfo?.data?.data?.items_price)}</p>
                     </div>
                   </div>
 
@@ -190,7 +191,7 @@ function Page({ params }: PageProps) {
                     </div>
 
                     <div>
-                      <p className=" text-base font-semibold">N {prodInfo?.data?.data?.delivery_fee}</p>
+                      <p className=" text-base font-semibold"> {formatCurrency(prodInfo?.data?.data?.delivery_fee)}</p>
                     </div>
                   </div>
 
@@ -200,7 +201,7 @@ function Page({ params }: PageProps) {
                     </div>
 
                     <div>
-                      <p className=" text-base font-semibold">N {prodInfo?.data?.data?.total_price}</p>
+                      <p className=" text-base font-semibold"> {formatCurrency(prodInfo?.data?.data?.total_price)}</p>
                     </div>
                   </div>
 

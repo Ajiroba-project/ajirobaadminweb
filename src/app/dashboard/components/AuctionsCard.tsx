@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { FaAngleDoubleLeft, FaAngleDoubleRight } from 'react-icons/fa';
 import { useRouter } from 'next/navigation'
+import { formatCurrency } from '@/utils/formatCurrency'
 
 const poppins = Poppins({ subsets: ['latin'], weight: ['400', '900'] })
 
@@ -84,7 +85,7 @@ export const AuctionsCard = ({ cardInfo }: ProductsCardProps) => {
                                     <div className='justify-start'>
                                         <p className="text-sm" >Ticket Price:</p>
                                         <p className=' font-Poppins text-[13px] font-semibold flex justify-end text-[#F25E26] '>
-                                            ₦&nbsp;{value.ticket_price}
+                                            {formatCurrency(value.ticket_price)}
                                             <span className='font-semibold '></span>
                                         </p>
                                     </div>

@@ -27,6 +27,8 @@ function Page() {
     };
 
     const router = useRouter();
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const { user_otp } = userOTPStore(state => ({
         user_otp: state.user_otp
@@ -92,7 +94,6 @@ function Page() {
                 theme: "light",
 
             });
-            reset();
         } else {
             toast.error(`${'An Error Occured'}`, {
                 position: "top-right",
@@ -105,7 +106,6 @@ function Page() {
                 theme: "light",
 
             });
-            reset();
         }
     };
 
@@ -124,7 +124,6 @@ function Page() {
             theme: "light",
 
         });
-        reset();
     };
 
     const { data, error, isError, isSuccess, mutate, status } = useMutateData(
@@ -206,13 +205,21 @@ function Page() {
                                         name="password"
                                         control={control}
                                         render={({ field }) => (
-                                            <div>
+                                            <div className="relative">
                                                 <input
-                                                    type="password"
+                                                    type={showPassword ? "text" : "password"}
                                                     {...field}
                                                     placeholder="*********"
-                                                    className="text-sm w-full h-auto p-2.5 border rounded-lg font-Inter font-normal"
+                                                    className="text-sm w-full h-auto p-2.5 pr-10 border rounded-lg font-Inter font-normal"
                                                 />
+                                                <button
+                                                    type="button"
+                                                    aria-label={showPassword ? "Hide password" : "Show password"}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                                                    onClick={() => setShowPassword((v) => !v)}
+                                                >
+                                                    {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}
+                                                </button>
                                             </div>
                                         )}
                                     />
@@ -243,13 +250,21 @@ function Page() {
                                         name="c_password"
                                         control={control}
                                         render={({ field }) => (
-                                            <div>
+                                            <div className="relative">
                                                 <input
-                                                    type="password"
+                                                    type={showConfirmPassword ? "text" : "password"}
                                                     {...field}
                                                     placeholder="*********"
-                                                    className="text-sm w-full h-auto p-2.5 border rounded-lg font-Inter font-normal"
+                                                    className="text-sm w-full h-auto p-2.5 pr-10 border rounded-lg font-Inter font-normal"
                                                 />
+                                                <button
+                                                    type="button"
+                                                    aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                                                    onClick={() => setShowConfirmPassword((v) => !v)}
+                                                >
+                                                    {showConfirmPassword ? <FaRegEyeSlash /> : <FaRegEye />}
+                                                </button>
                                             </div>
                                         )}
                                     />
