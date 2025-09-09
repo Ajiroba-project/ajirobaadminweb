@@ -51,8 +51,8 @@ export const ProductUploadSchema = Yup.object().shape({
   description: Yup.string().required("Product Description is required"),
   selling_price: Yup.string().required("selling Price is required"),
   discount: Yup.string().required("discount Price is required"),
-  quantity: Yup.number().min(1, "Quantity must be at least 1").required("Quantity is required"),
-  weight: Yup.string().required("Weight is required"),
+  quantity: Yup.number().min(1, "Quantity must be at least 1").notRequired(),
+  weight: Yup.string().notRequired(),
 
   // topdeals: Yup.boolean()
   //   .oneOf([true], 'Top Deals must be checked')
@@ -77,8 +77,8 @@ export const ProductEditUploadSchema = Yup.object().shape({
   description: Yup.string().required("Product Description is required"),
   selling_price: Yup.string().required("selling Price is required"),
   discount: Yup.string().required("discount Price is required"),
-  quantity: Yup.number().min(1, "Quantity must be at least 1").required("Quantity is required"),
-  weight: Yup.string().required("Weight is required"),
+  quantity: Yup.number().min(1, "Quantity must be at least 1").notRequired(),
+  weight: Yup.string().notRequired(),
 
   // topdeals: Yup.boolean()
   //   .oneOf([true], 'Top Deals must be checked')
@@ -87,12 +87,8 @@ export const ProductEditUploadSchema = Yup.object().shape({
 
   featured: Yup.boolean().default(false),
 
-  // scehma for image and video
-  regular_media: Yup.mixed().required("Please select at least one file").test(
-    'regular_media',
-    'Please select at least one file',
-    (value) => Array.isArray(value) && value.length > 0
-  )
+  // schema for image and video (optional on edit; existing media can remain)
+  regular_media: Yup.mixed().notRequired()
 });
 
 
@@ -127,12 +123,8 @@ export const AuctionEditUploadSchema = Yup.object().shape({
   //   .oneOf([true], 'Featured must be checked')
   //   .required('Featured is required'),
 
-  // scehma for image and video
-  regular_media: Yup.mixed().required("Please select at least one file").test(
-    'regular_media',
-    'Please select at least one file',
-    (value) => Array.isArray(value) && value.length > 0
-  )
+  // schema for image and video (optional on edit; existing media can remain)
+  regular_media: Yup.mixed().notRequired()
 });
 
 export const ActionUploadSchema = Yup.object().shape({

@@ -58,7 +58,9 @@ interface MediaFile {
 
 export default function Page() {
   const params = useParams();
-  const productId = params.slug as string;
+  const productId = Array.isArray((params as any)?.slug)
+    ? (params as any).slug[0]
+    : String((params as any)?.slug ?? "");
 
   // Single state for all media files
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
@@ -74,7 +76,7 @@ export default function Page() {
   );
 
   const productDetails = Array.isArray(productInfo?.data)
-    ? productInfo.data.find((product: any) => product.id === productId)
+    ? productInfo.data.find((product: any) => String(product.id) === String(productId))
     : null;
 
   // Load existing product images
@@ -110,6 +112,8 @@ export default function Page() {
     subcategories: cat.subcategories,
   }));
 
+  
+
   const {
     reset,
     register,
@@ -136,6 +140,7 @@ export default function Page() {
       regular_media: []
     }
   });
+
 
   const [showModal, setShowModal] = useState(false);
 
@@ -239,23 +244,45 @@ export default function Page() {
         }
       });
     };
-  }, []);
+  }, [mediaFiles]);
 
-  // Update form values when product details are loaded
+  // Prefill form when both product and categories are available
   useEffect(() => {
-    if (productDetails) {
-      setValue("product_name", productDetails.name || "");
-      setValue("product_category", productDetails.category || "");
-      setValue("sub_category", productDetails.subcategory || "");
-      setValue("quantity", productDetails.quantity || "");
-      setValue("weight", productDetails.weight?.replace('KG', '') || "");
-      setValue("selling_price", productDetails.price || "");
-      setValue("discount", productDetails.discount || "");
-      setValue("description", productDetails.description || "");
-      setValue("topdeals", productDetails.top_deals || false);
-      setValue("featured", productDetails.featured || false);
+    if (!productDetails || !catInfo?.data) return;
+
+    const cats = catInfo.data;
+    let resolvedCategoryId = "";
+    let resolvedSubId = "";
+
+    // Find category by name or ID
+    const foundCatById = cats.find((c: any) => String(c.id) === String(productDetails.category));
+    const foundCatByName = cats.find((c: any) => String(c.category).toLowerCase() === String(productDetails.category_name || productDetails.category).toLowerCase());
+    if (foundCatById) resolvedCategoryId = foundCatById.id;
+    else if (foundCatByName) resolvedCategoryId = foundCatByName.id;
+
+    // Find subcategory within the resolved category
+    const parent = cats.find((c: any) => String(c.id) === String(resolvedCategoryId)) || foundCatByName || foundCatById;
+    if (parent && Array.isArray(parent.subcategories)) {
+      const foundSubById = parent.subcategories.find((s: any) => String(s.id) === String(productDetails.subcategory));
+      const foundSubByName = parent.subcategories.find((s: any) => String(s.subcategory).toLowerCase() === String(productDetails.subcategory_name || productDetails.subcategory).toLowerCase());
+      resolvedSubId = (foundSubById?.id ?? foundSubByName?.id) ?? "";
     }
-  }, [productDetails, setValue]);
+
+    // Reset form with all values at once
+    reset({
+      product_name: productDetails.name || "",
+      product_category: resolvedCategoryId,
+      sub_category: resolvedSubId,
+      quantity: productDetails.quantity || "",
+      weight: productDetails.weight?.replace('KG', '') || "",
+      selling_price: productDetails.price || "",
+      discount: productDetails.discount || "",
+      description: productDetails.description || "",
+      topdeals: productDetails.top_deals || false,
+      featured: productDetails.featured || false,
+      regular_media: []
+    });
+  }, [productDetails, catInfo, reset]);
 
   const handleSuccess = (data: any) => {
     if (data.status === 200 || data.status === 201) {

@@ -62,7 +62,9 @@ export default function Page() {
   const router = useRouter();
 
   const params = useParams();
-  const productId = params.slug;
+  const productId = Array.isArray((params as any)?.slug)
+    ? (params as any).slug[0]
+    : String((params as any)?.slug ?? "");
 
 
   const [selectedImg, setSelectedImg] = useState<string[]>([]);
@@ -85,7 +87,7 @@ export default function Page() {
 
   // Find the product that matches the productId
   const productDetails = Array.isArray(productInfo?.data)
-    ? productInfo.data.find((product: any) => product.id === productId)
+    ? productInfo.data.find((product: any) => String(product?.id) === String(productId))
     : null;
 
 
@@ -250,27 +252,15 @@ export default function Page() {
         }
       });
     };
-  }, []);
+  }, [mediaFiles]);
 
   useEffect(() => {
     return () => previews.forEach((url) => URL.revokeObjectURL(url));
   }, [previews]);
 
 
-  useEffect(() => {
-    if (productDetails) {
-      setValue("product_name", productDetails.name || "");
-      setValue("auction_category", productDetails.category || "");
-      setValue("sub_category", productDetails.subcategory || "");
-      setValue("description", productDetails.description || "");
-      setValue("ticket_price", productDetails.ticket_price || "");
-      setValue("cost_price", productDetails.cost_price || "");
-      setValue("auction_starttime", productDetails.auction_starttime || "");
-      setValue("auction_endtime", productDetails.auction_endtime || "");
-      setValue("auction_date", productDetails.auction_date || "");
-      // Removed setValue for 'quantity' and 'weight' to fix linter error
-    }
-  }, [productDetails, setValue]);
+
+  
 
   const handleSuccess = (data: any) => {
     if (data.status === 200 || data.status === 201) {
@@ -345,6 +335,61 @@ export default function Page() {
     id: cat.id,
     subcategories: cat.subcategories,
   }));
+
+  // Prefill form when both product and categories are available
+  useEffect(() => {
+    if (!productDetails || !catInfo?.data) return;
+
+    const to12h = (val: string) => {
+      if (!val) return "";
+      const twelveHrPattern = /^\d{2}:\d{2} (AM|PM)$/i;
+      if (twelveHrPattern.test(val)) return val.toUpperCase();
+      const parts = val.split(":");
+      if (parts.length >= 2) {
+        let hour = parseInt(parts[0], 10);
+        const minute = parts[1] ?? "00";
+        if (isNaN(hour)) return "";
+        const suffix = hour >= 12 ? "PM" : "AM";
+        hour = hour % 12 || 12;
+        const hh = String(hour).padStart(2, "0");
+        const mm = String(parseInt(minute, 10) || 0).padStart(2, "0");
+        return `${hh}:${mm} ${suffix}`;
+      }
+      return "";
+    };
+
+    const cats = catInfo.data;
+    let resolvedCategoryId = "";
+    let resolvedSubId = "";
+
+    // Find category by name or ID
+    const foundCatById = cats.find((c: any) => String(c.id) === String(productDetails.category));
+    const foundCatByName = cats.find((c: any) => String(c.category).toLowerCase() === String(productDetails.category_name || productDetails.category).toLowerCase());
+    if (foundCatById) resolvedCategoryId = foundCatById.id;
+    else if (foundCatByName) resolvedCategoryId = foundCatByName.id;
+
+    // Find subcategory within the resolved category
+    const parent = cats.find((c: any) => String(c.id) === String(resolvedCategoryId)) || foundCatByName || foundCatById;
+    if (parent && Array.isArray(parent.subcategories)) {
+      const foundSubById = parent.subcategories.find((s: any) => String(s.id) === String(productDetails.subcategory));
+      const foundSubByName = parent.subcategories.find((s: any) => String(s.subcategory).toLowerCase() === String(productDetails.subcategory_name || productDetails.subcategory).toLowerCase());
+      resolvedSubId = (foundSubById?.id ?? foundSubByName?.id) ?? "";
+    }
+
+    // Reset form with all values at once
+    reset({
+      product_name: productDetails.name || "",
+      auction_category: resolvedCategoryId,
+      sub_category: resolvedSubId,
+      description: productDetails.description || "",
+      ticket_price: productDetails.ticket_price || "",
+      cost_price: productDetails.cost_price || "",
+      auction_starttime: to12h(productDetails.start_time || ""),
+      auction_endtime: to12h(productDetails.end_time || ""),
+      auction_date: productDetails.start_date || "",
+      regular_media: []
+    });
+  }, [productDetails, catInfo, reset]);
 
   const isDisabled = true;
 
