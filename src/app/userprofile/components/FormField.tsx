@@ -210,7 +210,7 @@ export const MutipleUpload = ({
           <div className='flex flex-col items-center justify-center pb-6 pt-5'>
             <p className='mb-2 text-xl text-gray-500 '>SelectFile to upload</p>
             <p className='mb-2 text-xs text-gray-500 '>
-              you may upload up to 4 images & video
+              you may upload up to 4 images 
             </p>
           </div>
         </span>

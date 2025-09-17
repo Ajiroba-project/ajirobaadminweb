@@ -548,7 +548,7 @@ export default function Page() {
           <label htmlFor="upload-files" className="bg-gray-50 rounded-md shadow hover:bg-[#FCDFD4] h-40 w-full max-w-xs flex justify-center items-center cursor-pointer flex-col border border-dashed border-gray-300 mt-6 transition-colors">
             <FiUpload className="text-4xl mb-2 text-[#F25E26]" />
             <span className="text-gray-500 text-base">Select file to upload</span>
-            <span className="text-xs text-gray-400">You may upload up to 5 images & videos</span>
+            <span className="text-xs text-gray-400">You may upload up to 5 images</span>
             <input
               id="upload-files"
               type="file"

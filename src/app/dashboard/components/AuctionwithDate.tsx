@@ -149,7 +149,7 @@ export const Auction = () => {
                         SelectFile to upload
                       </p>
                       <p className="mb-2 text-xs text-gray-500 ">
-                        you may upload up to 4 images & video
+                        you may upload up to 4 images 
                       </p>
                     </div>
                   </span>

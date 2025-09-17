@@ -62,11 +62,18 @@ export const ProductUploadSchema = Yup.object().shape({
   featured: Yup.boolean().default(false),
 
   // scehma for image and video
-  regular_media: Yup.mixed().required("Please select at least one file").test(
-    'regular_media',
-    'Please select at least one file',
-    (value) => Array.isArray(value) && value.length > 0
-  )
+  regular_media: Yup.mixed()
+    .required("Please select at least one file")
+    .test(
+      'regular_media',
+      'Please select at least one file',
+      (value) => Array.isArray(value) && value.length > 0
+    )
+    .test(
+      'regular_media_max',
+      'You can upload up to 4 files',
+      (value) => !Array.isArray(value) || value.length <= 4
+    )
 });
 
 
@@ -129,11 +136,18 @@ export const AuctionEditUploadSchema = Yup.object().shape({
 
 export const ActionUploadSchema = Yup.object().shape({
 
-  auction_media: Yup.mixed().required("Please select at least one file").test(
-    'regular_media',
-    'Please select at least one file',
-    (value) => Array.isArray(value) && value.length > 0
-  ),
+  auction_media: Yup.mixed()
+    .required("Please select at least one file")
+    .test(
+      'regular_media',
+      'Please select at least one file',
+      (value) => Array.isArray(value) && value.length > 0
+    )
+    .test(
+      'regular_media_max',
+      'You can upload up to 4 files',
+      (value) => !Array.isArray(value) || value.length <= 4
+    ),
 
   topdeals: Yup.boolean().default(false),
   featured: Yup.boolean().default(false),

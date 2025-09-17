@@ -91,9 +91,18 @@ export const Regular = () => {
   }
 
   const handleFileChange = (e: FileChangeEvent): void => {
-    const files: File[] = Array.from(e.target.files);
+    const selected: File[] = Array.from(e.target.files);
+    const previous = (watch("regular_media") as string[]) ?? [];
+    const remaining = 4 - previous.length;
 
-    const base64Promises = files.map((file) => {
+    if (remaining <= 0) {
+      toast.warn("You can upload up to 4 files");
+      return;
+    }
+
+    const allowedFiles = selected.slice(0, remaining);
+
+    const base64Promises = allowedFiles.map((file) => {
       return new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -104,15 +113,14 @@ export const Regular = () => {
 
     Promise.all(base64Promises)
       .then((base64Files) => {
-        const previousFiles = (watch("regular_media") as string[]) ?? [];
-        setValue("regular_media", [...previousFiles, ...base64Files]);
+        setValue("regular_media", [...previous, ...base64Files]);
         trigger("regular_media");
       })
       .catch((error) =>
         console.error("Error converting files to base64:", error),
       );
 
-    const imagePreviews = files.map((file) =>
+    const imagePreviews = allowedFiles.map((file) =>
       URL.createObjectURL(file as Blob),
     );
     setPreviews((prev: string[]) => [...prev, ...imagePreviews]);
@@ -275,7 +283,7 @@ export const Regular = () => {
                         Select files to upload
                       </p>
                       <p className="text-xs md:text-sm font-Poppins text-gray-500">
-                        You may upload up to 4 images & Videos
+                        You may upload up to 4 images 
                       </p>
                     </div>
                   </div>

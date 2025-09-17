@@ -104,9 +104,18 @@ export const Auction = () => {
   }
 
   const handleFileChange = (e: FileChangeEvent): void => {
-    const files: File[] = Array.from(e.target.files);
+    const selected: File[] = Array.from(e.target.files);
+    const previous = (watch("auction_media") as string[]) ?? [];
+    const remaining = 4 - previous.length;
 
-    const base64Promises = files.map((file) => {
+    if (remaining <= 0) {
+      toast.warn("You can upload up to 4 files");
+      return;
+    }
+
+    const allowedFiles = selected.slice(0, remaining);
+
+    const base64Promises = allowedFiles.map((file) => {
       return new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -117,15 +126,14 @@ export const Auction = () => {
 
     Promise.all(base64Promises)
       .then((base64Files) => {
-        const previousFiles = (watch("auction_media") as string[]) ?? [];
-        setValue("auction_media", [...previousFiles, ...base64Files]);
+        setValue("auction_media", [...previous, ...base64Files]);
         trigger("auction_media");
       })
       .catch((error) =>
         console.error("Error converting files to base64:", error),
       );
 
-    const imagePreviews = files.map((file) =>
+    const imagePreviews = allowedFiles.map((file) =>
       URL.createObjectURL(file as Blob),
     );
     setPreviews((prev: string[]) => [...prev, ...imagePreviews]);
@@ -344,7 +352,7 @@ export const Auction = () => {
                         SelectFile to upload
                       </p>
                       <p className="mb-2 text-xs text-gray-500 ">
-                        you may upload up to 4 images & video
+                        you may upload up to 4 images 
                       </p>
                     </div>
                   </span>
