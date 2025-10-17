@@ -212,7 +212,7 @@ export const exportToPDF = async (
     // Remove loading indicator
     document.body.removeChild(loadingDiv);
   } catch (error) {
-    console.error('Error generating PDF:', error);
+
     alert('Failed to generate PDF. Please try again.');
     // Remove loading indicator if it exists
     const loadingDiv = document.querySelector('div[style*="position: fixed"]');
@@ -256,8 +256,16 @@ export const exportToXLS = (
   config: ExcelExportConfig = {}
 ) => {
   try {
+    // console.log('Starting Excel export with data:', data);
+    // console.log('Config:', config);
+    
     const finalConfig = { ...defaultConfig, ...config };
     const { title, fileName, columns, summaryRows } = finalConfig;
+
+    // Check if data is valid
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      throw new Error('No data provided for export');
+    }
 
     // Prepare data for Excel
     const excelData = data.map((item, index) => {
@@ -265,8 +273,13 @@ export const exportToXLS = (
       
       if (columns) {
         columns.forEach(col => {
-          const value = item[col.key];
-          row[col.header] = col.formatter ? col.formatter(value) : value;
+          try {
+            const value = item[col.key];
+            row[col.header] = col.formatter ? col.formatter(value) : value;
+          } catch (colError) {
+            // console.warn(`Error processing column ${col.key}:`, colError);
+            row[col.header] = item[col.key] || '';
+          }
         });
       } else {
         // Default behavior - use all keys from first item
@@ -278,34 +291,116 @@ export const exportToXLS = (
       return row;
     });
     
+    // console.log('Processed Excel data:', excelData);
+    
     // Create workbook and worksheet
+
     const wb = XLSX.utils.book_new();
+
     const ws = XLSX.utils.json_to_sheet(excelData);
+
     
     // Set column widths if provided
     if (columns) {
       const colWidths = columns.map(col => ({ wch: col.width || 15 }));
       ws['!cols'] = colWidths;
+      // console.log('Column widths set:', colWidths);
     }
     
     // Add summary rows if provided
     if (summaryRows && summaryRows.length > 0) {
       const summaryRow = excelData.length + 2;
+     
       summaryRows.forEach((summary, index) => {
-        const value = summary.formatter ? summary.formatter(summary.value) : summary.value;
-        ws[`A${summaryRow + index}`] = { v: `${summary.label}: ${value}`, t: 's' };
+        try {
+          const value = summary.formatter ? summary.formatter(summary.value) : summary.value;
+          ws[`A${summaryRow + index}`] = { v: `${summary.label}: ${value}`, t: 's' };
+        } catch (summaryError) {
+        
+          ws[`A${summaryRow + index}`] = { v: `${summary.label}: ${summary.value}`, t: 's' };
+        }
       });
     }
     
     // Add worksheet to workbook
-    XLSX.utils.book_append_sheet(wb, ws, title || 'Report');
+
+    // Excel sheet names cannot exceed 31 characters
+    const sheetName = (title || 'Report').substring(0, 31);
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
     
     // Save the file
     const finalFileName = `${fileName}_${new Date().toISOString().split('T')[0]}.xlsx`;
-    XLSX.writeFile(wb, finalFileName);
+
+    
+    // Try to save the file
+    try {
+      XLSX.writeFile(wb, finalFileName);
+
+    } catch (writeError) {
+
+      // Fallback: try to download as CSV
+  
+      const csvContent = convertToCSV(excelData, columns);
+      downloadCSV(csvContent, finalFileName.replace('.xlsx', '.csv'));
+    }
   } catch (error) {
-    console.error('Error generating Excel:', error);
-    alert('Failed to generate Excel file. Please try again.');
+   
+    alert(`Failed to generate Excel file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+};
+
+/**
+ * Export tabular data directly to PDF using jsPDF AutoTable (data-driven, no DOM capture)
+ */
+export const exportToPDFTable = async (
+  data: ExportData[],
+  config: ExportConfig & { columns?: { key: string; header: string }[] } = {}
+) => {
+  try {
+    const finalConfig = { ...defaultConfig, ...config } as ExportConfig & { columns?: { key: string; header: string }[] };
+    const { title, fileName, customStyles } = finalConfig;
+
+    if (!data || data.length === 0) {
+      alert('No data available to export');
+      return;
+    }
+
+    const pdf = new jsPDF({ orientation: finalConfig.orientation, unit: 'mm', format: finalConfig.pageSize });
+
+    // Title
+    pdf.setFontSize(finalConfig.customStyles?.titleFontSize || 16);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(title || 'Report', (finalConfig.margins?.left || 10) + 4, 20);
+
+    // Timestamp
+    pdf.setFontSize(customStyles?.timestampFontSize || 10);
+    pdf.setFont('helvetica', 'normal');
+    const timestamp = new Date().toLocaleString('en-US', {
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+    });
+    pdf.text(`Generated: ${timestamp}`, (finalConfig.margins?.left || 10) + 4, 28);
+
+    // Build columns/rows
+    const headers = finalConfig.columns
+      ? finalConfig.columns.map(c => ({ header: c.header, dataKey: c.key }))
+      : Object.keys(data[0]).map(k => ({ header: k, dataKey: k }));
+
+    // @ts-ignore - types for autoTable
+    autoTable(pdf, {
+      startY: 34,
+      head: [headers.map(h => h.header)],
+      body: data.map(row => headers.map(h => row[h.dataKey])),
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [242, 94, 38], textColor: 255 },
+      columnStyles: {},
+      margin: { left: finalConfig.margins?.left || 10, right: finalConfig.margins?.right || 10 },
+    });
+
+    const finalFileName = `${fileName || 'export'}_${new Date().toISOString().split('T')[0]}.pdf`;
+    pdf.save(finalFileName);
+  } catch (error) {
+    alert('Failed to generate PDF. Please try again.');
   }
 };
 
@@ -357,7 +452,7 @@ export const exportToCSV = (
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   } catch (error) {
-    console.error('Error generating CSV:', error);
+    
     alert('Failed to generate CSV file. Please try again.');
   }
 };
@@ -369,6 +464,46 @@ function csvEscape(value: unknown): string {
   const escaped = str.replace(/"/g, '""');
   // Wrap in quotes to preserve commas/newlines
   return `"${escaped}"`;
+}
+
+function convertToCSV(data: any[], columns?: any[]): string {
+  if (!data || data.length === 0) return '';
+  
+  // Build headers
+  const headers = columns 
+    ? columns.map(col => col.header)
+    : Object.keys(data[0]);
+  
+  // Build rows
+  const rows = data.map(item => {
+    if (columns) {
+      return columns.map(col => {
+        const value = item[col.key];
+        return csvEscape(value);
+      });
+    }
+    return Object.keys(item).map(key => csvEscape(item[key]));
+  });
+  
+  return [headers.map(csvEscape).join(','), ...rows.map(r => r.join(','))].join('\n');
+}
+
+function downloadCSV(content: string, fileName: string): void {
+  try {
+    const blob = new Blob(["\uFEFF" + content], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+ 
+  } catch (error) {
+ 
+    alert('Failed to generate file. Please try again.');
+  }
 }
 
 // Helper functions

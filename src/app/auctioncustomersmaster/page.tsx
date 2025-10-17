@@ -10,7 +10,7 @@ import { RedeemedTable } from "../dashboard/components/RedeemedTable";
 import { ReportsTable } from "../dashboard/components/ReportsTable";
 import RaffleTicket from "../dashboard/components/RaffleTicket";
 import { DownloadModal } from "@/app/components/DownloadModal";
-import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
+import { exportToPDF, exportToXLS, exportToPDFTable, ExportData } from "@/utils/exportUtils";
 import { useGetDatanew } from "@/hooks/useGetData";
 import Loading from "@/app/components/Loading";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
@@ -237,7 +237,7 @@ export default function Page() {
       userid: item.userid,
       productId: item.productId,
       productname: item.productname,
-      nooftickets: item.nooftickets,
+      nooftickets: Array.isArray(item.nooftickets) ? item.nooftickets.join(', ') : item.nooftickets,
       ticketunit: item.ticketunit,
       quantity: item.quantity,
       ticketprice: item.ticketprice,
@@ -247,9 +247,25 @@ export default function Page() {
     }));
 
     setShowDownloadModal(false);
-    await exportToPDF(exportData, {
+    await exportToPDFTable(exportData, {
       title: "Auction Transaction Report",
-      fileName: "Auction_Transaction_Report"
+      fileName: "Auction_Transaction_Report",
+      columns: [
+        { key: 'customername', header: 'Customer Name' },
+        { key: 'email', header: 'Email' },
+        { key: 'phone', header: 'Phone' },
+        { key: 'gender', header: 'Gender' },
+        { key: 'userid', header: 'User ID' },
+        { key: 'productId', header: 'Product ID' },
+        { key: 'productname', header: 'Product Name' },
+        { key: 'nooftickets', header: 'No of Tickets' },
+        { key: 'ticketunit', header: 'Unit Ticket Rate (NGN)' },
+        { key: 'quantity', header: 'Quantity' },
+        { key: 'ticketprice', header: 'Ticket Price (NGN)' },
+        { key: 'ticketpurdate', header: 'Ticket Purchase Date' },
+        { key: 'raffledrawdate', header: 'Raffle Draw Date' },
+        { key: 'raffledrawtime', header: 'Raffle Draw Time' },
+      ],
     });
   };
 

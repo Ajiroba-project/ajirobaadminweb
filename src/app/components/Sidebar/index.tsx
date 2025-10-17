@@ -84,7 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     router.replace("/signin");
   };
   const handleError = () => {
-    console.log("Somthing went wrong...");
+    // console.log("Somthing went wrong...");
     clearAuthCookies();
     router.replace("/signin");
   };
@@ -128,12 +128,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       } transition-transform duration-300 ease-in-out lg:translate-x-0 lg:relative`}
     >
 
-      <div className="py-6 lg:py-8 flex items-center justify-center bg-[#F6F6F6] shadowCard rounded-none border-none h-16 lg:h-20">
-        <div className="flex items-center justify-center bg-[#F6F6F6] shadowCard rounded-none border-none h-16 lg:h-20">
-          <Link href="/signin">
-            <Image src={Brand} alt="brand logo" className="w-32 lg:w-36 xl:w-40" />
-          </Link>
-        </div>
+      <div className="py-6 lg:py-8 flex items-center bg-[#F6F6F6] shadowCard rounded-none border-none h-16 lg:h-20 px-4 lg:px-6">
+        <Link href="/signin">
+          <Image src={Brand} alt="brand logo" className="w-32 lg:w-36 xl:w-40" />
+        </Link>
       </div>
 
       <nav className={`flex flex-col flex-1 py-6 lg:py-10 gap-8 lg:gap-20 container ${

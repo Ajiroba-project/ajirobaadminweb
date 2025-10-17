@@ -7,12 +7,13 @@ import Image from "next/image";
 import Brand from "@/app/asset/logo.svg";
 import { ReportsTable } from "../components/ReportsTable";
 import { DownloadModal } from "@/app/components/DownloadModal";
-import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
+import { exportToPDF, exportToXLS, exportToPDFTable, ExportData } from "@/utils/exportUtils";
 import { useGetDatanew } from "@/hooks/useGetData";
 import Cookies from "js-cookie";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 import Loading from "@/app/components/Loading";
 // import Loading from "@/app/components/Loading";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // TypeScript interfaces for API response
 interface ProductInfo {
@@ -96,42 +97,48 @@ export default function Page() {
     );
   }, []);
 
+  // Debounce filter changes (to avoid rapid refetches)
+  const [debouncedDateFilter, setDebouncedDateFilter] = useState("");
+  const [debouncedStart, setDebouncedStart] = useState("");
+  const [debouncedEnd, setDebouncedEnd] = useState("");
+
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      const sortDropdown = target.closest(".sort-dropdown");
-      const filterDropdown = target.closest(".filter-dropdown");
-      
-      // Only close dropdowns if clicking outside both dropdowns
-      if (!sortDropdown && !filterDropdown) {
-        setShowFilterDropdown(false);
-        setShowSortDropdown(false);
-        setShowCustomDatePicker(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    const t = setTimeout(() => {
+      setDebouncedDateFilter(dateFilter);
+      setDebouncedStart(customDateRange.start);
+      setDebouncedEnd(customDateRange.end);
+    }, 500);
+    return () => clearTimeout(t);
+  }, [dateFilter, customDateRange.start, customDateRange.end]);
 
 
 
- // Construct filter parameters for API
+ // Construct filter parameters for API (uses debounced values)
  const getFilterParams = () => {
   const params = new URLSearchParams();
-  
   if (currentPage > 1) {
     params.append('page', currentPage.toString());
   }
-  
-  // Handle custom date range for raffle date filtering
-  if (customDateRange.start && customDateRange.end) {
-    params.append('raffle_start_date', customDateRange.start);
-    params.append('raffle_end_date', customDateRange.end);
-  } else if (dateFilter && dateFilter !== 'custom') {
-    // Only add filter parameter if it's not custom and we have a dateFilter
-    params.append('raffle_filter', dateFilter);
+
+  if (debouncedDateFilter === 'yesterday') {
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+    // Map 'Yesterday' to custom range (today -> yesterday)
+    params.append('raffle_start_date', todayStr);
+    params.append('raffle_end_date', yesterdayStr);
+  } else if (debouncedDateFilter === 'custom') {
+    if (debouncedStart && debouncedEnd) {
+      params.append('raffle_start_date', debouncedStart);
+      params.append('raffle_end_date', debouncedEnd);
+    }
+  } else if (debouncedDateFilter) {
+    // last_week, last_month, last_year
+    params.append('raffle_filter', debouncedDateFilter);
   }
-  
+
   return params.toString();
 };
 
@@ -140,6 +147,7 @@ const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/auction_transaction_repor
 const {
   data: auctionTransactionData,
   isLoading: auctionTransactionLoading,
+  isFetching: auctionTransactionFetching,
   error: auctionTransactionError,
 } = useGetDatanew(url, "get_regular_transaction_report", userToken || " ");
 
@@ -410,9 +418,21 @@ const transformApiData = (apiData: any): any[] => {
     } else if (dateFilter && dateFilter !== 'custom') {
       // Handle predefined date ranges
       const now = new Date();
-      let startDate, endDate;
+      let startDate: Date, endDate: Date;
       
       switch (dateFilter) {
+        case 'yesterday': {
+          const today = new Date();
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+
+          const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+          const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+
+          startDate = new Date(yesterdayStr);
+          endDate = new Date(todayStr);
+          break;
+        }
         case 'last_week':
           startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
           endDate = now;
@@ -463,9 +483,18 @@ const transformApiData = (apiData: any): any[] => {
       eca: item.ticketeca,
     }));
     setShowDownloadModal(false);
-    await exportToPDF(exportData, {
+    await exportToPDFTable(exportData, {
       title: "Auction Transaction Report",
       fileName: "Auction_Transaction_Report",
+      columns: [
+        { key: 'productId', header: 'Product ID' },
+        { key: 'productName', header: 'Product Name' },
+        { key: 'numberOfTickets', header: 'Number of Tickets' },
+        { key: 'ticketprice', header: 'Ticket Price' },
+        { key: 'totalGtv', header: 'Total GTV' },
+        { key: 'rda', header: 'RDA' },
+        { key: 'eca', header: 'ECA' },
+      ],
     });
   };
 
@@ -527,9 +556,14 @@ const transformApiData = (apiData: any): any[] => {
           </p>
         </div>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 md:px-14 py-4 gap-2">
-          <h1 className="text-[#111111] text-lg font-Poppins font-semibold">
-            Auction Transaction Report
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-[#111111] text-lg font-Poppins font-semibold">
+              Auction Transaction Report
+            </h1>
+            {auctionTransactionFetching && (
+              <span className="inline-flex items-center text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded animate-pulse">Updating…</span>
+            )}
+          </div>
           <button
             onClick={() => setShowDownloadModal(true)}
             className="rounded-md bg-[#f25e26] px-6 py-2 text-white text-sm hover:bg-[#d63918] transition-colors"
@@ -566,183 +600,39 @@ const transformApiData = (apiData: any): any[] => {
             </svg>
           </span>
         </div>
-        <div className="w-full md:w-auto flex gap-4">
-          {/* Filter by dropdown (future) */}
-         {/*  <div className="relative filter-dropdown">
-            <button
-              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-              className="w-full md:w-auto px-4 py-2 border border-[#E9E9E9] rounded-md bg-white text-[#353131] text-sm font-Poppins focus:outline-none focus:ring-2 focus:ring-[#F25E26] flex items-center justify-between min-w-[120px]"
-            >
-              Filter by
-              <svg
-                className={`ml-2 h-4 w-4 transition-transform ${showFilterDropdown ? "rotate-180" : ""}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-           
-          </div> */}
-          {/* Sort by dropdown (date range, placeholder) */}
-     
-                <div className="relative sort-dropdown">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setShowSortDropdown(!showSortDropdown);
-              }}
-              className="w-full md:w-auto px-4 py-2 border border-[#E9E9E9] rounded-md bg-white text-[#353131] text-sm font-Poppins focus:outline-none focus:ring-2 focus:ring-[#F25E26] flex items-center justify-between min-w-[120px]"
-            >
-              {dateFilter === 'custom' && customDateRange.start && customDateRange.end 
-                ? `Custom (${customDateRange.start} - ${customDateRange.end})`
-                : dateFilter 
-                ? dateFilter.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) 
-                : 'Filter by Raffle Date'}
-              <svg
-                className={`ml-2 h-4 w-4 transition-transform ${showSortDropdown ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            
-            {showSortDropdown && (
-              <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-10 max-h-60 overflow-y-auto">
-                <div className="p-2 space-y-1">
-                  {[
-                    { value: 'last_week', label: 'Last Week' },
-                    { value: 'last_month', label: 'Last Month' },
-                    { value: 'last_year', label: 'Last Year' },
-                    { value: 'custom', label: 'Custom' }
-                  ].map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setDateFilter(option.value);
-                        if (option.value === 'custom') {
-                          setShowCustomDatePicker(true);
-                          setShowSortDropdown(false);
-                        } else {
-                          setShowSortDropdown(false);
-                        }
-                      }}
-                      className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-50 transition-colors ${
-                        dateFilter === option.value ? 'bg-[#F25E26] text-white' : 'text-[#353131]'
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                  {dateFilter && (
-                    <div className="pt-2 border-t border-gray-200">
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setDateFilter('');
-                          setCustomDateRange({ start: '', end: '' });
-                          setShowSortDropdown(false);
-                          setShowCustomDatePicker(false);
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
-                      >
-                        Clear filter
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+        <div className="w-full md:w-auto flex gap-4 items-center justify-end">
+          <Select value={dateFilter} onValueChange={(val) => setDateFilter(val)}>
+            <SelectTrigger className="h-10 w-[200px] rounded border px-3 selector">
+              <SelectValue placeholder="Filter by Raffle Date" />
+            </SelectTrigger>
+            <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+              <SelectItem value="yesterday" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Yesterday</SelectItem>
+              <SelectItem value="last_week" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Week</SelectItem>
+              <SelectItem value="last_month" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Month</SelectItem>
+              <SelectItem value="last_year" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Year</SelectItem>
+              <SelectItem value="custom" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Custom</SelectItem>
+            </SelectContent>
+          </Select>
 
-            {/* Custom Date Picker */}
-            {showCustomDatePicker && (
-              <div 
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 sm:absolute sm:inset-auto sm:top-full sm:left-0 sm:mt-1 sm:bg-transparent"
-                onClick={(e) => {
-                  if (e.target === e.currentTarget) {
-                    setShowCustomDatePicker(false);
-                  }
-                }}
-              >
-                <div className="w-11/12 max-w-sm bg-white border border-[#E9E9E9] rounded-md shadow-lg p-4 max-h-96 overflow-y-auto sm:w-72 md:w-80">
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-medium text-[#353131]">Select Raffle Date Range</h3>
-                    <div className="space-y-2">
-                      <div>
-                        <label className="block text-xs text-gray-600 mb-1">Start Raffle Date</label>
-                        <input
-                          type="date"
-                          value={customDateRange.start}
-                          max={new Date().toISOString().split('T')[0]}
-                          onChange={(e) => setCustomDateRange({ ...customDateRange, start: e.target.value })}
-                          className="w-full px-3 py-2 border border-[#E9E9E9] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#F25E26]"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-gray-600 mb-1">End Raffle Date</label>
-                        <input
-                          type="date"
-                          value={customDateRange.end}
-                          min={customDateRange.start || new Date().toISOString().split('T')[0]}
-                          max={new Date().toISOString().split('T')[0]}
-                          onChange={(e) => setCustomDateRange({ ...customDateRange, end: e.target.value })}
-                          className="w-full px-3 py-2 border border-[#E9E9E9] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#F25E26]"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex gap-2 pt-2">
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          if (customDateRange.start && customDateRange.end) {
-                            // Validate that end date is not before start date
-                            if (new Date(customDateRange.end) >= new Date(customDateRange.start)) {
-                              setDateFilter('custom');
-                              setShowCustomDatePicker(false);
-                            } else {
-                              alert('End date must be after or equal to start date');
-                            }
-                          } else {
-                            alert('Please select both start and end dates');
-                          }
-                        }}
-                        className="flex-1 px-3 py-2 bg-[#F25E26] text-white text-sm rounded-md hover:bg-[#d63918] transition-colors"
-                      >
-                        Apply
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setCustomDateRange({ start: '', end: '' });
-                          setDateFilter('');
-                          setShowCustomDatePicker(false);
-                        }}
-                        className="flex-1 px-3 py-2 border border-[#E9E9E9] text-[#353131] text-sm rounded-md hover:bg-gray-50 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+          {dateFilter === 'custom' && (
+            <>
+              <input
+                type="date"
+                className="border border-gray-300 rounded px-2 py-1 text-sm"
+                value={customDateRange.start}
+                onChange={(e) => setCustomDateRange({ ...customDateRange, start: e.target.value })}
+              />
+              <span className="mx-1">to</span>
+              <input
+                type="date"
+                className="border border-gray-300 rounded px-2 py-1 text-sm"
+                value={customDateRange.end}
+                onChange={(e) => setCustomDateRange({ ...customDateRange, end: e.target.value })}
+              />
+            </>
+          )}
         </div>
-      </div>
+        </div>
       <div className="flex justify-center ">
         <div className="w-7/12 ">
           <div className=" bg-white rounded-lg shadow border mt-6 mb-12 overflow-x-scroll overflow-y-scroll  py-4">

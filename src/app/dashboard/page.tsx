@@ -1,8 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { HeaderTitle } from "./components/HeaderTitle";
-import { SideNav } from "@/app/components/SideNav";
-import { Header } from "@/app/components/Header";
+// import { HeaderTitle } from "./components/HeaderTitle";
+// import { SideNav } from "@/app/components/SideNav";
+// import { Header } from "@/app/components/Header";
 import { useStore } from "@/store/nav-store";
 import { UserDetails } from "./components/UserDetails";
 import { Upload } from "./components/Upload";

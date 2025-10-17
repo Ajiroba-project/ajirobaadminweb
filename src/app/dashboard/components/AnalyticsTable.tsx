@@ -17,6 +17,7 @@ import Cookies from 'js-cookie';
 import { useGetDatanew } from '@/hooks/useGetData';
 import { GiftPointModal } from './GiftPointModal';
 import { toast } from 'react-toastify';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 function AnalyticsTable() {
 
@@ -73,8 +74,8 @@ function AnalyticsTable() {
 
 
 
-  const handleOptionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedOption(event.target.value);
+  const handleOptionChange = (value: string) => {
+    setSelectedOption(value);
     setCurrentPage(1); // Reset to first page when filter changes
   };
 
@@ -257,17 +258,17 @@ function AnalyticsTable() {
             <label htmlFor="dateRange" className="text-sm font-medium text-gray-700">
               Filter by Date Range:
             </label>
-            <select
-              id="dateRange"
-              value={selectedOption}
-              onChange={handleOptionChange}
-              className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F25E26] focus:border-[#F25E26] transition-all duration-200"
-            >
-              <option value="All">All Time</option>
-              <option value="5">Past 5 Days</option>
-              <option value="10">Past 10 Days</option>
-              <option value="30">Past 30 Days</option>
-            </select>
+            <Select value={selectedOption} onValueChange={handleOptionChange}>
+              <SelectTrigger className="h-10 w-[160px] rounded border px-3 selector">
+                <SelectValue placeholder="Filter by Date Range" />
+              </SelectTrigger>
+              <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+                <SelectItem value="All" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>All Time</SelectItem>
+                <SelectItem value="5" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Past 5 Days</SelectItem>
+                <SelectItem value="10" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Past 10 Days</SelectItem>
+                <SelectItem value="30" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Past 30 Days</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

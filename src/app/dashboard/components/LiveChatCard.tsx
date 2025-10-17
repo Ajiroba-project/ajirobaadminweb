@@ -68,10 +68,10 @@ export const LiveChatCard: React.FC = () => {
   });
 
   const onSubmit = async (data: ChatFormValues) => {
-    console.log("Form submitted with data:", data);
+    // console.log("Form submitted with data:", data);
     
     if (!data.text.trim() || !userInfo?.id) {
-      console.log("No text or user selected");
+      // console.log("No text or user selected");
       return;
     }
 
@@ -86,10 +86,10 @@ export const LiveChatCard: React.FC = () => {
             const payload = {
         text: data.text.trim(),
         image: data.image || "",
-        chat_room: currentChatRoomId,
+        chatroom_id: currentChatRoomId,
       };
 
-      console.log("Sending message with payload:", payload);
+      // console.log("Sending message with payload:", payload);
 
       const response = await axios.post(
         "https://staging.ajiroba.ng/v1/admin/send_message/",
@@ -97,13 +97,15 @@ export const LiveChatCard: React.FC = () => {
         { headers }
       );
 
+      console.log(response, 'response')
+
       if (response.data.status === "success") {
         const newMessage: Message = {
           type: "admin",
           text: data.text.trim(),
         };
         setMessages((prev) => [...prev, newMessage]);
-        console.log("Message sent successfully:", response.data);
+        // console.log("Message sent successfully:", response.data);
         reset();
         
         toast.success("Message sent successfully", {
@@ -119,10 +121,23 @@ export const LiveChatCard: React.FC = () => {
         
         // Refetch customer details to get updated data
         refetch();
+      } else if (response.data.status === "failed") {
+
+        console.log(response, 'response?.data?.message')
+        toast.error(response?.data?.message || "Failed to send message", {
+          position: "top-right",
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
       }
     } catch (error) {
-      console.error("Error sending message:", error);
-      toast.error("Failed to send message", {
+      // console.error("Error sending message:", error);
+      toast.error(    "Failed to send message", {
         position: "top-right",
         autoClose: 4000,
         hideProgressBar: false,
@@ -156,7 +171,7 @@ export const LiveChatCard: React.FC = () => {
         };
 
         const response = await axios.get(
-          `https://staging.ajiroba.ng/v1/admin/chat_messages/?chatroom_id=${chatroom_id}`,
+          `https://staging.ajiroba.ng/v1/admin/chatroom_messages/?chatroom_id=${chatroom_id}`,
           { headers }
         );
 
@@ -200,7 +215,7 @@ export const LiveChatCard: React.FC = () => {
         reset();
       } catch (error) {
         if (error instanceof AxiosError) {
-          console.error("Error sending message:", error);
+          // console.error("Error sending message:", error);
           // Show sample messages if API fails
           setMessages([
             {
@@ -235,7 +250,10 @@ export const LiveChatCard: React.FC = () => {
 
   useEffect(() => {
     if (customerdetails) {
-      const usersdata: User[] = customerdetails?.data?.data?.map(
+
+      // console.log(customerdetails, 'customerdetails')
+
+      const usersdata: User[] = customerdetails?.data?.results?.map(
         (item: any) => ({
           first_name: item.customer.full_name.split(" ")[0] || "N/A",
           surname: item.customer.full_name.split(" ")[1] || "N/A",
@@ -272,7 +290,7 @@ export const LiveChatCard: React.FC = () => {
           photo: item.customer.profile_image || user_img,
           id: item.id,
         })) || [];
-      console.log("Setting all users:", allUsers);
+      // console.log("Setting all users:", allUsers);
       setFilteredUsers(allUsers);
       return;
     }
@@ -294,7 +312,7 @@ export const LiveChatCard: React.FC = () => {
         photo: item.customer.profile_image || user_img,
         id: item.id,
       }));
-    console.log("Filtered users:", filtered);
+    // console.log("Filtered users:", filtered);
     setFilteredUsers(filtered);
   };
 
@@ -302,7 +320,7 @@ export const LiveChatCard: React.FC = () => {
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const { value } = event.target;
-    console.log("Search input changed:", value);
+    // console.log("Search input changed:", value);
     setSearchVal(value);
     searchQuery(value);
   };
@@ -361,7 +379,7 @@ export const LiveChatCard: React.FC = () => {
                     active === index ? "bg-gray-100" : ""
                   }`}
                   onClick={() => {
-                    console.log("User clicked:", val);
+                    // console.log("User clicked:", val);
                     setUserInfo(val);
                     setActive(index);
                     ChatData(val.id);

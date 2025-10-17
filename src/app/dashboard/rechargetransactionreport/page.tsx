@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo, Suspense } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { ProfileHeader } from "@/app/components/Header";
 import { useRouter, useSearchParams } from "next/navigation";
 import Cookies from "js-cookie";
@@ -7,19 +7,22 @@ import Link from "next/link";
 import Image from "next/image";
 import Brand from "@/app/asset/logo.svg";
 import axios from "axios";
-import { useSuspenseQuery } from "@tanstack/react-query";
-
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { DownloadModal } from "@/app/components/DownloadModal";
-import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
+import { exportToPDF, exportToXLS, exportToPDFTable, ExportData } from "@/utils/exportUtils";
 import { ReportsTable } from "../components/ReportsTable";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
+
+
 
 
 function RechargeReportPage() {
   const router = useRouter();
   useAuthMiddleware(router);
   const searchParams = useSearchParams();
-  const token = Cookies.get("token") || "";
+ 
+  const token = Cookies.get('token')
+
 
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState("");
@@ -50,7 +53,7 @@ function RechargeReportPage() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (!target.closest('.filter-dropdown') && !target.closest('.sort-dropdown')) {
+      if (!target.closest('.filter-dropdown') && !target.closest('.sort-dropdown') && !target.closest('.custom-date-picker')) {
         setShowFilterDropdown(false);
         setShowSortDropdown(false);
         setShowCustomDatePicker(false);
@@ -116,39 +119,65 @@ function RechargeReportPage() {
 
   // React Query fetcher with Suspense
   const fetchRechargeReport = async () => {
-    const finalUrl = `${baseUrl}?${buildQueryString()}`;
-    const resp = await axios.get(finalUrl, { headers: { Authorization: `Token ${token}` } });
-    const root = resp.data || {};
-    const wrapper = root.results ? root : { count: root.count, next: root.next, previous: root.previous, results: root };
-    const results = wrapper.results || {};
+    try {
+      // Get fresh token from cookies
+      const currentToken = Cookies.get('token');
 
-    const dataArray: any[] = Array.isArray(results.data) ? results.data : [];
-    const rows = dataArray.map((item: any, idx: number) => {
-      const core = item.airtime_transactions || item.data_transactions || item.electricity_transactions || item.electicity_transactions || item.cable_transactions || item;
+
+      if (!currentToken || currentToken.trim() === '') {
+     
+        // console.log('Available cookies:', document.cookie);
+        
+        if (typeof window !== 'undefined') {
+          router.push("/signin");
+        }
+        throw new Error("No authentication token found. Please sign in.");
+      }
+      
+      const finalUrl = `${baseUrl}?${buildQueryString()}`;
+      const resp = await axios.get(finalUrl, { headers: { Authorization: `Token ${currentToken}` } });
+      const root = resp.data || {};
+      const wrapper = root.results ? root : { count: root.count, next: root.next, previous: root.previous, results: root };
+      const results = wrapper.results || {};
+
+      const dataArray: any[] = Array.isArray(results.data) ? results.data : [];
+      const rows = dataArray.map((item: any, idx: number) => {
+        const core = item.airtime_transactions || item.data_transactions || item.electricity_transactions || item.electicity_transactions || item.cable_transactions || item;
+        return {
+          id: item.id || idx,
+          date: core?.date ?? "N/A",
+          time: core?.time ?? "N/A",
+          biller: core?.biller ?? "N/A",
+          amount: Number(core?.amount ?? 0),
+          commission: core?.commission ?? "0%",
+          commission_profit: Number(core?.commission_profit ?? 0),
+          phone_number: core?.phone_number ?? "N/A",
+          channel: core?.channel ?? "N/A",
+          token: core?.token,
+          meter_type: core?.meter_type,
+          iuc_number: core?.iuc_number,
+        };
+      });
+
       return {
-        id: item.id || idx,
-        date: core?.date ?? "N/A",
-        time: core?.time ?? "N/A",
-        biller: core?.biller ?? "N/A",
-        amount: Number(core?.amount ?? 0),
-        commission: core?.commission ?? "0%",
-        commission_profit: Number(core?.commission_profit ?? 0),
-        phone_number: core?.phone_number ?? "N/A",
-        channel: core?.channel ?? "N/A",
-        token: core?.token,
-        meter_type: core?.meter_type,
-        iuc_number: core?.iuc_number,
-      };
-    });
-
-    return {
-      rows,
-      count: wrapper.count || (results.data ? results.data.length : 0) || 0,
-      next: wrapper.next || null,
-      previous: wrapper.previous || null,
-      current_datetime: results.current_datetime,
-      total: results.total || null,
-    } as const;
+        rows,
+        count: wrapper.count || (results.data ? results.data.length : 0) || 0,
+        next: wrapper.next || null,
+        previous: wrapper.previous || null,
+        current_datetime: results.current_datetime,
+        total: results.total || null,
+      } as const;
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        // Token is invalid or expired, redirect to login
+        if (typeof window !== 'undefined') {
+          Cookies.remove("token");
+          router.push("/signin");
+        }
+        throw new Error("Authentication failed. Please sign in again.");
+      }
+      throw error;
+    }
   };
 
   type RechargeQueryResult = {
@@ -160,11 +189,23 @@ function RechargeReportPage() {
     total: { total_amount?: number; total_commission?: number } | null;
   };
 
-  const { data: queryData } = useSuspenseQuery<RechargeQueryResult>({
-    queryKey: ["recharge-report", typeParam, dateFilter, customDateRange.start, customDateRange.end, serverPage],
+  // Check if we're on the client side and have a token before running the query
+  const isClient = typeof window !== 'undefined';
+  const hasToken = isClient && Cookies.get('token');
+
+  const filterParams = buildQueryString();
+  const enabled = (isClient && !!hasToken) && (dateFilter !== 'custom' || (customDateRange.start && customDateRange.end));
+
+  const { data: queryData, error, isLoading, isFetching } = useQuery<RechargeQueryResult>({
+    queryKey: ["recharge-report", typeParam, filterParams, serverPage] as const,
     queryFn: fetchRechargeReport,
+    retry: false, // Don't retry on auth errors
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+    enabled: !!enabled,
   });
 
+  // All hooks must be called before any conditional returns
   useEffect(() => {
     const anyData: any = queryData as any;
     if (anyData?.current_datetime) setCurrentTime(anyData.current_datetime);
@@ -202,6 +243,22 @@ function RechargeReportPage() {
     return base;
   }, [typeParam]);
 
+  // Show loading state if not on client, no token, or query is loading
+  if (!isClient || !hasToken || isLoading) {
+    return <div className="w-full py-8 text-center text-sm text-gray-600">Loading...</div>;
+  }
+
+  // Handle authentication errors
+  if (error) {
+    // console.log('Query error:', error);
+    if (typeof window !== 'undefined') {
+      // router.push("/signin");
+      alert('An error occurred while fetching the data. Please try again later.');
+      router.push("/dashboard/reports");
+    }
+    return <div className="w-full py-8 text-center text-sm text-red-600">Authentication failed. Redirecting to sign in...</div>;
+  }
+
   // Filter the data locally (search + filterBy)
   const getFilteredAndSortedData = () => {
     const anyData: any = queryData as any;
@@ -218,17 +275,23 @@ function RechargeReportPage() {
       );
     }
 
-    // Apply filter by checkboxes
+    // Apply filter by checkboxes - these work independently of search
     if (filterBy.length > 0) {
       filteredData = filteredData.filter(item => {
-        return filterBy.every(filter => {
+        return filterBy.some(filter => {
           switch (filter) {
             case 'biller':
-              return search ? item.biller.toLowerCase().includes(search.toLowerCase()) : true;
+              // Show all items with biller information
+              return item.biller && item.biller !== 'N/A';
             case 'paymentChannel':
-              return search ? (item.channel || "").toLowerCase().includes(search.toLowerCase()) : true;
+              // Show all items with payment channel information
+              return item.channel && item.channel !== 'N/A';
             case 'commission':
-              return search ? item.commission.includes(search) : true;
+              // Show all items with commission information (not 0.00%)
+              return item.commission && 
+                     item.commission !== '0%' && 
+                     item.commission !== '0.00%' &&
+                     parseFloat(item.commission.replace('%', '')) > 0;
             default:
               return true;
           }
@@ -240,6 +303,15 @@ function RechargeReportPage() {
   };
 
   const displayData = getFilteredAndSortedData();
+  
+  // Debug: Log filter state and data
+  // console.log('Filter state:', { search, filterBy, displayDataLength: displayData.length });
+  // if (filterBy.includes('commission')) {
+  //   // console.log('Commission filter active. Sample data:', displayData.slice(0, 3).map(item => ({
+  //   //   commission: item.commission,
+  //   //   commission_profit: item.commission_profit
+  //   // })));
+  // }
 
   // Totals for summary row (fallback to client calc if server not provided)
   const anyTotals: any = queryData as any;
@@ -248,66 +320,167 @@ function RechargeReportPage() {
 
   // Download handlers (PDF/XLS)
   const handleDownloadPDF = async () => {
-    const exportData: ExportData[] = displayData.map((item) => ({
-      date: item.date,
-      time: item.time,
-      biller: item.biller,
-      amount: item.amount,
-      commission: item.commission,
-      commission_profit: item.commission_profit,
-      phone_number: item.phone_number,
-      channel: item.channel,
-      ...(typeParam === 'electricity' ? { token: item.token, meter_type: item.meter_type } : {}),
-      ...(typeParam === 'cable' ? { iuc_number: item.iuc_number } : {}),
-    }));
-    setShowDownloadModal(false);
-    await exportToPDF(exportData, {
-      title: `Recharge Transaction Report - ${typeLabel}`,
-      fileName: `Recharge_Transaction_Report_${typeLabel.replace(/\s+/g, '_')}`,
-    });
+    try {
+      setShowDownloadModal(false);
+
+      const headers = { headers: { Authorization: `Token ${Cookies.get('token')}` } } as const;
+      // Start from page=1 regardless of current serverPage
+      const initialParams = new URLSearchParams(buildQueryString());
+      initialParams.set('page', '1');
+      let nextUrl: string | null = `${baseUrl}?${initialParams.toString()}`;
+
+      const allRows: any[] = [];
+      for (let i = 0; i < 200 && nextUrl; i++) {
+        const resp: any = await axios.get(nextUrl, headers);
+        const root = resp.data || {};
+        const wrapper = root.results ? root : { count: root.count, next: root.next, previous: root.previous, results: root };
+        const results = wrapper.results || {};
+        const dataArray: any[] = Array.isArray(results.data) ? results.data : [];
+
+        dataArray.forEach((item: any, idx: number) => {
+          const core = item.airtime_transactions || item.data_transactions || item.electricity_transactions || item.electicity_transactions || item.cable_transactions || item;
+          allRows.push({
+            date: core?.date ?? 'N/A',
+            time: core?.time ?? 'N/A',
+            biller: core?.biller ?? 'N/A',
+            amount: Number(core?.amount ?? 0),
+            commission: core?.commission ?? '0%',
+            commission_profit: Number(core?.commission_profit ?? 0),
+            phone_number: core?.phone_number ?? 'N/A',
+            channel: core?.channel ?? 'N/A',
+            token: core?.token,
+            meter_type: core?.meter_type,
+            iuc_number: core?.iuc_number,
+          });
+        });
+
+        nextUrl = wrapper.next || null;
+      }
+
+      if (allRows.length === 0) {
+        alert('No data available to export');
+        return;
+      }
+
+      const exportData: ExportData[] = allRows.map((item) => ({
+        date: item.date,
+        time: item.time,
+        biller: item.biller,
+        amount: item.amount,
+        commission: item.commission,
+        commission_profit: item.commission_profit,
+        phone_number: item.phone_number,
+        channel: item.channel,
+        ...(typeParam === 'electricity' ? { token: item.token, meter_type: item.meter_type } : {}),
+        ...(typeParam === 'cable' ? { iuc_number: item.iuc_number } : {}),
+      }));
+
+      await exportToPDFTable(exportData, {
+        title: `Recharge Transaction Report - ${typeLabel}`,
+        fileName: `Recharge_Transaction_Report_${typeLabel.replace(/\s+/g, '_')}`,
+        columns: [
+          { key: 'date', header: 'Date' },
+          { key: 'time', header: 'Time' },
+          { key: 'biller', header: 'Biller' },
+          { key: 'amount', header: 'Amount (NGN)' },
+          { key: 'commission', header: 'Commission' },
+          { key: 'commission_profit', header: 'Commission/Profit (NGN)' },
+          { key: 'phone_number', header: 'Customer Phone Number' },
+          { key: 'channel', header: 'Payment Channel' },
+          ...(typeParam === 'electricity' ? [ { key: 'token', header: 'Token' }, { key: 'meter_type', header: 'Meter Type' } ] : []),
+          ...(typeParam === 'cable' ? [ { key: 'iuc_number', header: 'IUC Number' } ] : []),
+        ] as any,
+      });
+    } catch (err) {
+      alert('Failed to prepare PDF export.');
+    }
   };
 
-  const handleDownloadXLS = () => {
-    const exportData: ExportData[] = displayData.map((item) => ({
-      date: item.date,
-      time: item.time,
-      biller: item.biller,
-      amount: item.amount,
-      commission: item.commission,
-      commission_profit: item.commission_profit,
-      phone_number: item.phone_number,
-      channel: item.channel,
-      ...(typeParam === 'electricity' ? { token: item.token, meter_type: item.meter_type } : {}),
-      ...(typeParam === 'cable' ? { iuc_number: item.iuc_number } : {}),
-    }));
-    const baseColumns = [
-      { key: 'date', header: 'Date', width: 15 },
-      { key: 'time', header: 'Time', width: 12 },
-      { key: 'biller', header: 'Biller', width: 15 },
-      { key: 'amount', header: 'Amount (NGN)', width: 20 },
-      { key: 'commission', header: 'Commission', width: 12 },
-      { key: 'commission_profit', header: 'Commission/Profit (NGN)', width: 20 },
-      { key: 'phone_number', header: 'Customer Phone Number', width: 20 },
-      { key: 'channel', header: 'Payment Channel', width: 18 },
-    ];
-    if (typeParam === 'electricity') {
-      baseColumns.splice(3, 0, { key: 'token', header: 'Token', width: 25 } as any);
-      baseColumns.splice(4, 0, { key: 'meter_type', header: 'Meter Type', width: 12 } as any);
+  const handleDownloadXLS = async () => {
+    try {
+      const headers = { headers: { Authorization: `Token ${Cookies.get('token')}` } } as const;
+      const initialParams = new URLSearchParams(buildQueryString());
+      initialParams.set('page', '1');
+      let nextUrl: string | null = `${baseUrl}?${initialParams.toString()}`;
+
+      const allRows: any[] = [];
+      for (let i = 0; i < 200 && nextUrl; i++) {
+        const resp: any = await axios.get(nextUrl, headers);
+        const root = resp.data || {};
+        const wrapper = root.results ? root : { count: root.count, next: root.next, previous: root.previous, results: root };
+        const results = wrapper.results || {};
+        const dataArray: any[] = Array.isArray(results.data) ? results.data : [];
+
+        dataArray.forEach((item: any, idx: number) => {
+          const core = item.airtime_transactions || item.data_transactions || item.electricity_transactions || item.electicity_transactions || item.cable_transactions || item;
+          allRows.push({
+            date: core?.date ?? 'N/A',
+            time: core?.time ?? 'N/A',
+            biller: core?.biller ?? 'N/A',
+            amount: Number(core?.amount ?? 0),
+            commission: core?.commission ?? '0%',
+            commission_profit: Number(core?.commission_profit ?? 0),
+            phone_number: core?.phone_number ?? 'N/A',
+            channel: core?.channel ?? 'N/A',
+            token: core?.token,
+            meter_type: core?.meter_type,
+            iuc_number: core?.iuc_number,
+          });
+        });
+
+        nextUrl = wrapper.next || null;
+      }
+
+      if (allRows.length === 0) {
+        alert('No data available to export');
+        return;
+      }
+
+      const exportData: ExportData[] = allRows.map((item) => ({
+        date: item.date,
+        time: item.time,
+        biller: item.biller,
+        amount: item.amount,
+        commission: item.commission,
+        commission_profit: item.commission_profit,
+        phone_number: item.phone_number,
+        channel: item.channel,
+        ...(typeParam === 'electricity' ? { token: item.token, meter_type: item.meter_type } : {}),
+        ...(typeParam === 'cable' ? { iuc_number: item.iuc_number } : {}),
+      }));
+
+      const baseColumns = [
+        { key: 'date', header: 'Date', width: 15 },
+        { key: 'time', header: 'Time', width: 12 },
+        { key: 'biller', header: 'Biller', width: 15 },
+        { key: 'amount', header: 'Amount (NGN)', width: 20 },
+        { key: 'commission', header: 'Commission', width: 12 },
+        { key: 'commission_profit', header: 'Commission/Profit (NGN)', width: 20 },
+        { key: 'phone_number', header: 'Customer Phone Number', width: 20 },
+        { key: 'channel', header: 'Payment Channel', width: 18 },
+      ];
+      if (typeParam === 'electricity') {
+        baseColumns.splice(3, 0, { key: 'token', header: 'Token', width: 25 } as any);
+        baseColumns.splice(4, 0, { key: 'meter_type', header: 'Meter Type', width: 12 } as any);
+      }
+      if (typeParam === 'cable') {
+        baseColumns.splice(3, 0, { key: 'iuc_number', header: 'IUC Number', width: 18 } as any);
+      }
+
+      exportToXLS(exportData, {
+        title: `Recharge Report - ${typeLabel}`,
+        fileName: `Recharge_Transaction_Report_${typeLabel.replace(/\s+/g, '_')}`,
+        columns: baseColumns as any,
+        summaryRows: [
+          { label: 'TOTAL', value: '' },
+          { label: 'Amount', value: Number(allRows.reduce((s, r) => s + (Number(r.amount) || 0), 0)).toLocaleString() },
+          { label: 'Commission/Profit', value: Number(allRows.reduce((s, r) => s + (Number(r.commission_profit) || 0), 0)).toFixed(2) },
+        ],
+      });
+      setShowDownloadModal(false);
+    } catch (error) {
+      alert(`Error preparing data for export: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-    if (typeParam === 'cable') {
-      baseColumns.splice(3, 0, { key: 'iuc_number', header: 'IUC Number', width: 18 } as any);
-    }
-    exportToXLS(exportData, {
-      title: `Recharge Transaction Report - ${typeLabel}`,
-      fileName: `Recharge_Transaction_Report_${typeLabel.replace(/\s+/g, '_')}`,
-      columns: baseColumns as any,
-      summaryRows: [
-        { label: 'TOTAL', value: '' },
-        { label: 'Amount', value: Number(totalAmount).toLocaleString() },
-        { label: 'Commission/Profit', value: Number(totalCommission).toFixed(2) },
-      ],
-    });
-    setShowDownloadModal(false);
   };
 
   const AjirobaLogo = ({
@@ -322,7 +495,14 @@ function RechargeReportPage() {
   );
 
   return (
-    <section className="flex flex-col">
+    <section 
+      className="flex flex-col"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+        }
+      }}
+    >
       <div className="w-full bg-gray-100">
         <ProfileHeader />
         <div className="px-4 md:px-14 py-4">
@@ -341,6 +521,7 @@ function RechargeReportPage() {
             <p className="text-[#666666] text-sm font-Poppins">{typeLabel}</p>
           </div>
           <button
+            type="button"
             onClick={() => setShowDownloadModal(true)}
             className="rounded-md bg-[#f25e26] px-6 py-2 text-white text-sm hover:bg-[#d63918] transition-colors"
           >
@@ -356,6 +537,11 @@ function RechargeReportPage() {
             placeholder="Search here..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+              }
+            }}
             className="w-full h-10 pl-10 pr-4 rounded-md border border-[#E9E9E9] bg-[#F6F6F6] text-sm focus:outline-none focus:ring-2 focus:ring-[#F25E26]"
           />
           <span className="absolute left-3 top-2.5 text-gray-400">
@@ -382,6 +568,7 @@ function RechargeReportPage() {
           {/* Filter by dropdown */}
           <div className="relative filter-dropdown">
             <button
+              type="button"
               onClick={() => setShowFilterDropdown(!showFilterDropdown)}
               className="w-full md:w-auto px-4 py-2 border border-[#E9E9E9] rounded-md bg-white text-[#353131] text-sm font-Poppins focus:outline-none focus:ring-2 focus:ring-[#F25E26] flex items-center justify-between min-w-[120px]"
             >
@@ -423,6 +610,7 @@ function RechargeReportPage() {
                   {filterBy.length > 0 && (
                     <div className="pt-2 border-t border-gray-200">
                       <button
+                        type="button"
                         onClick={() => setFilterBy([])}
                         className="w-full text-left px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded"
                       >
@@ -438,6 +626,7 @@ function RechargeReportPage() {
           {/* Sort by dropdown */}
           <div className="relative sort-dropdown">
             <button
+              type="button"
               onClick={() => setShowSortDropdown(!showSortDropdown)}
               className="w-full md:w-auto px-4 py-2 border border-[#E9E9E9] rounded-md bg-white text-[#353131] text-sm font-Poppins focus:outline-none focus:ring-2 focus:ring-[#F25E26] flex items-center justify-between min-w-[120px]"
             >
@@ -464,6 +653,7 @@ function RechargeReportPage() {
                   ].map((option) => (
                     <button
                       key={option.value}
+                      type="button"
                       onClick={() => {
                         setDateFilter(option.value);
                         if (option.value === 'custom') {
@@ -483,6 +673,7 @@ function RechargeReportPage() {
                   {dateFilter && (
                     <div className="pt-2 border-t border-gray-200">
                       <button
+                        type="button"
                         onClick={() => {
                           setDateFilter('');
                           setCustomDateRange({ start: '', end: '' });
@@ -500,11 +691,11 @@ function RechargeReportPage() {
 
             {/* Custom Date Picker */}
             {showCustomDatePicker && (
-              <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-20 p-4">
+              <div className="custom-date-picker absolute top-full right-0 mt-1 w-80 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-20 p-4">
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium text-[#353131]">Select Date Range</h3>
-                  <div className="space-y-2">
-                    <div>
+                  <div className="flex gap-3 items-end flex-wrap">
+                    <div className="flex-1">
                       <label className="block text-xs text-gray-600 mb-1">Start Date</label>
                       <input
                         type="date"
@@ -513,7 +704,7 @@ function RechargeReportPage() {
                         className="w-full px-3 py-2 border border-[#E9E9E9] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#F25E26]"
                       />
                     </div>
-                    <div>
+                    <div className="flex-1 flex-wrap">
                       <label className="block text-xs text-gray-600 mb-1">End Date</label>
                       <input
                         type="date"
@@ -522,27 +713,29 @@ function RechargeReportPage() {
                         className="w-full px-3 py-2 border border-[#E9E9E9] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#F25E26]"
                       />
                     </div>
-                  </div>
-                  <div className="flex gap-2 pt-2">
-                    <button
-                      onClick={() => {
-                        if (customDateRange.start && customDateRange.end) {
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (customDateRange.start && customDateRange.end) {
+                            setShowCustomDatePicker(false);
+                          }
+                        }}
+                        className="px-4 py-2 bg-[#F25E26] text-white text-sm rounded-md hover:bg-[#d63918] whitespace-nowrap"
+                      >
+                        Apply
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCustomDateRange({ start: '', end: '' });
                           setShowCustomDatePicker(false);
-                        }
-                      }}
-                      className="flex-1 px-3 py-2 bg-[#F25E26] text-white text-sm rounded-md hover:bg-[#d63918]"
-                    >
-                      Apply
-                    </button>
-                    <button
-                      onClick={() => {
-                        setCustomDateRange({ start: '', end: '' });
-                        setShowCustomDatePicker(false);
-                      }}
-                      className="flex-1 px-3 py-2 border border-[#E9E9E9] text-[#353131] text-sm rounded-md hover:bg-gray-50"
-                    >
-                      Cancel
-                    </button>
+                        }}
+                        className="px-4 py-2 border border-[#E9E9E9] text-[#353131] text-sm rounded-md hover:bg-gray-50 whitespace-nowrap"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -556,8 +749,13 @@ function RechargeReportPage() {
           <AjirobaLogo />
         </div>
         <div className="bg-[#F25E26] text-white font-Poppins font-medium px-4 md:px-8 py-2 flex items-center justify-between text-sm rounded-t">
-          <span>AIRTIME TRANSACTION REPORT</span>
-          <span className="text-xs font-normal">({currentTime})</span>
+          <span>{`${typeLabel.toUpperCase()}`} TRANSACTION REPORT</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-normal">({currentTime})</span>
+            {isFetching && (
+              <span className="inline-flex items-center text-[10px] bg-white/20 px-2 py-1 rounded animate-pulse">Updating…</span>
+            )}
+          </div>
         </div>
         <div className="overflow-x-auto">
           <ReportsTable 
@@ -570,6 +768,7 @@ function RechargeReportPage() {
         {/* Server pagination controls */}
         <div className="flex items-center justify-between px-4 md:px-8 py-4">
           <button
+            type="button"
             disabled={!((queryData as any)?.previous)}
             onClick={() => {
               if ((queryData as any)?.previous) {
@@ -582,6 +781,7 @@ function RechargeReportPage() {
           </button>
           <div className="text-xs text-gray-600">{(queryData as any)?.count ? `Total Records: ${(queryData as any).count}` : ''}</div>
           <button
+            type="button"
             disabled={!((queryData as any)?.next)}
             onClick={() => {
               if ((queryData as any)?.next) {
@@ -602,6 +802,7 @@ function RechargeReportPage() {
             </div>
             {(search || filterBy.length > 0 || dateFilter) && (
               <button
+                type="button"
                 onClick={() => {
                   setSearch('');
                   setFilterBy([]);
@@ -629,9 +830,5 @@ function RechargeReportPage() {
 } 
 
 export default function Page() {
-  return (
-    <Suspense fallback={<div className="w-full py-8 text-center text-sm text-gray-600">Loading...</div>}>
-      <RechargeReportPage />
-    </Suspense>
-  );
+  return <RechargeReportPage />;
 }

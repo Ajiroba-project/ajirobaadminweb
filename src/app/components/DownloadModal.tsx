@@ -1,6 +1,8 @@
 "use client";
 import React from "react";
-
+import pdficon from'@/app/asset/pdficon.svg';
+import xlsicon from'@/app/asset/excelicon.svg';
+import Image from "next/image";
 interface DownloadModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -47,13 +49,7 @@ export const DownloadModal: React.FC<DownloadModalProps> = ({
           >
             <div className="flex items-center gap-3">
               <div className="bg-white bg-opacity-20 p-3 rounded-lg flex items-center justify-center">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14,2 14,8 20,8" />
-                  <text x="8" y="16" fontSize="6" fill="white" fontWeight="bold">
-                    PDF
-                  </text>
-                </svg>
+                <Image src={pdficon} alt="PDF" width={32} height={32} />
               </div>
               <span className="text-2xl font-medium">PDF</span>
             </div>
@@ -66,21 +62,7 @@ export const DownloadModal: React.FC<DownloadModalProps> = ({
           >
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-lg">
-                <svg
-                  width="32"
-                  height="32"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14,2 14,8 20,8" fill="white" />
-                  <rect x="8" y="12" width="8" height="1.5" fill="white" />
-                  <rect x="8" y="14" width="8" height="1.5" fill="white" />
-                  <rect x="8" y="16" width="8" height="1.5" fill="white" />
-                  <text x="8" y="11" fontSize="4" fill="white" fontWeight="bold">
-                    XLS
-                  </text>
-                </svg>
+                <Image src={xlsicon} alt="XLS" width={32} height={32} />
               </div>
               <span className="text-2xl font-medium">XLS</span>
             </div>

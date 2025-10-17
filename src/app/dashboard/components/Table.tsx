@@ -19,6 +19,7 @@ import {
   ChipProps,
   SortDescriptor,
 } from "@nextui-org/react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
   size?: number;
@@ -478,8 +479,8 @@ export default function App() {
     }
   }, [page]);
 
-  const onRowsPerPageChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setRowsPerPage(Number(e.target.value));
+  const onRowsPerPageChange = React.useCallback((value: string) => {
+    setRowsPerPage(Number(value));
     setPage(1);
   }, []);
 
@@ -562,14 +563,16 @@ export default function App() {
           <span className="text-default-400 text-small">Total {users.length} users</span>
           <label className="flex items-center text-default-400 text-small">
             Rows per page:
-            <select
-              className="bg-transparent outline-none text-default-400 text-small"
-              onChange={onRowsPerPageChange}
-            >
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="15">15</option>
-            </select>
+            <Select value={String(rowsPerPage)} onValueChange={onRowsPerPageChange}>
+              <SelectTrigger className="bg-transparent outline-none text-default-400 text-small border-none">
+                <SelectValue placeholder="10" />
+              </SelectTrigger>
+              <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+                <SelectItem value="5" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>5</SelectItem>
+                <SelectItem value="10" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>10</SelectItem>
+                <SelectItem value="15" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>15</SelectItem>
+              </SelectContent>
+            </Select>
           </label>
         </div>
       </div>

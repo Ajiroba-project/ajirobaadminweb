@@ -8,7 +8,7 @@ import Image from "next/image";
 import Brand from "@/app/asset/logo.svg";
 import { ReportsTable } from "../components/ReportsTable";
 import { DownloadModal } from "@/app/components/DownloadModal";
-import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
+import { exportToPDF, exportToXLS, exportToPDFTable, ExportData } from "@/utils/exportUtils";
 import { useGetDatanew } from "@/hooks/useGetData";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 
@@ -72,6 +72,11 @@ export default function Page() {
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [currentTime, setCurrentTime] = useState<string>("");
 
+
+  const [debouncedTopSortBy, setDebouncedTopSortBy] = useState("last_month");
+  const [debouncedTopCustomStart, setDebouncedTopCustomStart] = useState("");
+  const [debouncedTopCustomEnd, setDebouncedTopCustomEnd] = useState("");
+
   // Pagination state
   const [totalPages, setTotalPages] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
@@ -108,23 +113,72 @@ export default function Page() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedTopSortBy(sort);
+      setDebouncedTopCustomStart(customDateRange.start);
+      setDebouncedTopCustomEnd(customDateRange.end);
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timer);
+  }, [sort, customDateRange.start, customDateRange.end]);
+
   // Construct filter parameters for API
+  // const getFilterParams = () => {
+  //   const params = new URLSearchParams();
+    
+  //   if (currentPage > 1) {
+  //     params.append('page', currentPage.toString());
+  //   }
+    
+  //   // Handle custom date range
+  //   if (customDateRange.start && customDateRange.end) {
+  //     params.append('start_date', customDateRange.start);
+  //     params.append('end_date', customDateRange.end);
+  //   } else if (dateFilter && dateFilter !== 'custom') {
+  //     // Only add filter parameter if it's not custom and we have a dateFilter
+  //     params.append('filter', dateFilter);
+  //   }
+    
+  //   return params.toString();
+  // };
+
   const getFilterParams = () => {
     const params = new URLSearchParams();
-    
-    if (currentPage > 1) {
-      params.append('page', currentPage.toString());
+
+    switch (debouncedTopSortBy) {
+      case "last_7_days":
+        params.append("filter", "last_7_days");
+        break;
+      case "yesterday":
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+
+        params.append("filter", "custom");
+        params.append("start_date", todayStr);
+        params.append("end_date", yesterdayStr);
+        break;
+  
+      case "last_year":
+        params.append("filter", "last_year");
+        break;
+      case "custom":
+        // Only send custom filter when BOTH dates are available
+        if (debouncedTopCustomStart && debouncedTopCustomEnd) {
+          params.append("filter", "custom");
+          params.append("start_date", debouncedTopCustomStart);
+          params.append("end_date", debouncedTopCustomEnd);
+        }
+        break;
+      default:
+        params.append("filter", "last_month");
     }
-    
-    // Handle custom date range
-    if (customDateRange.start && customDateRange.end) {
-      params.append('start_date', customDateRange.start);
-      params.append('end_date', customDateRange.end);
-    } else if (dateFilter && dateFilter !== 'custom') {
-      // Only add filter parameter if it's not custom and we have a dateFilter
-      params.append('filter', dateFilter);
-    }
-    
+
     return params.toString();
   };
 
@@ -301,9 +355,19 @@ export default function Page() {
       stock: item.stock,
     }));
     setShowDownloadModal(false);
-    await exportToPDF(exportData, {
+    await exportToPDFTable(exportData, {
       title: "Regular Transaction Report",
       fileName: "Regular_Transaction_Report",
+      columns: [
+        { key: 'productId', header: 'Product ID' },
+        { key: 'productName', header: 'Product Name' },
+        { key: 'sellingPrice', header: 'Selling Price' },
+        { key: 'discount', header: 'Discount' },
+        { key: 'costPrice', header: 'Cost Price' },
+        { key: 'profit', header: 'Profit' },
+        { key: 'paymentMethod', header: 'Payment Method' },
+        { key: 'stock', header: 'Stock' },
+      ],
     });
   };
 
@@ -540,6 +604,7 @@ export default function Page() {
               <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-10">
                 <div className="p-2 space-y-1">
                   {[
+                    { value: 'yesterday', label: 'Yesterday' },
                     { value: 'last_week', label: 'Last Week' },
                     { value: 'last_month', label: 'Last Month' },
                     { value: 'last_year', label: 'Last Year' },
@@ -549,6 +614,7 @@ export default function Page() {
                       key={option.value}
                       onClick={() => {
                         setDateFilter(option.value);
+                        setSort(option.value);
                         if (option.value === 'custom') {
                           setShowCustomDatePicker(true);
                           setShowSortDropdown(false);
@@ -568,6 +634,7 @@ export default function Page() {
                       <button
                         onClick={() => {
                           setDateFilter('');
+                          setSort('');
                           setCustomDateRange({ start: '', end: '' });
                           setShowSortDropdown(false);
                           setShowCustomDatePicker(false);
@@ -612,6 +679,7 @@ export default function Page() {
                       onClick={() => {
                         if (customDateRange.start && customDateRange.end) {
                           setDateFilter('custom');
+                          setSort('custom');
                           setShowCustomDatePicker(false);
                         }
                       }}

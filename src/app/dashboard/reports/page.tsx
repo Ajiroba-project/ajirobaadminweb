@@ -3,7 +3,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useStore } from "@/store/nav-store";
 
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useMemo } from "react";
 import PageLayout from "@/app/components/Layout/PageLayout";
 import { Doughnut } from "react-chartjs-2";
 import {
@@ -26,9 +26,12 @@ import dstv from "@/app/asset/dstv.svg";
 import showmax from "@/app/asset/showmax.svg";
 import gotv from "@/app/asset/gotv.svg";
 import { useGetDatanew } from "@/hooks/useGetData";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import axios from "axios";
 import Cookies from "js-cookie";
 import Loading from "@/app/components/Loading";
 import { redirect } from 'next/navigation'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale);
@@ -46,8 +49,14 @@ const ReportsPageContent = () => {
   const [topSortBy, setTopSortBy] = useState("all_time");
   const [topCustomStart, setTopCustomStart] = useState("");
   const [topCustomEnd, setTopCustomEnd] = useState("");
+  const [currentTime, setCurrentTime] = useState<string>("");
 
   const [userToken, setUserToken] = useState(Cookies.get("token"));
+
+  // Debounced filter values to prevent excessive API calls
+  const [debouncedTopSortBy, setDebouncedTopSortBy] = useState("all_time");
+  const [debouncedTopCustomStart, setDebouncedTopCustomStart] = useState("");
+  const [debouncedTopCustomEnd, setDebouncedTopCustomEnd] = useState("");
 
 
 
@@ -55,24 +64,48 @@ const ReportsPageContent = () => {
   /*  useAuthMiddleware(router) */
   useAuthMiddleware(router);
 
+  // Debounce filter changes to prevent excessive API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedTopSortBy(topSortBy);
+      setDebouncedTopCustomStart(topCustomStart);
+      setDebouncedTopCustomEnd(topCustomEnd);
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timer);
+  }, [topSortBy, topCustomStart, topCustomEnd]);
+
   // Construct URL with query parameters based on filter selection
   const getFilterParams = () => {
     const params = new URLSearchParams();
 
-    switch (topSortBy) {
+    switch (debouncedTopSortBy) {
       case "last_7_days":
         params.append("filter", "last_7_days");
         break;
-      case "last_month":
-        params.append("filter", "last_month");
+      case "yesterday":
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+
+        params.append("filter", "custom");
+        params.append("start_date", todayStr);
+        params.append("end_date", yesterdayStr);
         break;
+  
       case "last_year":
         params.append("filter", "last_year");
         break;
       case "custom":
-        params.append("filter", "custom");
-        if (topCustomStart) params.append("start_date", topCustomStart);
-        if (topCustomEnd) params.append("end_date", topCustomEnd);
+        // Only send custom filter when BOTH dates are available
+        if (debouncedTopCustomStart && debouncedTopCustomEnd) {
+          params.append("filter", "custom");
+          params.append("start_date", debouncedTopCustomStart);
+          params.append("end_date", debouncedTopCustomEnd);
+        }
         break;
       default:
         params.append("filter", "all_time");
@@ -81,15 +114,33 @@ const ReportsPageContent = () => {
     return params.toString();
   };
 
-  const url = `${
-    process.env.NEXT_PUBLIC_BASE_URL
-  }/admin/report_summary/?${getFilterParams()}`;
+  // Custom hook to prevent page refresh on filter changes
+  const useStableReportData = (filterParams: string) => {
+    return useQuery({
+      queryKey: ["get_report_summary", filterParams], // Include filter params in query key
+      queryFn: async () => {
+        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/report_summary/?${filterParams}`;
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: `Token ${userToken}`
+          }
+        });
+        return response.data;
+      },
+      refetchOnWindowFocus: false,
+      staleTime: 5000, // Consider data fresh for 5 seconds
+      placeholderData: keepPreviousData, // Avoid UI flicker; update in background
+    });
+  };
 
+  const filterParams = getFilterParams();
+  const allowTopRefetch = !(debouncedTopSortBy === "custom" && (!debouncedTopCustomStart || !debouncedTopCustomEnd));
   const {
     data: reportInfo,
     isLoading: reportLoading,
+    isFetching: reportFetching,
     error,
-  } = useGetDatanew(url, "get_report_summary", userToken || " ");
+  } = useStableReportData(allowTopRefetch ? filterParams : "");
 
 
   // Add null checks to prevent errors when reportInfo is undefined
@@ -149,6 +200,20 @@ const ReportsPageContent = () => {
     }
   }, [searchParams]);
 
+  // Set current time
+  useEffect(() => {
+    setCurrentTime(
+      new Date().toLocaleString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })
+    );
+  }, []);
+
   // Modal content: two large, centered buttons
   const modalButtons = (
     <div className="flex flex-col sm:flex-row gap-6 justify-center items-center p-6">
@@ -184,11 +249,40 @@ const ReportsPageContent = () => {
     const [customStart, setCustomStart] = useState("");
     const [customEnd, setCustomEnd] = useState("");
 
+    // Debounced filter values
+    const [debouncedSortBy, setDebouncedSortBy] = useState("");
+    const [debouncedCustomStart, setDebouncedCustomStart] = useState("");
+    const [debouncedCustomEnd, setDebouncedCustomEnd] = useState("");
+
+    // Debounce filter changes
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        setDebouncedSortBy(sortBy);
+        setDebouncedCustomStart(customStart);
+        setDebouncedCustomEnd(customEnd);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }, [sortBy, customStart, customEnd]);
+
     // Construct URL with query parameters based on filter selection
     const getRegularDealsFilterParams = () => {
       const params = new URLSearchParams();
 
-      switch (sortBy) {
+      switch (debouncedSortBy) {
+        case "yesterday": {
+          const today = new Date();
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+
+          const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+          const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+
+          params.append("filter", "custom");
+          params.append("start_date", todayStr);
+          params.append("end_date", yesterdayStr);
+          break;
+        }
         case "last_week":
           params.append("filter", "last_week");
           break;
@@ -200,10 +294,10 @@ const ReportsPageContent = () => {
           break;
         case "custom":
           // Only add custom filter if both start and end dates are provided
-          if (customStart && customEnd) {
+          if (debouncedCustomStart && debouncedCustomEnd) {
             params.append("filter", "custom");
-            params.append("start_date", customStart);
-            params.append("end_date", customEnd);
+            params.append("start_date", debouncedCustomStart);
+            params.append("end_date", debouncedCustomEnd);
           }
           break;
         default:
@@ -214,13 +308,29 @@ const ReportsPageContent = () => {
       return params.toString();
     };
 
-    const regularDealsUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/regular_deals_summary/?${getRegularDealsFilterParams()}`;
+    const regularDealsFilterParams = getRegularDealsFilterParams();
+    const regularDealsEnabled = !(debouncedSortBy === "custom" && (!debouncedCustomStart || !debouncedCustomEnd));
 
     const {
       data: regularDealsData,
       isLoading: regularDealsLoading,
       error: regularDealsError,
-    } = useGetDatanew(regularDealsUrl, "get_regular_deals_summary", userToken || " ");
+    } = useQuery({
+      queryKey: ["get_regular_deals_summary", regularDealsFilterParams], // Include filter params
+      queryFn: async () => {
+        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/regular_deals_summary/?${regularDealsFilterParams}`;
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: `Token ${userToken}`
+          }
+        });
+        return response.data;
+      },
+      refetchOnWindowFocus: false,
+      staleTime: 5000,
+      placeholderData: keepPreviousData,
+      enabled: regularDealsEnabled,
+    });
 
 
    
@@ -272,17 +382,18 @@ const ReportsPageContent = () => {
           {/* Sort by section */}
           <div className="py-4 border-t border-gray-100">
             <div className="flex justify-end items-center gap-4">
-              <select
-                className="border border-gray-300 rounded px-2 md:px-3 py-1 text-xs sm:text-sm bg-white"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <option value="">All Time</option>
-                <option value="last_week">Last Week</option>
-                <option value="last_month">Last Month</option>
-                <option value="last_year">Last Year</option>
-                <option value="custom">Custom</option>
-              </select>
+              <Select value={sortBy} onValueChange={(val) => setSortBy(val)}>
+                <SelectTrigger className="h-10 w-[160px] rounded border px-3 selector">
+                  <SelectValue placeholder="All Time" />
+                </SelectTrigger>
+                <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+                  <SelectItem value="yesterday" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Yesterday</SelectItem>
+                  <SelectItem value="last_week" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Week</SelectItem>
+                  <SelectItem value="last_month" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Month</SelectItem>
+                  <SelectItem value="last_year" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Year</SelectItem>
+                  <SelectItem value="custom" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Custom</SelectItem>
+                </SelectContent>
+              </Select>
               {sortBy === "custom" && (
                 <>
                   <input
@@ -363,11 +474,40 @@ const ReportsPageContent = () => {
     const [customStart, setCustomStart] = useState("");
     const [customEnd, setCustomEnd] = useState("");
 
+    // Debounced filter values
+    const [debouncedSortBy, setDebouncedSortBy] = useState("");
+    const [debouncedCustomStart, setDebouncedCustomStart] = useState("");
+    const [debouncedCustomEnd, setDebouncedCustomEnd] = useState("");
+
+    // Debounce filter changes
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        setDebouncedSortBy(sortBy);
+        setDebouncedCustomStart(customStart);
+        setDebouncedCustomEnd(customEnd);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }, [sortBy, customStart, customEnd]);
+
     // Construct URL with query parameters based on filter selection
     const getAuctionCustomersFilterParams = () => {
       const params = new URLSearchParams();
 
-      switch (sortBy) {
+      switch (debouncedSortBy) {
+        case "yesterday": {
+          const today = new Date();
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+
+          const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+          const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+
+          params.append("filter", "custom");
+          params.append("start_date", todayStr);
+          params.append("end_date", yesterdayStr);
+          break;
+        }
         case "last_week":
           params.append("filter", "last_week");
           break;
@@ -379,10 +519,10 @@ const ReportsPageContent = () => {
           break;
         case "custom":
           // Only add custom filter if both start and end dates are provided
-          if (customStart && customEnd) {
+          if (debouncedCustomStart && debouncedCustomEnd) {
             params.append("filter", "custom");
-            params.append("start_date", customStart);
-            params.append("end_date", customEnd);
+            params.append("start_date", debouncedCustomStart);
+            params.append("end_date", debouncedCustomEnd);
           }
           break;
         default:
@@ -393,13 +533,31 @@ const ReportsPageContent = () => {
       return params.toString();
     };
 
-    const auctionCustomersUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/auction_deals_summary/?${getAuctionCustomersFilterParams()}`;
+    const auctionCustomersFilterParams = getAuctionCustomersFilterParams();
+    const auctionEnabled = !(debouncedSortBy === "custom" && (!debouncedCustomStart || !debouncedCustomEnd));
 
     const {
       data: auctionCustomersData,
       isLoading: auctionCustomersLoading,
       error: auctionCustomersError,
-    } = useGetDatanew(auctionCustomersUrl, "get_auction_customers_summary", userToken || " ");
+    } = useQuery({
+      queryKey: ["get_auction_customers_summary", auctionCustomersFilterParams], // Include filter params
+      queryFn: async () => {
+        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/auction_deals_summary/?${auctionCustomersFilterParams}`;
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: `Token ${userToken}`
+          }
+        });
+        return response.data;
+      },
+      refetchOnWindowFocus: false,
+      staleTime: 5000,
+      placeholderData: keepPreviousData,
+      enabled: auctionEnabled,
+    });
+
+  
 
     if (auctionCustomersLoading) {
       return (
@@ -441,24 +599,25 @@ const ReportsPageContent = () => {
             Reports
           </h1>
           <p className="text-xs sm:text-sm md:text-base text-gray-700">
-            Auction Transaction Report (23-May-2025; 4:40 PM)
+            Auction Transaction Report ({currentTime})
           </p>
         </div>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
           {/* Sort by section */}
           <div className="py-4 border-t border-gray-100">
             <div className="flex justify-end items-center gap-4">
-              <select
-                className="border border-gray-300 rounded px-2 md:px-3 py-1 text-xs sm:text-sm bg-white"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <option value="">All Time</option>
-                <option value="last_week">Last Week</option>
-                <option value="last_month">Last Month</option>
-                <option value="last_year">Last Year</option>
-                <option value="custom">Custom</option>
-              </select>
+              <Select value={sortBy} onValueChange={(val) => setSortBy(val)}>
+                <SelectTrigger className="h-10 w-[160px] rounded border px-3 selector">
+                  <SelectValue placeholder="All Time" />
+                </SelectTrigger>
+                <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+                  <SelectItem value="yesterday" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Yesterday</SelectItem>
+                  <SelectItem value="last_week" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Week</SelectItem>
+                  <SelectItem value="last_month" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Month</SelectItem>
+                  <SelectItem value="last_year" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Year</SelectItem>
+                  <SelectItem value="custom" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Custom</SelectItem>
+                </SelectContent>
+              </Select>
               {sortBy === "custom" && (
                 <>
                   <input
@@ -562,9 +721,25 @@ const ReportsPageContent = () => {
     const [customEnd, setCustomEnd] = useState("");
     const [activeTab, setActiveTab] = useState<string>("Airtime");
 
+    // Debounced filter values
+    const [debouncedSortBy, setDebouncedSortBy] = useState("");
+    const [debouncedCustomStart, setDebouncedCustomStart] = useState("");
+    const [debouncedCustomEnd, setDebouncedCustomEnd] = useState("");
+
+    // Debounce filter changes
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        setDebouncedSortBy(sortBy);
+        setDebouncedCustomStart(customStart);
+        setDebouncedCustomEnd(customEnd);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }, [sortBy, customStart, customEnd]);
+
     const getRechargeFilterParams = () => {
       const params = new URLSearchParams();
-      switch (sortBy) {
+      switch (debouncedSortBy) {
         case "last_week":
           params.append("filter", "last_week");
           break;
@@ -575,10 +750,10 @@ const ReportsPageContent = () => {
           params.append("filter", "last_year");
           break;
         case "custom":
-          if (customStart && customEnd) {
+          if (debouncedCustomStart && debouncedCustomEnd) {
             params.append("filter", "custom");
-            params.append("start_date", customStart);
-            params.append("end_date", customEnd);
+            params.append("start_date", debouncedCustomStart);
+            params.append("end_date", debouncedCustomEnd);
           }
           break;
         default:
@@ -588,13 +763,25 @@ const ReportsPageContent = () => {
       return params.toString();
     };
 
-    const rechargeUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/recharge_transaction_report/?${getRechargeFilterParams()}`;
+    const rechargeFilterParams = getRechargeFilterParams();
+    const rechargeEnabled = !(debouncedSortBy === "custom" && (!debouncedCustomStart || !debouncedCustomEnd));
 
-    const { data: rechargeData, isLoading: rechargeLoading, error: rechargeError } = useGetDatanew(
-      rechargeUrl,
-      "get_recharge_transaction_report",
-      userToken || " "
-    );
+    const { data: rechargeData, isLoading: rechargeLoading, isFetching: rechargeFetching, error: rechargeError } = useQuery({
+      queryKey: ["get_recharge_transaction_report", rechargeFilterParams], // Include filter params
+      queryFn: async () => {
+        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/recharge_transaction_report/?${rechargeFilterParams}`;
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: `Token ${userToken}`
+          }
+        });
+        return response.data;
+      },
+      refetchOnWindowFocus: false,
+      staleTime: 5000,
+      placeholderData: keepPreviousData,
+      enabled: rechargeEnabled,
+    });
 
     // Build dynamic tab data from API
     const api = rechargeData as unknown as RechargeApiResponse | undefined;
@@ -674,10 +861,26 @@ const ReportsPageContent = () => {
 
     const tabData = buildTabData();
 
+    // Client-side pagination for provider rows
+    const [providerPage, setProviderPage] = useState(1);
+    const providersPerPage = 7;
+
     // Ensure active tab exists
     const availableTabs = Object.keys(tabData);
     const currentTab = availableTabs.includes(activeTab) ? activeTab : availableTabs[0] || "";
     const currentTabData = currentTab ? tabData[currentTab] : undefined;
+
+    // Reset to page 1 when tab or filters change
+    useEffect(() => {
+      setProviderPage(1);
+    }, [currentTab, debouncedSortBy, debouncedCustomStart, debouncedCustomEnd]);
+
+    const totalProviders = currentTabData?.serviceProviders.length || 0;
+    const totalPages = Math.max(1, Math.ceil(totalProviders / providersPerPage));
+    const spStart = (providerPage - 1) * providersPerPage;
+    const spEnd = spStart + providersPerPage;
+    const paginatedServiceProviders = (currentTabData?.serviceProviders || []).slice(spStart, spEnd);
+    const paginatedDataColumns = (currentTabData?.dataColumns || []).slice(spStart, spEnd);
 
     if (rechargeLoading) {
       return (
@@ -715,6 +918,9 @@ const ReportsPageContent = () => {
             <span className="text-base text-gray-600 font-normal">
               {headerTime ? `(${headerTime})` : ""}
             </span>
+            {rechargeFetching && (
+              <span className="inline-flex items-center text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded animate-pulse">Updating…</span>
+            )}
           </div>
         </div>
 
@@ -741,17 +947,17 @@ const ReportsPageContent = () => {
 
           <div className="flex justify-end items-center mb-6">
             <div className="flex items-center gap-4">
-              <select
-                className="border border-gray-300 rounded px-2 md:px-3 py-1 text-sm bg-white"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <option value="">All Time</option>
-                <option value="last_week">Last Week</option>
-                <option value="last_month">Last Month</option>
-                <option value="last_year">Last Year</option>
-                <option value="custom">Custom</option>
-              </select>
+              <Select value={sortBy} onValueChange={(val) => setSortBy(val)}>
+                <SelectTrigger className="h-10 w-[160px] rounded border px-3 selector">
+                  <SelectValue placeholder="All Time" />
+                </SelectTrigger>
+                <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+                  <SelectItem value="last_week" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Week</SelectItem>
+                  <SelectItem value="last_month" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Month</SelectItem>
+                  <SelectItem value="last_year" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Year</SelectItem>
+                  <SelectItem value="custom" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Custom</SelectItem>
+                </SelectContent>
+              </Select>
               {sortBy === "custom" && (
                 <>
                   <input
@@ -844,13 +1050,13 @@ const ReportsPageContent = () => {
                   <div className="py-3 px-4 font-semibold text-lg text-gray-800 border-b border-gray-200 text-center">
                     Service Provider
                   </div>
-                  <div className="flex-1 flex flex-col">
-                    {currentTabData?.serviceProviders.map(
+                <div className="flex-1 flex flex-col">
+                  {paginatedServiceProviders.map(
                       (provider: { name: string; img?: any }, idx: number) => (
                         <div
                           key={provider.name}
                           className={`flex items-center justify-center py-6 border-b border-gray-200 bg-white ${
-                            idx === (currentTabData?.serviceProviders.length || 1) - 1
+                            idx === (paginatedServiceProviders.length || 1) - 1
                               ? "border-b-0"
                               : ""
                           }`}
@@ -892,7 +1098,7 @@ const ReportsPageContent = () => {
                     </div>
                   </div>
                   {/* Data Rows */}
-                  {currentTabData?.dataColumns.map(
+                  {paginatedDataColumns.map(
                     (row: string[], idx: number) => (
                       <div className="grid grid-cols-4" key={idx}>
                         {row.map((cell: string, cidx: number) => (
@@ -910,6 +1116,29 @@ const ReportsPageContent = () => {
               </div>
             </div>
           </div>
+
+          {/* Providers pagination */}
+          {totalProviders > providersPerPage && (
+            <div className="flex items-center justify-between mt-4">
+              <button
+                type="button"
+                onClick={() => setProviderPage((p) => Math.max(1, p - 1))}
+                disabled={providerPage <= 1}
+                className={`px-4 py-2 rounded-md text-sm ${providerPage > 1 ? 'bg-gray-100 text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+              >
+                Previous
+              </button>
+              <div className="text-xs text-gray-600">Page {providerPage} of {totalPages}</div>
+              <button
+                type="button"
+                onClick={() => setProviderPage((p) => Math.min(totalPages, p + 1))}
+                disabled={providerPage >= totalPages}
+                className={`px-4 py-2 rounded-md text-sm ${providerPage < totalPages ? 'bg-gray-100 text-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -936,9 +1165,39 @@ const ReportsPageContent = () => {
     const [customStart, setCustomStart] = useState("");
     const [customEnd, setCustomEnd] = useState("");
 
+    // Debounced filter values
+    const [debouncedSortBy, setDebouncedSortBy] = useState("");
+    const [debouncedCustomStart, setDebouncedCustomStart] = useState("");
+    const [debouncedCustomEnd, setDebouncedCustomEnd] = useState("");
+
+    // Debounce filter changes
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        setDebouncedSortBy(sortBy);
+        setDebouncedCustomStart(customStart);
+        setDebouncedCustomEnd(customEnd);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }, [sortBy, customStart, customEnd]);
+
     const getCustomerStatsParams = () => {
       const params = new URLSearchParams();
-      switch (sortBy) {
+      switch (debouncedSortBy) {
+        case "yesterday": {
+          const today = new Date();
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+
+          const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+          const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+
+          params.append("filter", "custom");
+          params.append("start_date", todayStr);
+          params.append("end_date", yesterdayStr);
+          break;
+        }
+
         case "last_week":
           params.append("filter", "last_week");
           break;
@@ -949,10 +1208,10 @@ const ReportsPageContent = () => {
           params.append("filter", "last_year");
           break;
         case "custom":
-          if (customStart && customEnd) {
+          if (debouncedCustomStart && debouncedCustomEnd) {
             params.append("filter", "custom");
-            params.append("start_date", customStart);
-            params.append("end_date", customEnd);
+            params.append("start_date", debouncedCustomStart);
+            params.append("end_date", debouncedCustomEnd);
           }
           break;
         default:
@@ -962,13 +1221,25 @@ const ReportsPageContent = () => {
       return params.toString();
     };
 
-    const customerStatsUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/customer_statistics_summary/?${getCustomerStatsParams()}`;
+    const customerStatsFilterParams = getCustomerStatsParams();
+    const customerStatsEnabled = !(debouncedSortBy === "custom" && (!debouncedCustomStart || !debouncedCustomEnd));
 
-    const { data: customerStatsRaw, isLoading: customerStatsLoading, error: customerStatsError } = useGetDatanew(
-      customerStatsUrl,
-      "get_customer_statistics_summary",
-      userToken || " "
-    );
+    const { data: customerStatsRaw, isLoading: customerStatsLoading, error: customerStatsError } = useQuery({
+      queryKey: ["get_customer_statistics_summary", customerStatsFilterParams], // Include filter params
+      queryFn: async () => {
+        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/customer_statistics_summary/?${customerStatsFilterParams}`;
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: `Token ${userToken}`
+          }
+        });
+        return response.data;
+      },
+      refetchOnWindowFocus: false,
+      staleTime: 5000,
+      placeholderData: keepPreviousData,
+      enabled: customerStatsEnabled,
+    });
 
     const api = customerStatsRaw as unknown as CustomerStatsApiResponse | undefined;
     const headerTime = api?.current_datetime;
@@ -1019,17 +1290,18 @@ const ReportsPageContent = () => {
         </div>
         <div className="max-w-3xl mx-auto px-8">
           <div className="flex justify-end items-center mt-8 mb-8 gap-4">
-            <select
-              className="border border-gray-300 rounded-lg px-4 py-2 text-gray-700 text-sm"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              <option value="">All Time</option>
-              <option value="last_week">Last Week</option>
-              <option value="last_month">Last Month</option>
-              <option value="last_year">Last Year</option>
-              <option value="custom">Custom</option>
-            </select>
+            <Select value={sortBy} onValueChange={(val) => setSortBy(val)}>
+              <SelectTrigger className="h-10 w-[160px] rounded border px-3 selector">
+                <SelectValue placeholder="All Time" />
+              </SelectTrigger>
+              <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+                <SelectItem value="yesterday" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Yesterday</SelectItem>
+                <SelectItem value="last_week" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Week</SelectItem>
+                <SelectItem value="last_month" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Month</SelectItem>
+                <SelectItem value="last_year" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Year</SelectItem>
+                <SelectItem value="custom" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Custom</SelectItem>
+              </SelectContent>
+            </Select>
             {sortBy === "custom" && (
               <>
                 <input
@@ -1123,26 +1395,55 @@ const ReportsPageContent = () => {
     const [customStart, setCustomStart] = useState("");
     const [customEnd, setCustomEnd] = useState("");
 
+    // Debounced filter values
+    const [debouncedSortBy, setDebouncedSortBy] = useState("");
+    const [debouncedCustomStart, setDebouncedCustomStart] = useState("");
+    const [debouncedCustomEnd, setDebouncedCustomEnd] = useState("");
+
+    // Debounce filter changes
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        setDebouncedSortBy(sortBy);
+        setDebouncedCustomStart(customStart);
+        setDebouncedCustomEnd(customEnd);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }, [sortBy, customStart, customEnd]);
+
     const buildRaffleParams = () => {
       const params = new URLSearchParams();
-      if (sortBy === "last_week") params.append("filter", "last_week");
-      else if (sortBy === "last_month") params.append("filter", "last_month");
-      else if (sortBy === "last_year") params.append("filter", "last_year");
-      else if (sortBy === "custom" && customStart && customEnd) {
+      if (debouncedSortBy === "yesterday") params.append("filter", "yesterday");
+      if (debouncedSortBy === "last_week") params.append("filter", "last_week");
+      else if (debouncedSortBy === "last_month") params.append("filter", "last_month");
+      else if (debouncedSortBy === "last_year") params.append("filter", "last_year");
+      else if (debouncedSortBy === "custom" && debouncedCustomStart && debouncedCustomEnd) {
         params.append("filter", "custom");
-        params.append("start_date", customStart);
-        params.append("end_date", customEnd);
+        params.append("start_date", debouncedCustomStart);
+        params.append("end_date", debouncedCustomEnd);
       }
       return params.toString();
     };
 
-    const raffleUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/raffle_draw_summary/?${buildRaffleParams()}`;
+    const raffleFilterParams = buildRaffleParams();
+    const raffleEnabled = !(debouncedSortBy === "custom" && (!debouncedCustomStart || !debouncedCustomEnd));
 
-    const { data: raffleRaw, isLoading: raffleLoading, error: raffleError } = useGetDatanew(
-      raffleUrl,
-      "get_raffle_draw_summary",
-      userToken || " "
-    );
+    const { data: raffleRaw, isLoading: raffleLoading, error: raffleError } = useQuery({
+      queryKey: ["get_raffle_draw_summary", raffleFilterParams], // Include filter params
+      queryFn: async () => {
+        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/raffle_draw_summary/?${raffleFilterParams}`;
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: `Token ${userToken}`
+          }
+        });
+        return response.data;
+      },
+      refetchOnWindowFocus: false,
+      staleTime: 5000,
+      placeholderData: keepPreviousData,
+      enabled: raffleEnabled,
+    });
 
     const api = raffleRaw as unknown as RaffleApiResponse | undefined;
     const headerTime = api?.current_datetime;
@@ -1166,17 +1467,18 @@ const ReportsPageContent = () => {
         </div>
         <div className="max-w-5xl mx-auto px-8">
           <div className="flex justify-end items-center mt-8 mb-8 gap-4">
-            <select
-              className="border border-gray-300 rounded-lg px-4 py-2 text-gray-700 text-sm"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              <option value="">All Time</option>
-              <option value="last_week">Last Week</option>
-              <option value="last_month">Last Month</option>
-              <option value="last_year">Last Year</option>
-              <option value="custom">Custom</option>
-            </select>
+            <Select value={sortBy} onValueChange={(val) => setSortBy(val)}>
+              <SelectTrigger className="h-10 w-[160px] rounded border px-3 selector">
+                <SelectValue placeholder="All Time" />
+              </SelectTrigger>
+              <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+                <SelectItem value="yesterday" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Yesterday</SelectItem>
+                <SelectItem value="last_week" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Week</SelectItem>
+                <SelectItem value="last_month" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Month</SelectItem>
+                <SelectItem value="last_year" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Year</SelectItem>
+                <SelectItem value="custom" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Custom</SelectItem>
+              </SelectContent>
+            </Select>
             {sortBy === "custom" && (
               <>
                 <input
@@ -1343,24 +1645,33 @@ const ReportsPageContent = () => {
           >
             {/* Header */}
             <div className="bg-[#F6F6F6] border border-b-[#e9dddd] h-20 flex justify-between items-center px-6 sticky top-0">
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900">
-                  Report Summary Dashboard
-                </h1>
-                <p className="text-sm text-gray-600">(23-May-2025; 4:40 PM)</p>
+              <div className="flex items-center gap-3">
+                <div>
+                  <h1 className="text-xl font-semibold text-gray-900">
+                    Report Summary Dashboard
+                  </h1>
+                  <p className="text-sm text-gray-600">({currentTime})</p>
+                </div>
+                {reportFetching && (
+                  <span className="inline-flex items-center text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded animate-pulse">
+                    Updating…
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-4">
-                <select
-                  className="border border-gray-300 rounded px-2 py-1 text-sm"
-                  value={topSortBy}
-                  onChange={(e) => setTopSortBy(e.target.value)}
-                >
-                  <option value="all_time">All Time</option>
-                  <option value="last_7_days">Last 7 Days</option>
-                  <option value="last_month">Last Month</option>
-                  <option value="last_year">Last Year</option>
-                  <option value="custom">Custom</option>
-                </select>
+                <Select value={topSortBy} onValueChange={(val) => setTopSortBy(val)}>
+                  <SelectTrigger className="h-10 w-[160px] rounded border px-3 selector">
+                    <SelectValue placeholder="All Time" />
+                  </SelectTrigger>
+                  <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+                    <SelectItem value="all_time" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>All Time</SelectItem>
+                    <SelectItem value="yesterday" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Yesterday</SelectItem>
+                    <SelectItem value="last_7_days" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last 7 Days</SelectItem>
+                    <SelectItem value="last_month" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Month</SelectItem>
+                    <SelectItem value="last_year" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Year</SelectItem>
+                    <SelectItem value="custom" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Custom</SelectItem>
+                  </SelectContent>
+                </Select>
                 {topSortBy === "custom" && (
                   <>
                     <input
@@ -1408,7 +1719,7 @@ const ReportsPageContent = () => {
                       </svg>
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 group-hover:text-white">
-                      Auction Customers Master Report
+                      Customers Master Report
                     </h3>
                   </div>
 

@@ -9,6 +9,7 @@ import {
 } from "@/app/components/FormField";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Page = () => {
   const [selectedImg, setSelectedImg] = useState<any>([]);
@@ -104,19 +105,15 @@ const Page = () => {
             <label htmlFor="subCategory" className="block text-sm font-semibold">
               Sub Category:
             </label>
-            <select
-              name="subCategory"
-              value={formData.subCategory}
-              onChange={handleInputChange}
-              className="w-full border rounded-lg p-2 mt-1"
-              required
-            >
-              <option value="" disabled>
-                Select a sub-category
-              </option>
-              <option value="Ralph Lauren Men T-shirt">Ralph Lauren Men T-shirt</option>
-              {/* Add more options as needed */}
-            </select>
+            <Select value={formData.subCategory} onValueChange={(val) => setFormData(prev => ({ ...prev, subCategory: val }))}>
+              <SelectTrigger className="w-full h-10 rounded border px-3 selector mt-1">
+                <SelectValue placeholder="Select a sub-category" />
+              </SelectTrigger>
+              <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+                <SelectItem value="Ralph Lauren Men T-shirt" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Ralph Lauren Men T-shirt</SelectItem>
+                {/* Add more options as needed */}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>

@@ -191,7 +191,8 @@ const ParentPage = () => {
         // console.log(user_otp, 'user-otp')
 
         mutate({
-            url: "/api/verifyaccount",
+            // url: "/api/verifyaccount",
+            url: "/api/verifyresetpasswordotp",
             payload: Payload
         });
 

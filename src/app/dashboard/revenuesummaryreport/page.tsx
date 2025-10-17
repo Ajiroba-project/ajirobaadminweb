@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ProfileHeader } from "@/app/components/Header";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
@@ -34,10 +34,15 @@ export default function Page() {
   const [pageSize] = useState(10);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [currentTime, setCurrentTime] = useState<string>("");
+  
+  // Refs for outside click detection
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
+  const customDatePickerRef = useRef<HTMLDivElement>(null);
 
   // Build query params and fetch API
   const buildQueryParams = () => {
     const params = new URLSearchParams();
+    if (sort === "yesterday") params.append("filter", "yesterday");
     if (sort === "last_week") params.append("filter", "last_week");
     else if (sort === "last_month") params.append("filter", "last_month");
     else if (sort === "last_year") params.append("filter", "last_year");
@@ -77,10 +82,12 @@ export default function Page() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (
-        !target.closest(".filter-dropdown") &&
-        !target.closest(".sort-dropdown")
-      ) {
+      
+      // Check if click is outside both dropdown and custom date picker
+      const isOutsideSortDropdown = sortDropdownRef.current && !sortDropdownRef.current.contains(target);
+      const isOutsideCustomDatePicker = customDatePickerRef.current && !customDatePickerRef.current.contains(target);
+      
+      if (isOutsideSortDropdown && isOutsideCustomDatePicker) {
         setShowFilterDropdown(false);
         setShowSortDropdown(false);
         setShowCustomDatePicker(false);
@@ -205,6 +212,7 @@ export default function Page() {
 
   const displayData = getFilteredAndSortedData();
 
+
   return (
     <section className="flex flex-col">
       <div className="w-full bg-gray-100">
@@ -265,7 +273,7 @@ export default function Page() {
        
 
           {/* Sort by dropdown */}
-          <div className="relative sort-dropdown">
+          <div className="relative sort-dropdown" ref={sortDropdownRef}>
             <button
               onClick={() => setShowSortDropdown(!showSortDropdown)}
               className="w-full md:w-auto px-4 py-2 border border-[#E9E9E9] rounded-md bg-white text-[#353131] text-sm font-Poppins focus:outline-none focus:ring-2 focus:ring-[#F25E26] flex items-center justify-between min-w-[120px]"
@@ -292,6 +300,7 @@ export default function Page() {
               <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-10">
                 <div className="p-2 space-y-1">
                   {[
+                    { value: "yesterday", label: "Yesterday" },
                     { value: "last_week", label: "Last Week" },
                     { value: "last_month", label: "Last Month" },
                     { value: "last_year", label: "Last Year" },
@@ -334,7 +343,7 @@ export default function Page() {
             )}
           </div>
           {showCustomDatePicker && (
-            <div className="flex gap-2 items-center mt-2">
+            <div className="custom-date-picker flex gap-2 items-center mt-2" ref={customDatePickerRef}>
               <input
                 type="date"
                 value={customDateRange.start}

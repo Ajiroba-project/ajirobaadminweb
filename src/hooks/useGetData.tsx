@@ -56,6 +56,7 @@ interface UserData {
   total_tickets?: number
   rda?: number
   eca?: number
+  results?: any
 
 }
 

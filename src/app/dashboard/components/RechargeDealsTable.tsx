@@ -16,6 +16,7 @@ import Loading from '@/app/components/Loading';
 import { exportToCSV } from '@/utils/exportUtils';
 import "react-datepicker/dist/react-datepicker.css";
 import ajirobalogo from '@/app/asset/logo.svg'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 function RechargeDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () => void) => void }) {
   const router = useRouter();
@@ -276,18 +277,18 @@ function RechargeDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =
               {showFilter && (
                 <div className="absolute z-20 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-56">
                   <label className="block text-xs text-gray-500 mb-1">Biller</label>
-                  <select
-                    value={billerFilter}
-                    onChange={(e) => { setBillerFilter(e.target.value); setCurrentPage(1); }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  >
-                    <option value="">All</option>
-                    <option value="dstv">DSTV</option>
-                    <option value="gotv">GOTV</option>
-                    <option value="startimes">Startimes</option>
-                    <option value="airtime">Airtime</option>
-                    <option value="electricity">Electricity</option>
-                  </select>
+                  <Select value={billerFilter} onValueChange={(val) => { setBillerFilter(val); setCurrentPage(1); }}>
+                    <SelectTrigger className="w-full h-10 rounded border px-3 selector">
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+                      <SelectItem value="dstv" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>DSTV</SelectItem>
+                      <SelectItem value="gotv" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>GOTV</SelectItem>
+                      <SelectItem value="startimes" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Startimes</SelectItem>
+                      <SelectItem value="airtime" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Airtime</SelectItem>
+                      <SelectItem value="electricity" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Electricity</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
             </div>

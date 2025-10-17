@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Brand from "@/app/asset/logo.svg";
 import { DownloadModal } from "@/app/components/DownloadModal";
-import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
+import { exportToPDF, exportToXLS, exportToPDFTable, ExportData } from "@/utils/exportUtils";
 import RaffleTicket from "@/app/dashboard/components/RaffleTicket";
 import { useGetDatanew } from "@/hooks/useGetData";
 import Cookies from "js-cookie";
@@ -137,9 +137,15 @@ function TicketDetailsContent() {
       ticketNumber: item.ticketNumber,
     }));
     setShowDownloadModal(false);
-    await exportToPDF(exportData, {
+    await exportToPDFTable(exportData, {
       title: "List of Tickets",
       fileName: "List_of_Tickets",
+      columns: [
+        { key: 'sn', header: 'S/N' },
+        { key: 'userId', header: 'User ID' },
+        { key: 'customerName', header: 'Customer Name' },
+        { key: 'ticketNumber', header: 'Ticket Number' },
+      ],
     });
   };
 

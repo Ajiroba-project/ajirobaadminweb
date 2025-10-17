@@ -8,9 +8,10 @@ import Image from "next/image";
 import Brand from "@/app/asset/logo.svg";
 import { ReportsTable } from "../dashboard/components/ReportsTable";
 import { DownloadModal } from "@/app/components/DownloadModal";
-import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
+import { exportToPDF, exportToXLS, exportToPDFTable, ExportData } from "@/utils/exportUtils";
 import { useGetDatanew } from "@/hooks/useGetData";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // TypeScript interfaces for API response
 interface ServiceMetric {
@@ -46,6 +47,19 @@ export default function Page() {
   const [sortBy, setSortBy] = useState("");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
+
+  // Debounced filter values to avoid rapid refetches
+  const [debouncedSortBy, setDebouncedSortBy] = useState("");
+  const [debouncedCustomStart, setDebouncedCustomStart] = useState("");
+  const [debouncedCustomEnd, setDebouncedCustomEnd] = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSortBy(sortBy);
+      setDebouncedCustomStart(customStart);
+      setDebouncedCustomEnd(customEnd);
+    }, 500);
+    return () => clearTimeout(t);
+  }, [sortBy, customStart, customEnd]);
 
   const [userToken] = useState(Cookies.get("token"));
   const [currentPage, setCurrentPage] = useState(1);
@@ -87,11 +101,60 @@ export default function Page() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // API integration
-  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/service_uptime_report/`;
+  // Build filter params similar to reports page
+  const getFilterParams = () => {
+    const params = new URLSearchParams();
+    switch (debouncedSortBy) {
+      case "yesterday": {
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+        params.append("filter", "custom");
+        params.append("start_date", todayStr);
+        params.append("end_date", yesterdayStr);
+        break;
+      }
+      case "last_week":
+        params.append("filter", "last_week");
+        break;
+      case "last_month":
+        params.append("filter", "last_month");
+        break;
+      case "last_year":
+        params.append("filter", "last_year");
+        break;
+      case "custom":
+        if (debouncedCustomStart && debouncedCustomEnd) {
+          params.append("filter", "custom");
+          params.append("start_date", debouncedCustomStart);
+          params.append("end_date", debouncedCustomEnd);
+        }
+        break;
+      default:
+        // all_time
+        break;
+    }
+    return params.toString();
+  };
+
+  // Stable params to avoid refetch until custom range is complete
+  const [stableParams, setStableParams] = useState("");
+  useEffect(() => {
+    const params = getFilterParams();
+    const allowRefetch = !(debouncedSortBy === "custom" && (!debouncedCustomStart || !debouncedCustomEnd));
+    if (allowRefetch) {
+      setStableParams(params);
+    }
+  }, [debouncedSortBy, debouncedCustomStart, debouncedCustomEnd]);
+
+  // API integration with params
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/service_uptime_report/?${stableParams}`;
   const {
     data: serviceUptimeData,
     isLoading: serviceUptimeLoading,
+    isFetching: serviceUptimeFetching,
     error: serviceUptimeError,
   } = useGetDatanew(url, "get_service_uptime", userToken || " ");
 
@@ -142,9 +205,15 @@ export default function Page() {
     }));
 
     setShowDownloadModal(false);
-    await exportToPDF(exportData, {
+    await exportToPDFTable(exportData, {
       title: "Service Uptime Report",
       fileName: "Service_Uptime_Report",
+      columns: [
+        { key: 'service', header: 'Service' },
+        { key: 'successrate', header: 'Success Rate' },
+        { key: 'failurerate', header: 'Failure Rate' },
+        { key: 'reasonforfailure', header: 'Reason for Failure' },
+      ],
     });
   };
 
@@ -341,9 +410,14 @@ export default function Page() {
         </div>
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 md:px-14 py-4 gap-2">
-          <h1 className="text-[#111111] text-lg font-Poppins font-semibold">
-            Service Uptime Report
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-[#111111] text-lg font-Poppins font-semibold">
+              Service Uptime Report
+            </h1>
+            {serviceUptimeFetching && (
+              <span className="inline-flex items-center text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded animate-pulse">Updating…</span>
+            )}
+          </div>
           <button
             onClick={() => setShowDownloadModal(true)}
             className="rounded-md bg-[#f25e26] px-6 py-2 text-white text-sm hover:bg-[#d63918] transition-colors"
@@ -387,17 +461,18 @@ export default function Page() {
             {/* Sort by section */}
             <div className="py-4 border-t border-gray-100">
               <div className="flex justify-end items-center gap-4">
-                <select
-                  className="border border-gray-300 rounded px-2 md:px-3 py-1 text-xs sm:text-sm bg-white"
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                >
-                  <option value="">All Time</option>
-                  <option value="last_week">Last Week</option>
-                  <option value="last_month">Last Month</option>
-                  <option value="last_year">Last Year</option>
-                  <option value="custom">Custom</option>
-                </select>
+                <Select value={sortBy} onValueChange={(val) => setSortBy(val)}>
+                  <SelectTrigger className="h-10 w-[160px] rounded border px-3 selector">
+                    <SelectValue placeholder="All Time" />
+                  </SelectTrigger>
+                  <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+                <SelectItem value="yesterday" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Yesterday</SelectItem>
+                    <SelectItem value="last_week" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Week</SelectItem>
+                    <SelectItem value="last_month" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Month</SelectItem>
+                    <SelectItem value="last_year" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Year</SelectItem>
+                    <SelectItem value="custom" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Custom</SelectItem>
+                  </SelectContent>
+                </Select>
                 {sortBy === "custom" && (
                   <>
                     <input

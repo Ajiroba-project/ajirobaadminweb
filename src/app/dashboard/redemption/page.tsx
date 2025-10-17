@@ -18,6 +18,8 @@ import { useGetDatanew } from "@/hooks/useGetData";
 import Loading from "@/app/components/Loading";
 import { Pagination } from "@/app/components/Pagination";
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 const AjirobaLogo = ({
   className = "h-4 w-4 sm:h-6 sm:w-6 md:h-8 md:w-8",
   textClassName = "text-base sm:text-lg md:text-xl",
@@ -81,53 +83,6 @@ interface WinnersTableProps {
 }
 
 
-
-const mockWinnersA = [
-  {
-    firstName: "Tania",
-    surname: "Joe",
-    email: "Taniajoe@gmail.com",
-    phone: "08190784320",
-    address: "1, Adeniyi Jones, Ikeja Lagos State",
-    ticket: "43529565",
-    productId: "5648T53",
-    product: "T-shirt",
-    status: "Delivered",
-  },
-  {
-    firstName: "Femi",
-    surname: "Tosin",
-    email: "Taniajoe@gmail.com",
-    phone: "08190784320",
-    address: "1, Adeniyi Jones, Ikeja Lagos State",
-    ticket: "43529565",
-    productId: "5648T53",
-    product: "T-shirt",
-    status: "Delivered",
-  },
-  {
-    firstName: "Tania",
-    surname: "Joe",
-    email: "Taniajoe@gmail.com",
-    phone: "08190784320",
-    address: "1, Adeniyi Jones, Ikeja Lagos State",
-    ticket: "43529565",
-    productId: "5648T53",
-    product: "T-shirt",
-    status: "Delivered",
-  },
-  {
-    firstName: "Tania",
-    surname: "Joe",
-    email: "Taniajoe@gmail.com",
-    phone: "08190784320",
-    address: "1, Adeniyi Jones, Ikeja Lagos State",
-    ticket: "43529565",
-    productId: "5648T53",
-    product: "T-shirt",
-    status: "Delivered",
-  },
-];
 
 // ... (other imports remain the same)
 const Page = () => {
@@ -298,19 +253,45 @@ const Page = () => {
       date_created: item.date_modified
     })) : [];
 
+  // State for custom date range
+  const [customDateRange, setCustomDateRange] = useState({
+    start: '',
+    end: ''
+  });
+  const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
+
   // Function to filter data based on date
-  const filterDataByDate = (data: any[], filterType: string) => {
+  const filterDataByDate = (data: any[], filterType: string, customRange?: { start: string; end: string }) => {
     if (!filterType) return data;
     
     const now = new Date();
     let filterDate: Date;
+    let endDate: Date = now;
     
     switch (filterType) {
+      case "yesterday":
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        yesterday.setHours(0, 0, 0, 0);
+        filterDate = yesterday;
+        endDate = new Date(yesterday);
+        endDate.setHours(23, 59, 59, 999);
+        break;
       case "last_week":
         filterDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         break;
       case "last_month":
         filterDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case "last_year":
+        filterDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+        break;
+      case "custom":
+        const range = customRange || customDateRange;
+        if (!range.start || !range.end) return data;
+        filterDate = new Date(range.start);
+        endDate = new Date(range.end);
+        endDate.setHours(23, 59, 59, 999);
         break;
       default:
         return data;
@@ -318,7 +299,7 @@ const Page = () => {
     
     return data.filter((item: any) => {
       const itemDate = new Date(item.date_created);
-      return itemDate >= filterDate;
+      return itemDate >= filterDate && itemDate <= endDate;
     });
   };
 
@@ -339,6 +320,11 @@ const Page = () => {
   const [dateFilterrd, setDateFilterrd] = useState("");
   const [modalOpenrd, setModalOpenrd] = useState(false);
   const [selectedRowrd, setSelectedRowrd] = useState<Winner | null>(null);
+  const [customDateRangeRd, setCustomDateRangeRd] = useState({
+    start: '',
+    end: ''
+  });
+  const [showCustomDatePickerRd, setShowCustomDatePickerRd] = useState(false);
 
   const columnsB: Column[] = [
     {
@@ -467,7 +453,7 @@ const Page = () => {
       w.status.toLowerCase().includes(search.toLowerCase())
   );
 
-    const filteredRedeemed = filterDataByDate(mockRedeemed || [], dateFilterrd);
+    const filteredRedeemed = filterDataByDate(mockRedeemed || [], dateFilterrd, customDateRangeRd);
   
   const filteredWinnersA = filteredRedeemed?.filter(
     (w) =>
@@ -539,9 +525,13 @@ const Page = () => {
     if (tabIndex === 0) {
       setSearchrd("");
       setDateFilterrd("");
+      setShowCustomDatePickerRd(false);
+      setCustomDateRangeRd({ start: '', end: '' });
     } else {
       setSearch("");
       setDateFilter("");
+      setShowCustomDatePicker(false);
+      setCustomDateRange({ start: '', end: '' });
     }
   };
 
@@ -612,8 +602,7 @@ const Page = () => {
               ) : (
                 <div className="py-4 border-b text-[#353131] text-sm font-normal font-Poppins">
                   Below are the customer information of winners that have
-                  redeemed their auction wins and have been physically by
-                  delivery.
+                  redeemed their auction wins by physical delivery.
                 </div>
               )}
 
@@ -652,16 +641,57 @@ const Page = () => {
                     </span>
                   </div>
                   <div className="flex gap-2">
-                    <select
-                      value={dateFilter}
-                      onChange={(e) => setDateFilter(e.target.value)}
-                      className="px-4 py-2 border border-[#E9E9E9] rounded-md bg-white text-[#353131] text-sm font-Poppins focus:outline-none focus:ring-2 focus:ring-[#F25E26]"
-                    >
-                      <option value="">Sort by</option>
-                      <option value="last_week">Last Week</option>
-                      <option value="last_month">Last Month</option>
-                    </select>
+                    <Select value={dateFilter} onValueChange={(val) => {
+                        setDateFilter(val);
+                        if (val === 'custom') {
+                          setShowCustomDatePicker(true);
+                        } else {
+                          setShowCustomDatePicker(false);
+                        }
+                      }}>
+                      <SelectTrigger className="h-10 w-[160px] rounded border px-3 selector">
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+                        <SelectItem value="yesterday" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Yesterday</SelectItem>
+                        <SelectItem value="last_week" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Week</SelectItem>
+                        <SelectItem value="last_month" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Month</SelectItem>
+                        <SelectItem value="last_year" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Year</SelectItem>
+                        <SelectItem value="custom" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Custom</SelectItem>
+                      </SelectContent>
+                    </Select>
                     
+                    {showCustomDatePicker && (
+                      <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center bg-white border border-[#E9E9E9] rounded-md p-2 min-w-0">
+                        <div className="flex flex-col sm:flex-row gap-2 items-center min-w-0">
+                          <input
+                            type="date"
+                            value={customDateRange.start}
+                            onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
+                            className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#F25E26] min-w-0"
+                            placeholder="Start date"
+                          />
+                          <span className="text-gray-500 text-sm hidden sm:inline">to</span>
+                          <input
+                            type="date"
+                            value={customDateRange.end}
+                            onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
+                            className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#F25E26] min-w-0"
+                            placeholder="End date"
+                          />
+                        </div>
+                        <button
+                          onClick={() => {
+                            setShowCustomDatePicker(false);
+                            setDateFilter('');
+                            setCustomDateRange({ start: '', end: '' });
+                          }}
+                          className="px-2 py-1 text-xs text-gray-500 hover:text-red-500 flex-shrink-0"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -699,15 +729,57 @@ const Page = () => {
                     </span>
                   </div>
                   <div className="flex gap-2">
-                    <select
-                      value={dateFilterrd}
-                      onChange={(e) => setDateFilterrd(e.target.value)}
-                      className="px-4 py-2 border border-[#E9E9E9] rounded-md bg-white text-[#353131] text-sm font-Poppins focus:outline-none focus:ring-2 focus:ring-[#F25E26]"
-                    >
-                      <option value="">Sort by</option>
-                      <option value="last_week">Last Week</option>
-                      <option value="last_month">Last Month</option>
-                    </select>
+                    <Select value={dateFilterrd} onValueChange={(val) => {
+                        setDateFilterrd(val);
+                        if (val === 'custom') {
+                          setShowCustomDatePickerRd(true);
+                        } else {
+                          setShowCustomDatePickerRd(false);
+                        }
+                      }}>
+                      <SelectTrigger className="h-10 w-[160px] rounded border px-3 selector">
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+                        <SelectItem value="yesterday" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Yesterday</SelectItem>
+                        <SelectItem value="last_week" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Week</SelectItem>
+                        <SelectItem value="last_month" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Month</SelectItem>
+                        <SelectItem value="last_year" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Year</SelectItem>
+                        <SelectItem value="custom" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Custom</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    {showCustomDatePickerRd && (
+                      <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center bg-white border border-[#E9E9E9] rounded-md p-2 min-w-0">
+                        <div className="flex flex-col sm:flex-row gap-2 items-center min-w-0">
+                          <input
+                            type="date"
+                            value={customDateRangeRd.start}
+                            onChange={(e) => setCustomDateRangeRd(prev => ({ ...prev, start: e.target.value }))}
+                            className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#F25E26] min-w-0"
+                            placeholder="Start date"
+                          />
+                          <span className="text-gray-500 text-sm hidden sm:inline">to</span>
+                          <input
+                            type="date"
+                            value={customDateRangeRd.end}
+                            onChange={(e) => setCustomDateRangeRd(prev => ({ ...prev, end: e.target.value }))}
+                            className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#F25E26] min-w-0"
+                            placeholder="End date"
+                          />
+                        </div>
+                        <button
+                          onClick={() => {
+                            setShowCustomDatePickerRd(false);
+                            setDateFilterrd('');
+                            setCustomDateRangeRd({ start: '', end: '' });
+                          }}
+                          className="px-2 py-1 text-xs text-gray-500 hover:text-red-500 flex-shrink-0"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

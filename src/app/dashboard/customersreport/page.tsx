@@ -7,9 +7,11 @@ import Link from "next/link";
 import Image from "next/image";
 import Brand from "@/app/asset/logo.svg";
 import { DownloadModal } from "@/app/components/DownloadModal";
-import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
+import { exportToPDF, exportToXLS, exportToPDFTable, ExportData } from "@/utils/exportUtils";
 import { ReportsTable } from "../components/ReportsTable";
 import { useGetDatanew } from "@/hooks/useGetData";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import axios from "axios";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 
 export default function Page() {
@@ -38,7 +40,16 @@ export default function Page() {
   // Build query params for backend filtering
   const buildQueryParams = () => {
     const params = new URLSearchParams();
-    if (dateFilter === "last_week") params.append("filter", "last_week");
+    if (dateFilter === "yesterday") {
+      const today = new Date();
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+      params.append("filter", "custom");
+      params.append("start_date", todayStr);
+      params.append("end_date", yesterdayStr);
+    } else if (dateFilter === "last_week") params.append("filter", "last_week");
     else if (dateFilter === "last_month") params.append("filter", "last_month");
     else if (dateFilter === "last_year") params.append("filter", "last_year");
     else if (dateFilter === "custom" && customDateRange.start && customDateRange.end) {
@@ -50,7 +61,9 @@ export default function Page() {
     return params.toString();
   };
 
-  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/customer_statistics_report/?${buildQueryParams()}`;
+  const paramsString = buildQueryParams();
+  const isClient = typeof window !== 'undefined';
+  const enabled = (isClient && !!userToken) && (dateFilter !== 'custom' || (customDateRange.start && customDateRange.end));
 
   type CustomerApiItem = {
     id: string;
@@ -79,11 +92,22 @@ export default function Page() {
     };
   }
 
-  const { data: apiRaw, isLoading, error } = useGetDatanew(
-    url,
-    "get_customer_statistics_report",
-    userToken || " "
-  );
+  const { data: apiRaw, isLoading, isFetching, error } = useQuery({
+    queryKey: ["get_customer_statistics_report", paramsString],
+    queryFn: async () => {
+      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/customer_statistics_report/?${paramsString}`;
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Token ${userToken}`
+        }
+      });
+      return response.data;
+    },
+    refetchOnWindowFocus: false,
+    staleTime: 5000,
+    placeholderData: keepPreviousData,
+    enabled: !!enabled,
+  });
 
   const api = apiRaw as unknown as CustomerApiResponse | undefined;
 
@@ -242,60 +266,177 @@ export default function Page() {
 
   // Download handlers
   const handleDownloadPDF = async () => {
-    const exportData = displayData.map((item, idx) => ({
-      S_N: idx + 1,
-      Customer_Name: item.customername,
-      Wallet_Balance: item.walletbalance,
-      Phone_Number: item.phonenumber,
-      Email: item.email,
-      Gender: item.gender,
-      Address: item.address,
-      State: item.state,
-      User_ID: item.userid,
-      Sign_Up_Date_Time: item.signupdatetime,
-    }));
-    setShowDownloadModal(false);
-    await exportToPDF(exportData, {
-      title: "Customer Statistics Report",
-      fileName: "Customer_Statistics_Report"
-    });
+    try {
+      setShowDownloadModal(false);
+
+      // Fetch all pages to export full dataset
+      const allRows: any[] = [];
+      const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/customer_statistics_report/`;
+      let nextUrl: string | null = `${baseUrl}?${paramsString}`;
+      const headers = { headers: { Authorization: `Token ${userToken}` } } as const;
+
+      for (let i = 0; i < 200 && nextUrl; i++) {
+        const resp: any = await axios.get(nextUrl, headers);
+        const res: any = resp.data;
+        const pageItems: any[] = res?.results?.data || [];
+
+        // Map API items to export rows
+        pageItems.forEach((item) => {
+          const d = (item.customer_details || {}) as any;
+          const genderStr = d.gender === true ? "Male" : d.gender === false ? "Female" : "N/A";
+          const isoDate = d.signup_date || "";
+          const displayDate = isoDate
+            ? new Date(isoDate).toLocaleString("en-US", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              })
+            : "";
+
+          allRows.push({
+            customername: d.customer_name || "",
+            walletbalance: Number(d.waller_balance || 0),
+            phonenumber: d.phone_no || "",
+            email: d.email || "",
+            gender: genderStr.toLowerCase(),
+            address: d.address || "",
+            state: d.state || "",
+            userid: d.user_id || "",
+            signupdatetime: displayDate,
+          });
+        });
+
+        nextUrl = res?.next || null;
+      }
+
+      if (allRows.length === 0) {
+        alert("No data available to export");
+        return;
+      }
+
+      // Convert to ExportData list with human-friendly headers
+      const exportData: ExportData[] = allRows.map((row, idx) => ({
+        S_N: idx + 1,
+        Customer_Name: row.customername,
+        Wallet_Balance: row.walletbalance,
+        Phone_Number: row.phonenumber,
+        Email: row.email,
+        Gender: row.gender,
+        Address: row.address,
+        State: row.state,
+        User_ID: row.userid,
+        Sign_Up_Date_Time: row.signupdatetime,
+      }));
+
+      await exportToPDFTable(exportData, {
+        title: "Customer Statistics Report",
+        fileName: "Customer_Statistics_Report",
+        columns: [
+          { key: 'S_N', header: 'S/N' },
+          { key: 'Customer_Name', header: 'Customer Name' },
+          { key: 'Wallet_Balance', header: 'Wallet Balance (₦)' },
+          { key: 'Phone_Number', header: 'Phone Number' },
+          { key: 'Email', header: 'Email' },
+          { key: 'Gender', header: 'Gender' },
+          { key: 'Address', header: 'Address' },
+          { key: 'State', header: 'State' },
+          { key: 'User_ID', header: 'User ID' },
+          { key: 'Sign_Up_Date_Time', header: 'Sign Up Date & Time' },
+        ],
+      });
+    } catch (err) {
+      alert('Failed to prepare PDF export.');
+    }
   };
 
-  const handleDownloadXLS = () => {
-    const exportData = displayData.map((item, idx) => ({
-      S_N: idx + 1,
-      Customer_Name: item.customername,
-      Wallet_Balance: item.walletbalance,
-      Phone_Number: item.phonenumber,
-      Email: item.email,
-      Gender: item.gender,
-      Address: item.address,
-      State: item.state,
-      User_ID: item.userid,
-      Sign_Up_Date_Time: item.signupdatetime,
-    }));
-    exportToXLS(exportData, {
-      title: "Customer Statistics Report",
-      fileName: "Customer_Statistics_Report",
-      columns: [
-        { key: 'S_N', header: 'S/N', width: 8 },
-        { key: 'Customer_Name', header: 'Customer Name', width: 20 },
-        { key: 'Wallet_Balance', header: 'Wallet Balance (₦)', width: 18 },
-        { key: 'Phone_Number', header: 'Phone Number', width: 15 },
-        { key: 'Email', header: 'Email', width: 25 },
-        { key: 'Gender', header: 'Gender', width: 10 },
-        { key: 'Address', header: 'Address', width: 30 },
-        { key: 'State', header: 'State', width: 12 },
-        { key: 'User_ID', header: 'User ID', width: 12 },
-        { key: 'Sign_Up_Date_Time', header: 'Sign Up Date & Time', width: 20 },
-      ],
-      summaryRows: [
-        { label: 'Total Wallet Balance', value: `₦${totalWallet.toLocaleString()}` },
-        { label: 'Total Records', value: exportData.length },
-        { label: 'Generated', value: new Date().toLocaleString() },
-      ]
-    });
-    setShowDownloadModal(false);
+  const handleDownloadXLS = async () => {
+    try {
+      setShowDownloadModal(false);
+
+      // Fetch all pages
+      const allRows: any[] = [];
+      const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/customer_statistics_report/`;
+      let nextUrl: string | null = `${baseUrl}?${paramsString}`;
+      const headers = { headers: { Authorization: `Token ${userToken}` } } as const;
+
+      for (let i = 0; i < 200 && nextUrl; i++) {
+        const resp: any = await axios.get(nextUrl, headers);
+        const res: any = resp.data;
+        const pageItems: any[] = res?.results?.data || [];
+        pageItems.forEach((item) => {
+          const d = (item.customer_details || {}) as any;
+          const genderStr = d.gender === true ? "Male" : d.gender === false ? "Female" : "N/A";
+          const isoDate = d.signup_date || "";
+          const displayDate = isoDate
+            ? new Date(isoDate).toLocaleString("en-US", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              })
+            : "";
+          allRows.push({
+            customername: d.customer_name || "",
+            walletbalance: Number(d.waller_balance || 0),
+            phonenumber: d.phone_no || "",
+            email: d.email || "",
+            gender: genderStr.toLowerCase(),
+            address: d.address || "",
+            state: d.state || "",
+            userid: d.user_id || "",
+            signupdatetime: displayDate,
+          });
+        });
+        nextUrl = res?.next || null;
+      }
+
+      if (allRows.length === 0) {
+        alert('No data available to export');
+        return;
+      }
+
+      const exportData: ExportData[] = allRows.map((item, idx) => ({
+        S_N: idx + 1,
+        Customer_Name: item.customername,
+        Wallet_Balance: item.walletbalance,
+        Phone_Number: item.phonenumber,
+        Email: item.email,
+        Gender: item.gender,
+        Address: item.address,
+        State: item.state,
+        User_ID: item.userid,
+        Sign_Up_Date_Time: item.signupdatetime,
+      }));
+
+      exportToXLS(exportData, {
+        title: "Customer Statistics Report",
+        fileName: "Customer_Statistics_Report",
+        columns: [
+          { key: 'S_N', header: 'S/N', width: 8 },
+          { key: 'Customer_Name', header: 'Customer Name', width: 20 },
+          { key: 'Wallet_Balance', header: 'Wallet Balance (₦)', width: 18 },
+          { key: 'Phone_Number', header: 'Phone Number', width: 15 },
+          { key: 'Email', header: 'Email', width: 25 },
+          { key: 'Gender', header: 'Gender', width: 10 },
+          { key: 'Address', header: 'Address', width: 30 },
+          { key: 'State', header: 'State', width: 12 },
+          { key: 'User_ID', header: 'User ID', width: 12 },
+          { key: 'Sign_Up_Date_Time', header: 'Sign Up Date & Time', width: 20 },
+        ],
+        summaryRows: [
+          { label: 'Total Wallet Balance', value: `₦${allRows.reduce((sum, r) => sum + Number(r.walletbalance || 0), 0).toLocaleString()}` },
+          { label: 'Total Records', value: exportData.length },
+          { label: 'Generated', value: new Date().toLocaleString() },
+        ]
+      });
+    } catch (err) {
+      alert('Failed to prepare Excel export.');
+    }
   };
 
   return (
@@ -312,9 +453,14 @@ export default function Page() {
         </div>
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 md:px-14 py-4 gap-2">
-          <h1 className="text-[#111111] text-lg font-Poppins font-semibold">
-            Customer Statistics Report
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-[#111111] text-lg font-Poppins font-semibold">
+              Customer Statistics Report
+            </h1>
+            {isFetching && (
+              <span className="inline-flex items-center text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded animate-pulse">Updating…</span>
+            )}
+          </div>
           <button
             onClick={() => setShowDownloadModal(true)}
             className="rounded-md bg-[#f25e26] px-6 py-2 text-white text-sm hover:bg-[#d63918] transition-colors"
@@ -377,6 +523,7 @@ export default function Page() {
               <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-10">
                 <div className="p-2 space-y-1">
                   {[
+                    { value: 'yesterday', label: 'Yesterday' },
                     { value: 'last_week', label: 'Last Week' },
                     { value: 'last_month', label: 'Last Month' },
                     { value: 'last_year', label: 'Last Year' },

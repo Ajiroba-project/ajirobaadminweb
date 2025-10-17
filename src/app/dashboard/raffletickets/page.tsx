@@ -8,7 +8,7 @@ import Image from "next/image";
 import Brand from "@/app/asset/logo.svg";
 
 import { DownloadModal } from "@/app/components/DownloadModal";
-import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
+import { exportToPDF, exportToXLS, exportToPDFTable, ExportData } from "@/utils/exportUtils";
 import { ReportsTable } from "../components/ReportsTable";
 import RaffleTicket from "../components/RaffleTicket";
 import { useGetDatanew } from "@/hooks/useGetData";
@@ -96,7 +96,17 @@ export default function Page() {
 
   const buildQueryParams = () => {
     const params = new URLSearchParams();
-    if (dateFilter === "last_week") params.append("filter", "last_week");
+    if (dateFilter === "yesterday") {
+      const today = new Date();
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+      params.append("filter", "custom");
+      params.append("start_date", todayStr);
+      params.append("end_date", yesterdayStr);
+    }
+    else if (dateFilter === "last_week") params.append("filter", "last_week");
     else if (dateFilter === "last_month") params.append("filter", "last_month");
     else if (dateFilter === "last_year") params.append("filter", "last_year");
     else if (dateFilter === "custom" && customDateRange.start && customDateRange.end) {
@@ -285,9 +295,23 @@ export default function Page() {
       redemptionDate: item.redemptionDate,
     }));
     setShowDownloadModal(false);
-    await exportToPDF(exportData, {
+    await exportToPDFTable(exportData, {
       title: "Raffle Winning Report",
       fileName: "Raffle_Winning_Report",
+      columns: [
+        { key: 'name', header: 'Name' },
+        { key: 'phone', header: 'Phone' },
+        { key: 'email', header: 'Email' },
+        { key: 'drawDate', header: 'Draw Date' },
+        { key: 'drawTime', header: 'Draw Time' },
+        { key: 'ticketNumber', header: 'Ticket Number' },
+        { key: 'ticketAmount', header: 'Ticket Amount' },
+        { key: 'product', header: 'Product' },
+        { key: 'productId', header: 'Product ID' },
+        { key: 'winningValue', header: 'Winning Value' },
+        { key: 'status', header: 'Status' },
+        { key: 'redemptionDate', header: 'Redemption Date' },
+      ],
     });
   };
 
@@ -476,6 +500,7 @@ export default function Page() {
               <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-10">
                 <div className="p-2 space-y-1">
               {[
+                    { value: 'yesterday', label: 'Yesterday' },
                     { value: 'last_week', label: 'Last Week' },
                     { value: 'last_month', label: 'Last Month' },
                     { value: 'last_year', label: 'Last Year' },

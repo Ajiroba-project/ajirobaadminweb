@@ -553,7 +553,7 @@ export const Auction = () => {
                             }
                           }}
                           dateFormat="d MMMM, yyyy"
-                          placeholderText="22 June, 2025"
+                          placeholderText={new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                           className="w-full min-w-[220px] px-3 h-12 focus:text-black border rounded"
                           withPortal
                           popperClassName="z-50"

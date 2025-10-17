@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Pagination } from '@/app/components/Pagination';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 // Define a generic RowData type to represent the data structure
 interface RowData {
@@ -108,12 +109,30 @@ export const ReportsTable = <T extends RowData>({
               >
                 {columns.map((col, colIdx) => {
                   const isLastColumn = colIdx === columns.length - 1;
+
+                  //  console.log(col.key);
                   return (
                     <td
                       key={col.key}
                       className={`px-3 py-2 ${!isLastColumn ? 'border-r border-[#E9E9E9]' : ''} whitespace-nowrap ${cellClassName} ${col.cellClassName || ''} text-sm`}
                     >
-                      {col.render ? col.render(row, idx) : row[col.key] ?? 'N/A'}
+                 
+                      {col.render 
+                        ? col.render(row, idx) 
+                        : col.key.toLowerCase().includes('amount') || col.key.toLowerCase().includes('gross') || col.key.toLowerCase().includes('profit') 
+                        || col.key.toLowerCase().includes('winningvalue') || col.key.toLowerCase().includes('ticketprice')
+                        || col.key.toLowerCase().includes('ticketgtv')
+                        || col.key.toLowerCase().includes('ticketrda')
+                        || col.key.toLowerCase().includes('ticketeca')    || col.key.toLowerCase().includes('sellingprice')
+                        || col.key.toLowerCase().includes('discount')
+                        || col.key.toLowerCase().includes('costprice')
+                        || col.key.toLowerCase().includes('profit')
+                        || col.key.toLowerCase().includes('selling_price')
+                        || col.key.toLowerCase().includes('cost_price')
+                        || col.key.toLowerCase().includes('total_cost')
+                          ? formatCurrency(row[col.key]) 
+                          : row[col.key] ?? 'N/A'
+                      }
                     </td>
                   );
                 })}
@@ -143,8 +162,22 @@ export const ReportsTable = <T extends RowData>({
                 >
                   {idx === 0
                     ? 'TOTAL'
-                    : col.sum
-                    ? getColumnSum(col.key)
+                    :  col.sum
+                    ? col.key.toLowerCase().includes('amount') || col.key.toLowerCase().includes('gross') || col.key.toLowerCase().includes('profit') || col.key.toLowerCase().includes('winningvalue') || col.key.toLowerCase().includes('ticketprice')
+                    || col.key.toLowerCase().includes('ticketgtv')
+                    || col.key.toLowerCase().includes('ticketrda')
+                    || col.key.toLowerCase().includes('ticketeca') 
+                    || col.key.toLowerCase().includes('sellingprice')
+                    || col.key.toLowerCase().includes('discount')
+                    || col.key.toLowerCase().includes('costprice')
+                    || col.key.toLowerCase().includes('profit')
+                    || col.key.toLowerCase().includes('selling_price')
+                    || col.key.toLowerCase().includes('cost_price')
+                    || col.key.toLowerCase().includes('number_in_stock')
+                    || col.key.toLowerCase().includes('total_cost')
+                   
+                      ? formatCurrency(getColumnSum(col.key))
+                      : getColumnSum(col.key)
                     : ''}
                 </td>
               ))}

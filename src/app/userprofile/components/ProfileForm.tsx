@@ -17,6 +17,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/store'
 import Cookies from 'js-cookie';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type ProfileFormValues = {
   first_name: string;
@@ -355,24 +356,24 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ userData }) => {
             render={({ field }) => (
               <div className='flex flex-col'>
                 <label className='py-2 text-sm sm:text-base font-medium text-[#111111]'>State*</label>
-                <select
-                  {...register('state', { required: true })}
-                  onChange={(event) => {
-                    const value = event.target.value;
+                <Select 
+                  value={field.value} 
+                  onValueChange={(value) => {
                     field.onChange(value);
                     handleStateChange(value);
                   }}
-                  className='w-full h-12 rounded border px-3 sm:px-4 focus:text-black focus:border-[#F25E26] focus:outline-none transition-colors'
                 >
-                  <option value='' className='text-gray-500'>
-                    Select a state
-                  </option>
-                  {state_and_LGA.map((state) => (
-                    <option key={state.state} className='text-[#111111]' value={state.state}>
-                      {state.state}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className='w-full h-12 rounded border px-3 sm:px-4 focus:text-black focus:border-[#F25E26] focus:outline-none transition-colors'>
+                    <SelectValue placeholder="Select a state" />
+                  </SelectTrigger>
+                  <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+                    {state_and_LGA.map((state) => (
+                      <SelectItem key={state.state} value={state.state} className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>
+                        {state.state}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {errors?.state?.message && (
                   <div className='pt-1 text-xs sm:text-sm text-red-700'>
                     {String(errors.state.message)}

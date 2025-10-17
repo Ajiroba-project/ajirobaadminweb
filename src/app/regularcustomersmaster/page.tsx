@@ -8,7 +8,7 @@ import Image from "next/image";
 import Brand from "@/app/asset/logo.svg";
 import { ReportsTable } from "../dashboard/components/ReportsTable";
 import { DownloadModal } from "@/app/components/DownloadModal";
-import { exportToPDF, exportToXLS, ExportData } from "@/utils/exportUtils";
+import { exportToPDF, exportToXLS, exportToPDFTable, ExportData } from "@/utils/exportUtils";
 import { useGetDatanew } from "@/hooks/useGetData";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 
@@ -249,9 +249,28 @@ export default function Page() {
     }));
 
     setShowDownloadModal(false);
-    await exportToPDF(exportData, {
+    await exportToPDFTable(exportData, {
       title: "Regular Customers Master Report",
-      fileName: "Regular_Customers_Master_Report"
+      fileName: "Regular_Customers_Master_Report",
+      columns: [
+        { key: 'customername', header: 'Customer Name' },
+        { key: 'email', header: 'Email' },
+        { key: 'phone', header: 'Phone' },
+        { key: 'gender', header: 'Gender' },
+        { key: 'userid', header: 'User ID' },
+        { key: 'productId', header: 'Product ID' },
+        { key: 'productname', header: 'Product Name' },
+        { key: 'costprice', header: 'Cost Price' },
+        { key: 'sellingprice', header: 'Selling Price' },
+        { key: 'discountprice', header: 'Discount Price' },
+        { key: 'profit', header: 'Profit' },
+        { key: 'vat', header: 'VAT' },
+        { key: 'purchasetime', header: 'Purchase Time' },
+        { key: 'modeofpayment', header: 'Mode of Payment' },
+        { key: 'status', header: 'Status' },
+        { key: 'quantity', header: 'Quantity' },
+        { key: 'total_cost', header: 'Total Cost' },
+      ],
     });
   };
 

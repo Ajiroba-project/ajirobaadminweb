@@ -10,7 +10,7 @@ export const Upload =()=>{
 
     return (
  <div>
-  <div className="bg-[#F6F6F6] border border-b-[#e9dddd] h-32 flex justify-center items-center sticky top-0 z-20">
+  <div className="bg-[#F6F6F6] border border-b-[#e9dddd] h-20 flex justify-center items-center sticky top-0 z-20">
       <h1 className="xl:text-2xl 2xl:text-2xl md:text-2xl text-base leading-tight tracking-tight font-Poppins font-semibold">Product Upload</h1>
     </div>
 
