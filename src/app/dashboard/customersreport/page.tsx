@@ -13,6 +13,11 @@ import { useGetDatanew } from "@/hooks/useGetData";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import axios from "axios";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { formatCurrency } from "@/utils/formatCurrency";
+import PointsHistoryModal from "@/app/components/PointsHistoryModal";
+
+
 
 export default function Page() {
   const router = useRouter();
@@ -34,6 +39,9 @@ export default function Page() {
   const [currentTime, setCurrentTime] = useState<string>("");
   const [hasNext, setHasNext] = useState(false);
   const [hasPrev, setHasPrev] = useState(false);
+  const [pointsUserId, setPointsUserId] = useState<string | undefined>(undefined);
+  const [isPointsModalOpen, setIsPointsModalOpen] = useState<boolean>(false);
+  const [mounted, setMounted] = useState(false);
 
   useAuthMiddleware(router);
 
@@ -68,9 +76,11 @@ export default function Page() {
   type CustomerApiItem = {
     id: string;
     customer_details: {
+      id?: string;
       customer_name?: string;
-      waller_balance?: number;
+      wallet_balance?: number;
       phone_no?: string;
+      wallet_point?: number;
       email?: string;
       gender?: boolean;
       address?: string;
@@ -135,10 +145,19 @@ export default function Page() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Prevent hydration mismatch for client-only dynamic elements
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // --- Replace the filteredRegularCustomers and columnsRegular with customer-centric data and columns ---
 
+  // console.log(api?.results?.data);
   const customerData = (api?.results?.data || []).map((item) => {
     const d = item.customer_details || {};
+    const id = item.id;
+    // console.log(item, 'itemokkfkfkffkfkfk');
+    // console.log(id, 'idokkfkfkffkfkfk');
     const genderStr = d.gender === true ? "Male" : d.gender === false ? "Female" : "N/A";
     // Keep ISO for potential sorting; render formatted in UI via column render if needed
     const isoDate = d.signup_date || "";
@@ -153,9 +172,11 @@ export default function Page() {
         })
       : "";
     return {
+      id: id,
       customername: d.customer_name || "",
-      walletbalance: Number(d.waller_balance || 0),
+      walletbalance: Number(d.wallet_balance || 0),
       phonenumber: d.phone_no || "",
+      wallet_point: <p className="text-[#F25E26] hover:text-[#d63918] underline cursor-pointer" onClick={() => { setPointsUserId(id || ""); setIsPointsModalOpen(true); }}>{(d.wallet_point || 0)}</p>,
       email: d.email || "",
       gender: genderStr.toLowerCase(),
       address: d.address || "",
@@ -169,8 +190,9 @@ export default function Page() {
   const columns = [
     { key: "index", label: "S/N", render: (_: any, idx: number) => idx + 1 },
     { key: "customername", label: "CUSTOMER NAME" },
-    { key: "walletbalance", label: "WALLET BALANCE (₦)", render: (row: any) => row.walletbalance.toLocaleString() },
+    { key: "walletbalance", label: "WALLET BALANCE (₦)", render: (row: any) => formatCurrency(row.walletbalance) },
     { key: "phonenumber", label: "PHONE NUMBER" },
+    {key: "wallet_point", label: "AJIROBA POINTS "},
     { key: "email", label: "EMAIL" },
     { key: "gender", label: "GENDER" },
     { key: "address", label: "ADDRESS" },
@@ -439,6 +461,10 @@ export default function Page() {
     }
   };
 
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <section className="flex flex-col">
       <div className="w-full bg-gray-100">
@@ -457,7 +483,7 @@ export default function Page() {
             <h1 className="text-[#111111] text-lg font-Poppins font-semibold">
               Customer Statistics Report
             </h1>
-            {isFetching && (
+            {mounted && isFetching && (
               <span className="inline-flex items-center text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded animate-pulse">Updating…</span>
             )}
           </div>
@@ -500,121 +526,38 @@ export default function Page() {
         </div>
 
         <div className="w-full md:w-auto flex gap-4">
-         
-
-          {/* Sort by dropdown */}
-          <div className="relative sort-dropdown">
-            <button
-              onClick={() => setShowSortDropdown(!showSortDropdown)}
-              className="w-full md:w-auto px-4 py-2 border border-[#E9E9E9] rounded-md bg-white text-[#353131] text-sm font-Poppins focus:outline-none focus:ring-2 focus:ring-[#F25E26] flex items-center justify-between min-w-[120px]"
-            >
-              {dateFilter ? dateFilter.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Sort by'}
-              <svg
-                className={`ml-2 h-4 w-4 transition-transform ${showSortDropdown ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            
-            {showSortDropdown && (
-              <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-10">
-                <div className="p-2 space-y-1">
-                  {[
-                    { value: 'yesterday', label: 'Yesterday' },
-                    { value: 'last_week', label: 'Last Week' },
-                    { value: 'last_month', label: 'Last Month' },
-                    { value: 'last_year', label: 'Last Year' },
-                    { value: 'custom', label: 'Custom' }
-                  ].map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => {
-                        setDateFilter(option.value);
-                        if (option.value === 'custom') {
-                          setShowCustomDatePicker(true);
-                          setShowSortDropdown(false);
-                        } else {
-                          setShowSortDropdown(false);
-                        }
-                      }}
-                      className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-50 ${
-                        dateFilter === option.value ? 'bg-[#F25E26] text-white' : 'text-[#353131]'
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                  {dateFilter && (
-                    <div className="pt-2 border-t border-gray-200">
-                      <button
-                        onClick={() => {
-                          setDateFilter('');
-                          setCustomDateRange({ start: '', end: '' });
-                          setShowSortDropdown(false);
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded"
-                      >
-                        Clear filter
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Custom Date Picker */}
-            {showCustomDatePicker && (
-              <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-20 p-4">
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-[#353131]">Select Date Range</h3>
-                  <div className="space-y-2">
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">Start Date</label>
-                      <input
-                        type="date"
-                        value={customDateRange.start}
-                        onChange={(e) => setCustomDateRange({ ...customDateRange, start: e.target.value })}
-                        className="w-full px-3 py-2 border border-[#E9E9E9] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#F25E26]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">End Date</label>
-                      <input
-                        type="date"
-                        value={customDateRange.end}
-                        onChange={(e) => setCustomDateRange({ ...customDateRange, end: e.target.value })}
-                        className="w-full px-3 py-2 border border-[#E9E9E9] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#F25E26]"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-2 pt-2">
-                    <button
-                      onClick={() => {
-                        if (customDateRange.start && customDateRange.end) {
-                          setShowCustomDatePicker(false);
-                        }
-                      }}
-                      className="flex-1 px-3 py-2 bg-[#F25E26] text-white text-sm rounded-md hover:bg-[#d63918]"
-                    >
-                      Apply
-                    </button>
-                    <button
-                      onClick={() => {
-                        setCustomDateRange({ start: '', end: '' });
-                        setShowCustomDatePicker(false);
-                      }}
-                      className="flex-1 px-3 py-2 border border-[#E9E9E9] text-[#353131] text-sm rounded-md hover:bg-gray-50"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+          {/* Date range filter */}
+          <div className="">
+            <Select value={dateFilter} onValueChange={(val) => setDateFilter(val)}>
+              <SelectTrigger className="h-10 w-[160px] rounded border px-3 selector">
+                <SelectValue placeholder="All Time" />
+              </SelectTrigger>
+              <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+                <SelectItem value="yesterday" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Yesterday</SelectItem>
+                <SelectItem value="last_week" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Week</SelectItem>
+                <SelectItem value="last_month" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Month</SelectItem>
+                <SelectItem value="last_year" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Year</SelectItem>
+                <SelectItem value="custom" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Custom</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+          {dateFilter === "custom" && (
+            <>
+              <input
+                type="date"
+                className="border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm"
+                value={customDateRange.start}
+                onChange={(e) => setCustomDateRange({ ...customDateRange, start: e.target.value })}
+              />
+              <span className="mx-1 text-xs sm:text-sm">to</span>
+              <input
+                type="date"
+                className="border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm"
+                value={customDateRange.end}
+                onChange={(e) => setCustomDateRange({ ...customDateRange, end: e.target.value })}
+              />
+            </>
+          )}
         </div>
       </div>
 
@@ -642,10 +585,11 @@ export default function Page() {
             </thead>
             <tbody>
               {displayData.map((row, idx) => (
+                // console.log(row),
                 <tr key={idx}>
                   {columns.map((col, cidx) => (
                     <td key={col.key} className="border px-2 py-2 whitespace-nowrap">
-                      {col.render ? col.render(row, idx) : row[col.key as keyof typeof row]}
+                      {col.render ? col.render(row, idx) : (col.key === "walletbalance" ? formatCurrency(row[col.key as keyof typeof row]) : row[col.key as keyof typeof row])}
                     </td>
                   ))}
                 </tr>
@@ -661,7 +605,7 @@ export default function Page() {
               {/* Total row */}
               <tr>
                 <td className="border px-2 py-2 font-bold" colSpan={2}>TOTAL</td>
-                <td className="border px-2 py-2 font-bold">{totalWallet.toLocaleString()}</td>
+                <td className="border px-2 py-2 font-bold">{formatCurrency(totalWallet)}</td>
                 {columns.slice(3).map((col, cidx) => (
                   <td key={col.key} className="border px-2 py-2">&nbsp;</td>
                 ))}
@@ -695,6 +639,12 @@ export default function Page() {
         onClose={() => setShowDownloadModal(false)}
         onDownloadPDF={handleDownloadPDF}
         onDownloadXLS={handleDownloadXLS}
+      />
+
+      <PointsHistoryModal
+        isOpen={isPointsModalOpen}
+        onClose={() => setIsPointsModalOpen(false)}
+        userId={pointsUserId}
       />
     </section>
   );
