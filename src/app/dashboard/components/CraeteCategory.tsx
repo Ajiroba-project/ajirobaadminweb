@@ -49,8 +49,11 @@ const handleSuccess = (data?: any) => {
   if (data?.status === 200 || data?.data?.status === 'success' || data?.status === 201) {
     // console.log(data, "data");
     toast.success(`${data?.data?.message || "Success!"}`);
-   /*  setSubCategoryOpen(false); */
+    setCategoryOpen(false);
   }
+
+
+  
   refetch?.();
 };
 
@@ -66,7 +69,7 @@ const handleSuccess = (data?: any) => {
       theme: "light",
     });
     reset();
-   /*    setCategoryOpen(false); */
+ /*    setCategoryOpen(false); */
   };
 
   const { data, error, isError, isSuccess, mutate, status, refetch } = useMutateData(
@@ -76,7 +79,7 @@ const handleSuccess = (data?: any) => {
   );
   const handleEdit = () => {
     // func();
-    console.log(data, "data");
+    // console.log(data, "data");
   };
 
 

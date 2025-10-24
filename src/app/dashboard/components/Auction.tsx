@@ -557,6 +557,7 @@ export const Auction = () => {
                           className="w-full min-w-[220px] px-3 h-12 focus:text-black border rounded"
                           withPortal
                           popperClassName="z-50"
+                          minDate={new Date()}
                         />
                       )}
                     />

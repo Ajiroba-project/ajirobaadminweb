@@ -149,9 +149,9 @@ export default function PointsHistoryModal({ isOpen, onClose, userId }: Props) {
           </Select>
           {sortBy === 'custom' && (
             <div className="flex items-center gap-1">
-              <input type="date" className="border rounded px-2 py-1 text-xs" value={customStart} onChange={(e) => { setCustomStart(e.target.value); setPage(1); }} />
+              <input type="date" className="border rounded px-2 py-1 text-xs" value={customStart} max={customEnd || undefined} onChange={(e) => { setCustomStart(e.target.value); setPage(1); }} />
               <span className="text-xs">to</span>
-              <input type="date" className="border rounded px-2 py-1 text-xs" value={customEnd} onChange={(e) => { setCustomEnd(e.target.value); setPage(1); }} />
+              <input type="date" className="border rounded px-2 py-1 text-xs" value={customEnd} min={customStart || undefined} onChange={(e) => { setCustomEnd(e.target.value); setPage(1); }} />
             </div>
           )}
         </div>
