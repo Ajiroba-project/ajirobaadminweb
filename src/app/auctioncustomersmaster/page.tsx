@@ -14,6 +14,7 @@ import { exportToPDF, exportToXLS, exportToPDFTable, ExportData } from "@/utils/
 import { useGetDatanew } from "@/hooks/useGetData";
 import Loading from "@/app/components/Loading";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 // Define the API response types
 interface Ticket {
@@ -281,7 +282,7 @@ export default function Page() {
       nooftickets: item.nooftickets,
       ticketunit: item.ticketunit,
       quantity: item.quantity,
-      ticketprice: item.ticketprice,
+      ticketprice: formatCurrency(item.ticketprice),
       ticketpurdate: item.ticketpurdate,
       raffledrawdate: item.raffledrawdate,
       raffledrawtime: item.raffledrawtime,
@@ -308,7 +309,7 @@ export default function Page() {
       ],
       summaryRows: [
         { label: 'Total Records', value: exportData.length },
-        { label: 'Total Amount', value: `₦${exportData.reduce((sum, item) => sum + item.ticketprice, 0).toLocaleString()}` },
+        { label: 'Total Amount', value: formatCurrency(exportData.reduce((sum, item) => sum + item.ticketprice, 0)) },
         { label: 'Generated', value: new Date().toLocaleString() },
       ]
     });

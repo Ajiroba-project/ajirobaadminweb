@@ -287,8 +287,6 @@ export default function ProductDetailsAuctionPage() {
           </h1>
         </div>
             </div>
-
-
 </>
 
         

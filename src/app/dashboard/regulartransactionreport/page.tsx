@@ -11,6 +11,7 @@ import { DownloadModal } from "@/app/components/DownloadModal";
 import { exportToPDF, exportToXLS, exportToPDFTable, ExportData } from "@/utils/exportUtils";
 import { useGetDatanew } from "@/hooks/useGetData";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 // TypeScript interfaces for API response
 interface ProductInfo {
@@ -347,10 +348,10 @@ export default function Page() {
     const exportData: ExportData[] = displayData.map((item) => ({
       productId: item.productId,
       productName: item.productName,
-      sellingPrice: item.sellingPrice,
-      discount: item.discount,
-      costPrice: item.costPrice,
-      profit: item.profit,
+      sellingPrice: formatCurrency(item.sellingPrice),
+      discount: formatCurrency(item.discount),
+      costPrice: formatCurrency(item.costPrice),
+      profit: formatCurrency(item.profit),
       paymentMethod: item.paymentMethod,
       stock: item.stock,
     }));
@@ -375,10 +376,10 @@ export default function Page() {
     const exportData: ExportData[] = displayData.map((item) => ({
       productId: item.productId,
       productName: item.productName,
-      sellingPrice: item.sellingPrice,
-      discount: item.discount,
-      costPrice: item.costPrice,
-      profit: item.profit,
+      sellingPrice: formatCurrency(item.sellingPrice),
+      discount: formatCurrency(item.discount),
+      costPrice: formatCurrency(item.costPrice),
+      profit: formatCurrency(item.profit),
       paymentMethod: item.paymentMethod,
       stock: item.stock,
     }));
@@ -397,7 +398,7 @@ export default function Page() {
       ],
       summaryRows: [
         { label: "Total Records", value: exportData.length },
-        { label: "Total Profit", value: `₦${exportData.reduce((sum, item) => sum + item.profit, 0).toLocaleString()}` },
+        { label: "Total Profit", value: formatCurrency(exportData.reduce((sum, item) => sum + item.profit, 0)) },
         { label: "Generated", value: new Date().toLocaleString() },
       ],
     });

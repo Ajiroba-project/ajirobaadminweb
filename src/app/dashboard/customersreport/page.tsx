@@ -320,7 +320,7 @@ export default function Page() {
 
           allRows.push({
             customername: d.customer_name || "",
-            walletbalance: Number(d.waller_balance || 0),
+            walletbalance: Number(d.wallet_balance || 0),
             phonenumber: d.phone_no || "",
             email: d.email || "",
             gender: genderStr.toLowerCase(),
@@ -404,7 +404,7 @@ export default function Page() {
             : "";
           allRows.push({
             customername: d.customer_name || "",
-            walletbalance: Number(d.waller_balance || 0),
+            walletbalance: Number(d.wallet_balance || 0),
             phonenumber: d.phone_no || "",
             email: d.email || "",
             gender: genderStr.toLowerCase(),
