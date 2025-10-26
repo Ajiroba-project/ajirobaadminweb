@@ -113,13 +113,14 @@ export const useGetDatanew = (
   url: string,
   title: string,
   userToken: string,
-  p0?: { cacheTime?: number; staleTime?: number }
+  options?: { cacheTime?: number; staleTime?: number; enabled?: boolean; retry?: number | boolean; gcTime?: number; refetchOnMount?: boolean }
 ): UseQueryResult<ResponseData> => {
   return useQuery({
     queryKey: [title, url],
     queryFn: () => fetchDatanew(url, userToken),
     refetchOnWindowFocus: false,
-    placeholderData: (prev) => prev
+    placeholderData: (prev) => prev,
+    ...options
   })
 }
 

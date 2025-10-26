@@ -19,7 +19,11 @@ function Regulardeals({ onRegisterExport }: { onRegisterExport?: (fn: () => void
     data: transInfo,
     isLoading: transLoading,
     error: transError,
-  } = useGetDatanew(url, "get_catandsubcat_details", userToken || " ");
+  } = useGetDatanew(url, "get_catandsubcat_details", userToken || " ", {
+    enabled: Boolean(userToken && url),
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+  });
 
   const salesDataMain = [
     {
