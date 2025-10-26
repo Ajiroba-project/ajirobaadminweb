@@ -3,7 +3,7 @@ import React, { Suspense, useState, lazy } from 'react'
 import icon from "../../asset/image/icon.svg"
 import Image from 'next/image';
 import chart from '../../asset/image/chart.svg'
-import RegularsDealTable from './RegularsDealTable';
+
 import Cookies from 'js-cookie';
 import { useGetDatanew } from '@/hooks/useGetData';
 import Loading from '@/app/components/Loading';
@@ -63,7 +63,7 @@ function Auctiondeals({ onRegisterExport }: { onRegisterExport?: (fn: () => void
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center">
-                <Image src={icon} width={20} height={20} alt='icon'/>
+                <Image src={icon} width={20} height={20} alt='icon' unoptimized />
               </div>
               <h3 className="text-[#667185] font-Poppins text-sm font-medium">{data.title}</h3>
             </div>
@@ -71,7 +71,7 @@ function Auctiondeals({ onRegisterExport }: { onRegisterExport?: (fn: () => void
             <div className="mb-4">
               <div className='flex items-center gap-3 mb-3'>
                 <div className='flex items-center gap-2 rounded-full px-3 py-1.5 bg-[#FFECE5]'>
-                  <Image src={chart} width={16} height={16} alt='chart'/>
+                  <Image src={chart} width={16} height={16} alt='chart' unoptimized />
                   <span className={`text-sm font-Poppins font-medium ${data.isPositive ? 'text-green-600' : 'text-red-600'}`}>
                     {data.comparison}
                   </span>

@@ -8,6 +8,9 @@ import Auctiondeals from "./Auctiondeals";
 import Rechargedeals from "./Rechargedeals";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import Axios from "axios";
+import Cookies from "js-cookie";
 
 export const Transaction = () => {
   const router = useRouter()
@@ -21,6 +24,41 @@ export const Transaction = () => {
     setExporter(null);
   }, [active]);
   useAuthMiddleware(router)
+
+  // Warm up lazy-loaded table chunks to make tab switches instant
+  useEffect(() => {
+    // Preload tables used inside the tab components
+    import('./RegularsDealTable');
+    import('./RechargeDealsTable');
+    import('@/app/components/AuctionDealsTable');
+  }, []);
+
+  // Prefetch data for all tabs so switching is instant
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    const token = Cookies.get("token") || " ";
+    const base = process.env.NEXT_PUBLIC_BASE_URL;
+    if (!base) return;
+
+    const prefetch = (endpoint: string) => {
+      const url = `${base}${endpoint}`;
+      return queryClient.prefetchQuery({
+        queryKey: ["get_catandsubcat_details", url],
+        queryFn: async () => {
+          const res = await Axios.get(url, {
+            headers: { Authorization: `Token ${token}` }
+          });
+          return res.data;
+        },
+        staleTime: 5 * 60 * 1000,
+      });
+    };
+
+    prefetch('/admin/product_transactions/');
+    prefetch('/admin/auction_transactions/');
+    prefetch('/admin/billpayment_transactions/');
+    prefetch('/admin/transaction_volume/');
+  }, [queryClient]);
 
   return (
     <div>

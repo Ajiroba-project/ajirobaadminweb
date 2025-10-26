@@ -118,7 +118,8 @@ export const useGetDatanew = (
   return useQuery({
     queryKey: [title, url],
     queryFn: () => fetchDatanew(url, userToken),
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    placeholderData: (prev) => prev
   })
 }
 

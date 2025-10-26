@@ -232,12 +232,11 @@ export default function ProductDetailsAuctionPage() {
     const id = params?.id;
 
 
-
-
-
     const [userToken, setUserToken] = useState(Cookies.get("token"));
 
-    let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/view_admin_product/${id}`;
+    let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/view_admin_auction/${id}`;
+
+    // let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/view_admin_auction/${id}`;
 
     const {
         data: prodInfo,
@@ -253,7 +252,7 @@ export default function ProductDetailsAuctionPage() {
 
 
 
-    // console.log(prodInfo?.data?.product_info, 'product_infooo')
+    //  console.log(prodInfo?.data?.product_info, 'product_infooo')
 
     if (
       prodInfo?.data &&
@@ -335,7 +334,7 @@ export default function ProductDetailsAuctionPage() {
                     <div className="absolute inset-0 bg-black bg-opacity-60 z-10" />
                     {/* Card Content */}
                     <div className="relative z-20 p-4 md:p-8 flex flex-col">
-                        <h2 className="text-white text-xl md:text-2xl font-semibold mb-4">Product Summary</h2>
+                        <h2 className="text-white text-xl md:text-2xl font-semibold mb-4">Product Summary </h2>
                         <div className="bg-[#FFF3EE] rounded-xl flex flex-col md:flex-row justify-between items-stretch p-4 md:p-8 gap-6 flex-wrap">
                             {/* Left Column */}
                             <div className="flex-1 flex flex-col gap-2 min-w-[180px]">

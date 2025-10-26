@@ -76,31 +76,33 @@ function RechargeDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =
 
   const itemsPerPage = 10;
 
-  const filteredTransactions = transactions?.filter((transaction: { id: string | number; name: string; email: string; item: any; date: string | string[]; deviceId: string; biller?: string; }) => {
-    const matchesSearch =
-      transaction.name.toLowerCase().includes(search.toLowerCase()) ||
-      transaction.email.toLowerCase().includes(search.toLowerCase()) ||
-      String(transaction.item ?? '').toLowerCase().includes(search.toLowerCase()) ||
-      transaction.deviceId.toLowerCase().includes(search.toLowerCase()) ||
-      transaction.date.includes(search) ||
-      String(transaction.id ?? '').toLowerCase().includes(search.toLowerCase());
+  const filteredTransactions = useMemo(() => {
+    return transactions?.filter((transaction: { id: string | number; name: string; email: string; item: any; date: string | string[]; deviceId: string; biller?: string; }) => {
+      const matchesSearch =
+        transaction.name.toLowerCase().includes(search.toLowerCase()) ||
+        transaction.email.toLowerCase().includes(search.toLowerCase()) ||
+        String(transaction.item ?? '').toLowerCase().includes(search.toLowerCase()) ||
+        transaction.deviceId.toLowerCase().includes(search.toLowerCase()) ||
+        transaction.date.includes(search) ||
+        String(transaction.id ?? '').toLowerCase().includes(search.toLowerCase());
 
-    const matchesBiller = !billerFilter || (transaction.biller || '').toLowerCase() === billerFilter.toLowerCase();
+      const matchesBiller = !billerFilter || (transaction.biller || '').toLowerCase() === billerFilter.toLowerCase();
 
-    const matchesSelectedDate =
-      !selectedDate ||
-      (() => {
-        const [dd, mm, yyyy] = (transaction.date as string).split('/').map(Number);
-        const tx = new Date(yyyy, mm - 1, dd);
-        return (
-          tx.getFullYear() === selectedDate.getFullYear() &&
-          tx.getMonth() === selectedDate.getMonth() &&
-          tx.getDate() === selectedDate.getDate()
-        );
-      })();
+      const matchesSelectedDate =
+        !selectedDate ||
+        (() => {
+          const [dd, mm, yyyy] = (transaction.date as string).split('/').map(Number);
+          const tx = new Date(yyyy, mm - 1, dd);
+          return (
+            tx.getFullYear() === selectedDate.getFullYear() &&
+            tx.getMonth() === selectedDate.getMonth() &&
+            tx.getDate() === selectedDate.getDate()
+          );
+        })();
 
-    return matchesSearch && matchesBiller && matchesSelectedDate;
-  });
+      return matchesSearch && matchesBiller && matchesSelectedDate;
+    });
+  }, [transactions, search, billerFilter, selectedDate]);
 
   // Register CSV exporter with parent using latest data via ref
   const exportColumns = useMemo(() => ([
@@ -120,13 +122,13 @@ function RechargeDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =
   }, [onRegisterExport, exportColumns]);
 
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = filteredTransactions?.slice(
+  const paginatedData = useMemo(() => filteredTransactions?.slice(
     startIndex,
     startIndex + itemsPerPage
-  );
+  ), [filteredTransactions, startIndex, itemsPerPage]);
   
 
-  const totalPages = Math.ceil(filteredTransactions?.length / itemsPerPage);
+  const totalPages = useMemo(() => Math.ceil((filteredTransactions?.length || 0) / itemsPerPage), [filteredTransactions, itemsPerPage]);
 
   const isAllSelected =
     paginatedData?.length > 0 &&
@@ -359,9 +361,9 @@ function RechargeDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                       {transaction.img ? (
-                        <Image src={transaction.img} alt="Profile" width={32} height={32} className="w-full h-full object-cover" />
+                        <Image src={transaction.img} alt="Profile" width={32} height={32} className="w-full h-full object-cover" unoptimized loading="lazy" />
                       ) : (
-                        <Image src={ajirobalogo} alt="Default" width={20} height={20} />
+                        <Image src={ajirobalogo} alt="Default" width={20} height={20} unoptimized loading="lazy" />
                       )}
                     </div>
                     <span className="font-Poppins text-sm text-[#1D2739] font-medium">
