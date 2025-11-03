@@ -234,7 +234,7 @@ export default function ProductDetailsAuctionPage() {
 
     const [userToken, setUserToken] = useState(Cookies.get("token"));
 
-    let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/view_admin_auction/${id}`;
+    let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/view_admin_product/${id}`;
 
     // let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/view_admin_auction/${id}`;
 

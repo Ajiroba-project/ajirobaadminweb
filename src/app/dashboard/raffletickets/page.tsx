@@ -33,6 +33,10 @@ export default function Page() {
   const [showTicket, setShowTicket] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<any>(null);
   const [userToken] = useState(Cookies.get("token"));
+  const [isExporting, setIsExporting] = useState(false);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrev, setHasPrev] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setCurrentTime(
@@ -45,6 +49,11 @@ export default function Page() {
         hour12: true,
       })
     );
+  }, []);
+
+  // Prevent hydration mismatch for client-only dynamic elements
+  useEffect(() => {
+    setMounted(true);
   }, []);
 
   // Close dropdowns when clicking outside
@@ -94,13 +103,31 @@ export default function Page() {
     };
   }
 
+  interface RaffleRow {
+    id: string;
+    name: string;
+    phone: string;
+    email: string;
+    drawDate: string;
+    drawTime: string;
+    ticketNumber: string;
+    ticketAmount: number;
+    product: string;
+    productId: string;
+    productno: string;
+    winningValue: number;
+    status: string;
+    redemptionDate: string;
+    purchasedDateISO: string;
+  }
+
   const buildQueryParams = () => {
     const params = new URLSearchParams();
     if (dateFilter === "yesterday") {
       const today = new Date();
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      const todayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
       const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
       params.append("filter", "custom");
       params.append("start_date", todayStr);
@@ -115,6 +142,7 @@ export default function Page() {
       params.append("end_date", customDateRange.end);
     }
     params.append("page", String(currentPage));
+    params.append("page_size", String(pageSize));
     return params.toString();
   };
 
@@ -132,9 +160,11 @@ export default function Page() {
     if (api?.results?.current_datetime) {
       setCurrentTime(api.results.current_datetime);
     }
+    setHasNext(Boolean(api?.next));
+    setHasPrev(Boolean(api?.previous));
   }, [api]);
 
-  const raffleData = (api?.results?.data || []).map((item, index) => {
+  const raffleData: RaffleRow[] = (api?.results?.data || []).map((item, index) => {
     const d = item.raffle_details || {};
     const id = item.id;
 
@@ -158,6 +188,140 @@ export default function Page() {
       purchasedDateISO: d.purchased_date || "",
     };
   });
+
+  // Build only filter-related params (exclude page) for full export
+  const buildFilterParamsOnly = () => {
+    const params = new URLSearchParams();
+    if (dateFilter === "yesterday") {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const startStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+      const endStr = startStr;
+      params.append("filter", "custom");
+      params.append("start_date", startStr);
+      params.append("end_date", endStr);
+    } else if (dateFilter === "last_week") params.append("filter", "last_week");
+    else if (dateFilter === "last_month") params.append("filter", "last_month");
+    else if (dateFilter === "last_year") params.append("filter", "last_year");
+    else if (dateFilter === "custom" && customDateRange.start && customDateRange.end) {
+      params.append("filter", "custom");
+      params.append("start_date", customDateRange.start);
+      params.append("end_date", customDateRange.end);
+    }
+    return params.toString();
+  };
+
+  // Fetch all pages for export respecting current server-side date filters
+  const fetchAllRaffleData = async (): Promise<RaffleReportItem[]> => {
+    const base = process.env.NEXT_PUBLIC_BASE_URL;
+    if (!base) return [];
+    const filterParams = buildFilterParamsOnly();
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (userToken) headers["Authorization"] = `Bearer ${userToken}`;
+
+    let page = 1;
+    const all: RaffleReportItem[] = [];
+    // Loop using next or page increment
+    while (true) {
+      const pageUrl = `${base}/admin/raffle_draw_report/?${filterParams}&page=${page}`;
+      const res = await fetch(pageUrl, { headers });
+      if (!res.ok) break;
+      const json = (await res.json()) as RaffleReportApiResponse;
+      const items = json?.results?.data ?? [];
+      all.push(...items);
+      if (!json.next) break;
+      page += 1;
+    }
+    return all;
+  };
+
+  // Apply client-side search/filter/sort to arbitrary dataset (used for export)
+  const applyClientFiltersAndSort = (data: RaffleRow[]) => {
+    let filteredData = [...data];
+
+    if (search) {
+      filteredData = filteredData.filter(item =>
+        item.name.toLowerCase().includes(search.toLowerCase()) ||
+        item.phone.includes(search) ||
+        item.email.toLowerCase().includes(search.toLowerCase()) ||
+        item.ticketNumber.includes(search) ||
+        item.product.toLowerCase().includes(search.toLowerCase()) ||
+        item.productId.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    if (filterBy.length > 0) {
+      filteredData = filteredData.filter(item => {
+        return filterBy.every(filter => {
+          switch (filter) {
+            case 'name':
+              return search ? item.name.toLowerCase().includes(search.toLowerCase()) : true;
+            case 'product':
+              return search ? item.product.toLowerCase().includes(search.toLowerCase()) : true;
+            case 'productId':
+              return search ? item.productId.toLowerCase().includes(search.toLowerCase()) : true;
+            case 'status':
+              return search ? item.status.toLowerCase().includes(search.toLowerCase()) : true;
+            default:
+              return true;
+          }
+        });
+      });
+    }
+
+    if (sort) {
+      filteredData.sort((a, b) => {
+        switch (sort) {
+          case 'name':
+            return a.name.localeCompare(b.name);
+          case 'date':
+            if (a.drawDate === "N/A" && b.drawDate === "N/A") return 0;
+            if (a.drawDate === "N/A") return 1;
+            if (b.drawDate === "N/A") return -1;
+            return new Date(b.drawDate).getTime() - new Date(a.drawDate).getTime();
+          case 'ticketAmount':
+            return b.ticketAmount - a.ticketAmount;
+          case 'winningValue':
+            return b.winningValue - a.winningValue;
+          default:
+            return 0;
+        }
+      });
+    }
+
+    return filteredData;
+  };
+
+  // Prepare full dataset for export (all pages + client filters)
+  const getAllDisplayDataForExport = async (): Promise<RaffleRow[]> => {
+    const allRaw = await fetchAllRaffleData();
+    const mapped = (allRaw || []).map((item, index) => {
+      const d = item.raffle_details || {};
+      const id = item.id;
+      return {
+        id: `${item.id}-${index}`,
+        name: d.name || "",
+        phone: d.phone_number || "",
+        email: d.email || "",
+        drawDate: d.raffle_date || "",
+        drawTime: d.raffle_time || "",
+        ticketNumber: d.ticket_no || "",
+        ticketAmount: Number(d.ticket_price || 0),
+        product: d.product || "",
+        productId: d.product_no || "",
+        productno: id,
+        winningValue: Number(d.winning_value || 0),
+        status: d.status ? d.status.charAt(0).toUpperCase() + d.status.slice(1) : "",
+        redemptionDate: d.redemption_date
+          ? new Date(d.redemption_date).toLocaleDateString("en-US")
+          : "N/A",
+        purchasedDateISO: d.purchased_date || "",
+      };
+    });
+    return applyClientFiltersAndSort(mapped);
+  };
 
   // Table columns for Raffle Winning Report
   const columnsRaffle = [
@@ -281,25 +445,30 @@ export default function Page() {
 
   // Download handlers (PDF/XLS)
   const handleDownloadPDF = async () => {
-    const exportData: ExportData[] = displayData.map((item) => ({
-      name: item.name,
-      phone: item.phone,
-      email: item.email,
-      drawDate: item.drawDate,
-      drawTime: item.drawTime,
-      ticketNumber: item.ticketNumber,
-      ticketAmount: item.ticketAmount,
-      product: item.product,
-      productId: item.productId,
-      winningValue: item.winningValue,
-      status: item.status,
-      redemptionDate: item.redemptionDate,
-    }));
-    setShowDownloadModal(false);
-    await exportToPDFTable(exportData, {
+    try {
+      setIsExporting(true);
+      const fullData = await getAllDisplayDataForExport();
+      const exportData: ExportData[] = fullData.map((item, idx) => ({
+        sn: idx + 1,
+        name: item.name,
+        phone: item.phone,
+        email: item.email,
+        drawDate: item.drawDate,
+        drawTime: item.drawTime,
+        ticketNumber: item.ticketNumber,
+        ticketAmount: item.ticketAmount,
+        product: item.product,
+        productId: item.productId,
+        winningValue: item.winningValue,
+        status: item.status,
+        redemptionDate: item.redemptionDate,
+      }));
+      setShowDownloadModal(false);
+      await exportToPDFTable(exportData, {
       title: "Raffle Winning Report",
       fileName: "Raffle_Winning_Report",
       columns: [
+          { key: 'sn', header: 'S/N' },
         { key: 'name', header: 'Name' },
         { key: 'phone', header: 'Phone' },
         { key: 'email', header: 'Email' },
@@ -313,48 +482,63 @@ export default function Page() {
         { key: 'status', header: 'Status' },
         { key: 'redemptionDate', header: 'Redemption Date' },
       ],
-    });
+      });
+    } finally {
+      setIsExporting(false);
+    }
   };
 
-  const handleDownloadXLS = () => {
-    const exportData: ExportData[] = displayData.map((item) => ({
-      name: item.name,
-      phone: item.phone,
-      email: item.email,
-      drawDate: item.drawDate,
-      drawTime: item.drawTime,
-      ticketNumber: item.ticketNumber,
-      ticketAmount: item.ticketAmount,
-      product: item.product,
-      productId: item.productId,
-      winningValue: item.winningValue,
-      status: item.status,
-      redemptionDate: item.redemptionDate,
-    }));
-    exportToXLS(exportData, {
-      title: "Raffle Winning Report",
-      fileName: "Raffle_Winning_Report",
-      columns: [
-        { key: 'name', header: 'Name', width: 20 },
-        { key: 'phone', header: 'Phone Number', width: 15 },
-        { key: 'email', header: 'Email', width: 25 },
-        { key: 'drawDate', header: 'Raffle Draw Date', width: 15 },
-        { key: 'drawTime', header: 'Raffle Draw Time', width: 12 },
-        { key: 'ticketNumber', header: 'Ticket Number', width: 15 },
-        { key: 'ticketAmount', header: 'Ticket Amount (NGN)', width: 15 },
-        { key: 'product', header: 'Product', width: 15 },
-        { key: 'productId', header: 'Product ID', width: 12 },
-        { key: 'winningValue', header: 'Winning Value (NGN)', width: 18 },
-        { key: 'status', header: 'Status', width: 20 },
-        { key: 'redemptionDate', header: 'Redemption Date', width: 15 },
-      ],
-      summaryRows: [
-        { label: 'TOTAL', value: '' },
-        { label: 'Ticket Amount', value: totalTicketAmount },
-        { label: 'Winning Value', value: totalWinningValue.toLocaleString() },
-      ],
-    });
-    setShowDownloadModal(false);
+  const handleDownloadXLS = async () => {
+    try {
+      setIsExporting(true);
+      const fullData = await getAllDisplayDataForExport();
+      const exportData: ExportData[] = fullData.map((item, idx) => ({
+        sn: idx + 1,
+        name: item.name,
+        phone: item.phone,
+        email: item.email,
+        drawDate: item.drawDate,
+        drawTime: item.drawTime,
+        ticketNumber: item.ticketNumber,
+        ticketAmount: item.ticketAmount,
+        product: item.product,
+        productId: item.productId,
+        winningValue: item.winningValue,
+        status: item.status,
+        redemptionDate: item.redemptionDate,
+      }));
+
+      const sumTicketAmount = fullData.reduce((sum, item) => sum + (item.ticketAmount || 0), 0);
+      const sumWinningValue = fullData.reduce((sum, item) => sum + (item.winningValue || 0), 0);
+
+      exportToXLS(exportData, {
+        title: "Raffle Winning Report",
+        fileName: "Raffle_Winning_Report",
+        columns: [
+          { key: 'sn', header: 'S/N', width: 6 },
+          { key: 'name', header: 'Name', width: 20 },
+          { key: 'phone', header: 'Phone Number', width: 15 },
+          { key: 'email', header: 'Email', width: 25 },
+          { key: 'drawDate', header: 'Raffle Draw Date', width: 15 },
+          { key: 'drawTime', header: 'Raffle Draw Time', width: 12 },
+          { key: 'ticketNumber', header: 'Ticket Number', width: 15 },
+          { key: 'ticketAmount', header: 'Ticket Amount (NGN)', width: 18 },
+          { key: 'product', header: 'Product', width: 15 },
+          { key: 'productId', header: 'Product ID', width: 12 },
+          { key: 'winningValue', header: 'Winning Value (NGN)', width: 18 },
+          { key: 'status', header: 'Status', width: 20 },
+          { key: 'redemptionDate', header: 'Redemption Date', width: 15 },
+        ],
+        summaryRows: [
+          { label: 'TOTAL', value: '' },
+          { label: 'Ticket Amount', value: sumTicketAmount },
+          { label: 'Winning Value', value: sumWinningValue.toLocaleString() },
+        ],
+      });
+      setShowDownloadModal(false);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const AjirobaLogo = ({
@@ -381,14 +565,20 @@ export default function Page() {
           </p>
         </div>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 md:px-14 py-4 gap-2">
-          <h1 className="text-[#111111] text-lg font-Poppins font-semibold">
-            Raffle Winning Report
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-[#111111] text-lg font-Poppins font-semibold">
+              Raffle Winning Report
+            </h1>
+            {mounted && isLoading && (
+              <span className="inline-flex items-center text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded animate-pulse">Updating…</span>
+            )}
+          </div>
           <button
             onClick={() => setShowDownloadModal(true)}
+            disabled={isExporting}
             className="rounded-md bg-[#f25e26] px-6 py-2 text-white text-sm hover:bg-[#d63918] transition-colors"
           >
-            Download
+            {isExporting ? 'Preparing…' : 'Download'}
           </button>
         </div>
       </div>
@@ -608,12 +798,30 @@ export default function Page() {
           <ReportsTable 
             data={displayData} 
             columns={columnsRaffle} 
-            currentPage={currentPage}
-            pageSize={pageSize}
-            onPageChange={setCurrentPage}
-            showPagination={true}
+            currentPage={1}
+            pageSize={displayData.length || 10}
+            onPageChange={undefined}
+            showPagination={false}
             emptyRowCount={8}
           />
+        </div>
+        {/* Pagination Controls (server-driven) */}
+        <div className="flex justify-between items-center mt-4">
+          <button
+            className="px-3 py-1 border rounded disabled:opacity-50"
+            disabled={!hasPrev || currentPage <= 1 || isLoading}
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          >
+            Previous
+          </button>
+          <div className="text-sm text-gray-600">Page {currentPage}</div>
+          <button
+            className="px-3 py-1 border rounded disabled:opacity-50"
+            disabled={!hasNext || isLoading}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Next
+          </button>
         </div>
         {displayData && displayData.length > 0 && (
           <div className="flex flex-col items-center py-4">

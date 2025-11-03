@@ -40,10 +40,34 @@ export default function Page() {
   const customDatePickerRef = useRef<HTMLDivElement>(null);
 
   // Build query params and fetch API
+  // const buildQueryParams = () => {
+  //   const params = new URLSearchParams();
+  //   if (sort === "yesterday") params.append("filter", "yesterday");
+  //   if (sort === "last_week") params.append("filter", "last_week");
+  //   else if (sort === "last_month") params.append("filter", "last_month");
+  //   else if (sort === "last_year") params.append("filter", "last_year");
+  //   else if (sort === "custom" && customDateRange.start && customDateRange.end) {
+  //     params.append("filter", "custom");
+  //     params.append("start_date", customDateRange.start);
+  //     params.append("end_date", customDateRange.end);
+  //   }
+  //   return params.toString();
+  // };
+
+
   const buildQueryParams = () => {
     const params = new URLSearchParams();
-    if (sort === "yesterday") params.append("filter", "yesterday");
-    if (sort === "last_week") params.append("filter", "last_week");
+    if (sort === "yesterday") {
+      const today = new Date();
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const todayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+      const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+      params.append("filter", "custom");
+      params.append("start_date", todayStr);
+      params.append("end_date", yesterdayStr);
+    }
+    else if (sort === "last_week") params.append("filter", "last_week");
     else if (sort === "last_month") params.append("filter", "last_month");
     else if (sort === "last_year") params.append("filter", "last_year");
     else if (sort === "custom" && customDateRange.start && customDateRange.end) {
@@ -51,6 +75,8 @@ export default function Page() {
       params.append("start_date", customDateRange.start);
       params.append("end_date", customDateRange.end);
     }
+    params.append("page", String(currentPage));
+    params.append("page_size", String(pageSize));
     return params.toString();
   };
 

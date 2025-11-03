@@ -606,8 +606,8 @@ const transformApiData = (apiData: any): any[] => {
   }
 
   return (
-    <section className="flex flex-col">
-      <div className="w-full bg-gray-100">
+    <section className="flex flex-col min-h-screen bg-gray-100">
+      <div className="w-full">
         <ProfileHeader />
         <div className="px-4 md:px-14 py-4">
           <p

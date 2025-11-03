@@ -741,28 +741,67 @@ const ReportsPageContent = () => {
     }, [sortBy, customStart, customEnd]);
 
     const getRechargeFilterParams = () => {
+      // const params = new URLSearchParams();
+      // switch (debouncedSortBy) {
+      //   case "last_week":
+      //     params.append("filter", "last_week");
+      //     break;
+      //   case "last_month":
+      //     params.append("filter", "last_month");
+      //     break;
+      //   case "last_year":
+      //     params.append("filter", "last_year");
+      //     break;
+      //   case "custom":
+      //     if (debouncedCustomStart && debouncedCustomEnd) {
+      //       params.append("filter", "custom");
+      //       params.append("start_date", debouncedCustomStart);
+      //       params.append("end_date", debouncedCustomEnd);
+      //     }
+      //     break;
+      //   default:
+      //     // all_time or no filter
+      //     break;
+      // }
+      // return params.toString();
+
       const params = new URLSearchParams();
+      params.append('page', String(1));
+  
       switch (debouncedSortBy) {
-        case "last_week":
-          params.append("filter", "last_week");
+        case 'yesterday': {
+          // const today = new Date();
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          const todayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+          const yStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+          params.append('filter', 'custom');
+          params.append('start_date', todayStr);
+          params.append('end_date', yStr);
           break;
-        case "last_month":
-          params.append("filter", "last_month");
+        }
+        case 'last_week':
+          params.append('filter', 'last_week');
           break;
-        case "last_year":
-          params.append("filter", "last_year");
+        case 'last_month':
+          params.append('filter', 'last_month');
           break;
-        case "custom":
+        case 'last_year':
+          params.append('filter', 'last_year');
+          break;
+        case 'custom':
+          // Only add custom filter if both start and end dates are provided
           if (debouncedCustomStart && debouncedCustomEnd) {
-            params.append("filter", "custom");
-            params.append("start_date", debouncedCustomStart);
-            params.append("end_date", debouncedCustomEnd);
+            params.append('filter', 'custom');
+            params.append('start_date', debouncedCustomStart);
+            params.append('end_date', debouncedCustomEnd);
           }
           break;
         default:
-          // all_time or no filter
+          // No filter applied
           break;
       }
+  
       return params.toString();
     };
 
@@ -955,6 +994,7 @@ const ReportsPageContent = () => {
                   <SelectValue placeholder="All Time" />
                 </SelectTrigger>
                 <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+                  <SelectItem value="yesterday" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Yesterday</SelectItem>
                   <SelectItem value="last_week" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Week</SelectItem>
                   <SelectItem value="last_month" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Month</SelectItem>
                   <SelectItem value="last_year" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Year</SelectItem>
@@ -1331,7 +1371,7 @@ const ReportsPageContent = () => {
                 Registered Customers
               </div>
               <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
-                {registeredCustomers}
+                { Number(registeredCustomers).toLocaleString()}
               </div>
             </div>
             <div className="rounded-xl border-2 border-red-200 bg-red-50 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[160px]">
@@ -1361,7 +1401,7 @@ const ReportsPageContent = () => {
                 Unredeemed Ajiroba Points
               </div>
               <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-900 text-center">
-                {unredeemedPoint}
+                { Number(unredeemedPoint).toLocaleString()}
               </div>
             </div>
           </div>
@@ -1415,9 +1455,31 @@ const ReportsPageContent = () => {
     }, [sortBy, customStart, customEnd]);
 
     const buildRaffleParams = () => {
+      // const params = new URLSearchParams();
+      // if (debouncedSortBy === "yesterday") params.append("filter", "yesterday");
+      // if (debouncedSortBy === "last_week") params.append("filter", "last_week");
+      // else if (debouncedSortBy === "last_month") params.append("filter", "last_month");
+      // else if (debouncedSortBy === "last_year") params.append("filter", "last_year");
+      // else if (debouncedSortBy === "custom" && debouncedCustomStart && debouncedCustomEnd) {
+      //   params.append("filter", "custom");
+      //   params.append("start_date", debouncedCustomStart);
+      //   params.append("end_date", debouncedCustomEnd);
+      // }
+      // return params.toString();
+
+
+
       const params = new URLSearchParams();
-      if (debouncedSortBy === "yesterday") params.append("filter", "yesterday");
-      if (debouncedSortBy === "last_week") params.append("filter", "last_week");
+      if (debouncedSortBy === "yesterday") { 
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const todayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+        const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+        params.append("filter", "custom");
+        params.append("start_date", todayStr);
+        params.append("end_date", yesterdayStr);
+      } else if (debouncedSortBy === "last_week") params.append("filter", "last_week");
       else if (debouncedSortBy === "last_month") params.append("filter", "last_month");
       else if (debouncedSortBy === "last_year") params.append("filter", "last_year");
       else if (debouncedSortBy === "custom" && debouncedCustomStart && debouncedCustomEnd) {
@@ -1425,6 +1487,7 @@ const ReportsPageContent = () => {
         params.append("start_date", debouncedCustomStart);
         params.append("end_date", debouncedCustomEnd);
       }
+      params.append("page", String(1));
       return params.toString();
     };
 

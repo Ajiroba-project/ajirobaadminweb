@@ -236,96 +236,251 @@ export default function Page() {
   }, [dateFilter, search, filterBy]);
 
 
-  // console.log(transformedData, 'ttttt')
 
-  // console.log(transformApiData, 'transformApiData')
 
   // Download handlers
   const handleDownloadPDF = async () => {
-    const exportData: ExportData[] = transformedData.map((item) => ({
-      customername: item.customername,
-      email: item.email,
-      phone: item.phone,
-      gender: item.gender,
-      userid: item.userid,
-      productId: item.productId,
-      productname: item.productname,
-      nooftickets: Array.isArray(item.nooftickets) ? item.nooftickets.join(', ') : item.nooftickets,
-      ticketunit: item.ticketunit,
-      quantity: item.quantity,
-      ticketprice: item.ticketprice,
-      ticketpurdate: item.ticketpurdate,
-      raffledrawdate: item.raffledrawdate,
-      raffledrawtime: item.raffledrawtime,
-    }));
+    try {
+      setShowDownloadModal(false);
 
-    setShowDownloadModal(false);
-    await exportToPDFTable(exportData, {
-      title: "Auction Transaction Report",
-      fileName: "Auction_Transaction_Report",
-      columns: [
-        { key: 'customername', header: 'Customer Name' },
-        { key: 'email', header: 'Email' },
-        { key: 'phone', header: 'Phone' },
-        { key: 'gender', header: 'Gender' },
-        { key: 'userid', header: 'User ID' },
-        { key: 'productId', header: 'Product ID' },
-        { key: 'productname', header: 'Product Name' },
-        { key: 'nooftickets', header: 'No of Tickets' },
-        { key: 'ticketunit', header: 'Unit Ticket Rate (NGN)' },
-        { key: 'quantity', header: 'Quantity' },
-        { key: 'ticketprice', header: 'Ticket Price (NGN)' },
-        { key: 'ticketpurdate', header: 'Ticket Purchase Date' },
-        { key: 'raffledrawdate', header: 'Raffle Draw Date' },
-        { key: 'raffledrawtime', header: 'Raffle Draw Time' },
-      ],
-    });
+      // Build filter params (exclude page)
+      const buildExportParams = () => {
+        const params = new URLSearchParams();
+        switch (dateFilter) {
+          case 'yesterday': {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const startStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+            const endStr = startStr;
+            params.append('filter', 'custom');
+            params.append('start_date', startStr);
+            params.append('end_date', endStr);
+            break;
+          }
+          case 'last_week':
+            params.append('filter', 'last_week');
+            break;
+          case 'last_month':
+            params.append('filter', 'last_month');
+            break;
+          case 'last_year':
+            params.append('filter', 'last_year');
+            break;
+          case 'custom':
+            if (customDateRange.start && customDateRange.end) {
+              params.append('filter', 'custom');
+              params.append('start_date', customDateRange.start);
+              params.append('end_date', customDateRange.end);
+            }
+            break;
+          default:
+            break;
+        }
+        return params.toString();
+      };
+
+      // Fetch all pages
+      const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/auction_customer_master_report/`;
+      const headers: Record<string, string> = {};
+      if (userToken) headers['Authorization'] = `Token ${userToken}`;
+      const allRows: any[] = [];
+      let nextUrl: string | null = `${baseUrl}?${buildExportParams()}`;
+      for (let i = 0; i < 200 && nextUrl; i++) {
+        const res = await fetch(nextUrl, { headers });
+        if (!res.ok) break;
+        const json: any = await res.json();
+        const pageItems: any[] = json?.results?.data || [];
+        pageItems.forEach((item: any) => {
+          allRows.push({
+            customername: item.user_info?.customer_name || 'N/A',
+            email: item.user_info?.email || 'N/A',
+            phone: item.user_info?.phone || 'N/A',
+            gender: item.user_info?.gender ? 'Male' : 'Female',
+            userid: item.user_info?.user_id || 'N/A',
+            productId: item.product_info?.product_no || 'N/A',
+            productname: item.product_info?.product_name || 'N/A',
+            nooftickets: (item.tickets?.map((t: any) => t.ticket_number) || []),
+            ticketunit: item.ticket_details?.ticket_price || 0,
+            quantity: item.ticket_details?.ticket_quantity || 0,
+            ticketprice: (item.ticket_details?.ticket_price || 0) * (item.ticket_details?.ticket_quantity || 0),
+            ticketpurdate: item.ticket_details?.ticket_date || 'N/A',
+            raffledrawdate: item.ticket_details?.auction_start_date || 'N/A',
+            raffledrawtime: item.ticket_details?.auction_start_time || 'N/A',
+          });
+        });
+        nextUrl = json?.next || null;
+      }
+
+      if (!allRows.length) {
+        alert('No data available to export');
+        return;
+      }
+
+      const exportData: ExportData[] = allRows.map((item) => ({
+        customername: item.customername,
+        email: item.email,
+        phone: item.phone,
+        gender: item.gender,
+        userid: item.userid,
+        productId: item.productId,
+        productname: item.productname,
+        nooftickets: Array.isArray(item.nooftickets) ? item.nooftickets.join(', ') : item.nooftickets,
+        ticketunit: item.ticketunit,
+        quantity: item.quantity,
+        ticketprice: item.ticketprice,
+        ticketpurdate: item.ticketpurdate,
+        raffledrawdate: item.raffledrawdate,
+        raffledrawtime: item.raffledrawtime,
+      }));
+
+      await exportToPDFTable(exportData, {
+        title: "Auction Transaction Report",
+        fileName: "Auction_Transaction_Report",
+        columns: [
+          { key: 'customername', header: 'Customer Name' },
+          { key: 'email', header: 'Email' },
+          { key: 'phone', header: 'Phone' },
+          { key: 'gender', header: 'Gender' },
+          { key: 'userid', header: 'User ID' },
+          { key: 'productId', header: 'Product ID' },
+          { key: 'productname', header: 'Product Name' },
+          { key: 'nooftickets', header: 'No of Tickets' },
+          { key: 'ticketunit', header: 'Unit Ticket Rate (NGN)' },
+          { key: 'quantity', header: 'Quantity' },
+          { key: 'ticketprice', header: 'Ticket Price (NGN)' },
+          { key: 'ticketpurdate', header: 'Ticket Purchase Date' },
+          { key: 'raffledrawdate', header: 'Raffle Draw Date' },
+          { key: 'raffledrawtime', header: 'Raffle Draw Time' },
+        ],
+      });
+    } catch (e) {
+      alert('Failed to prepare PDF export.');
+    }
   };
 
-  const handleDownloadXLS = () => {
-    const exportData: ExportData[] = transformedData.map((item) => ({
-      customername: item.customername,
-      email: item.email,
-      phone: item.phone,
-      gender: item.gender,
-      userid: item.userid,
-      productId: item.productId,
-      productname: item.productname,
-      nooftickets: item.nooftickets,
-      ticketunit: item.ticketunit,
-      quantity: item.quantity,
-      ticketprice: formatCurrency(item.ticketprice),
-      ticketpurdate: item.ticketpurdate,
-      raffledrawdate: item.raffledrawdate,
-      raffledrawtime: item.raffledrawtime,
-    }));
+  const handleDownloadXLS = async () => {
+    try {
+      // Build filter params (exclude page)
+      const buildExportParams = () => {
+        const params = new URLSearchParams();
+        switch (dateFilter) {
+          case 'yesterday': {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const startStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+            const endStr = startStr;
+            params.append('filter', 'custom');
+            params.append('start_date', startStr);
+            params.append('end_date', endStr);
+            break;
+          }
+          case 'last_week':
+            params.append('filter', 'last_week');
+            break;
+          case 'last_month':
+            params.append('filter', 'last_month');
+            break;
+          case 'last_year':
+            params.append('filter', 'last_year');
+            break;
+          case 'custom':
+            if (customDateRange.start && customDateRange.end) {
+              params.append('filter', 'custom');
+              params.append('start_date', customDateRange.start);
+              params.append('end_date', customDateRange.end);
+            }
+            break;
+          default:
+            break;
+        }
+        return params.toString();
+      };
 
-    exportToXLS(exportData, {
-      title: "Auction Transaction Report",
-      fileName: "Auction_Transaction_Report",
-      columns: [
-        { key: 'customername', header: 'Customer Name', width: 20 },
-        { key: 'email', header: 'Email Address', width: 25 },
-        { key: 'phone', header: 'Phone Number', width: 15 },
-        { key: 'gender', header: 'Gender', width: 10 },
-        { key: 'userid', header: 'User ID', width: 12 },
-        { key: 'productId', header: 'Product ID', width: 12 },
-        { key: 'productname', header: 'Product Name', width: 25 },
-        { key: 'nooftickets', header: 'Number of Tickets', width: 20, formatter: (value: string[]) => value.join(', ') },
-        { key: 'ticketunit', header: 'Unit Ticket Rate (NGN)', width: 15 },
-        { key: 'quantity', header: 'Quantity', width: 10 },
-        { key: 'ticketprice', header: 'Ticket Price (NGN)', width: 15 },
-        { key: 'ticketpurdate', header: 'Ticket Purchase Date', width: 18, formatter: (value: string) => new Date(value).toLocaleDateString() },
-        { key: 'raffledrawdate', header: 'Raffle Draw Date', width: 15, formatter: (value: string) => new Date(value).toLocaleDateString() },
-        { key: 'raffledrawtime', header: 'Raffle Draw Time', width: 12 },
-      ],
-      summaryRows: [
-        { label: 'Total Records', value: exportData.length },
-        { label: 'Total Amount', value: formatCurrency(exportData.reduce((sum, item) => sum + item.ticketprice, 0)) },
-        { label: 'Generated', value: new Date().toLocaleString() },
-      ]
-    });
-    setShowDownloadModal(false);
+      const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/auction_customer_master_report/`;
+      const headers: Record<string, string> = {};
+      if (userToken) headers['Authorization'] = `Token ${userToken}`;
+
+      // Fetch all pages
+      const allRows: any[] = [];
+      let nextUrl: string | null = `${baseUrl}?${buildExportParams()}`;
+      for (let i = 0; i < 200 && nextUrl; i++) {
+        const res = await fetch(nextUrl, { headers });
+        if (!res.ok) break;
+        const json: any = await res.json();
+        const pageItems: any[] = json?.results?.data || [];
+        pageItems.forEach((item: any) => {
+          const row = {
+            customername: item.user_info?.customer_name || 'N/A',
+            email: item.user_info?.email || 'N/A',
+            phone: item.user_info?.phone || 'N/A',
+            gender: item.user_info?.gender ? 'Male' : 'Female',
+            userid: item.user_info?.user_id || 'N/A',
+            productId: item.product_info?.product_no || 'N/A',
+            productname: item.product_info?.product_name || 'N/A',
+            nooftickets: (item.tickets?.map((t: any) => t.ticket_number) || []),
+            ticketunit: item.ticket_details?.ticket_price || 0,
+            quantity: item.ticket_details?.ticket_quantity || 0,
+            ticketprice: (item.ticket_details?.ticket_price || 0) * (item.ticket_details?.ticket_quantity || 0),
+            ticketpurdate: item.ticket_details?.ticket_date || 'N/A',
+            raffledrawdate: item.ticket_details?.auction_start_date || 'N/A',
+            raffledrawtime: item.ticket_details?.auction_start_time || 'N/A',
+          };
+          allRows.push(row);
+        });
+        nextUrl = json?.next || null;
+      }
+
+      if (!allRows.length) {
+        alert('No data available to export');
+        return;
+      }
+
+      const exportData: ExportData[] = allRows.map((item) => ({
+        customername: item.customername,
+        email: item.email,
+        phone: item.phone,
+        gender: item.gender,
+        userid: item.userid,
+        productId: item.productId,
+        productname: item.productname,
+        nooftickets: item.nooftickets,
+        ticketunit: item.ticketunit,
+        quantity: item.quantity,
+        ticketprice: Number(item.ticketprice).toLocaleString(),
+        ticketpurdate: item.ticketpurdate,
+        raffledrawdate: item.raffledrawdate,
+        raffledrawtime: item.raffledrawtime,
+      }));
+
+      exportToXLS(exportData, {
+        title: "Auction Transaction Report",
+        fileName: "Auction_Transaction_Report",
+        columns: [
+          { key: 'customername', header: 'Customer Name', width: 20 },
+          { key: 'email', header: 'Email Address', width: 25 },
+          { key: 'phone', header: 'Phone Number', width: 15 },
+          { key: 'gender', header: 'Gender', width: 10 },
+          { key: 'userid', header: 'User ID', width: 12 },
+          { key: 'productId', header: 'Product ID', width: 12 },
+          { key: 'productname', header: 'Product Name', width: 25 },
+          { key: 'nooftickets', header: 'Number of Tickets', width: 20, formatter: (value: string[]) => value.join(', ') },
+          { key: 'ticketunit', header: 'Unit Ticket Rate (NGN)', width: 15 },
+          { key: 'quantity', header: 'Quantity', width: 10 },
+          { key: 'ticketprice', header: 'Ticket Price (NGN)', width: 15 },
+          { key: 'ticketpurdate', header: 'Ticket Purchase Date', width: 18, formatter: (value: string) => new Date(value).toLocaleDateString() },
+          { key: 'raffledrawdate', header: 'Raffle Draw Date', width: 15, formatter: (value: string) => new Date(value).toLocaleDateString() },
+          { key: 'raffledrawtime', header: 'Raffle Draw Time', width: 12 },
+        ],
+        summaryRows: [
+          { label: 'Total Records', value: exportData.length },
+          { label: 'Total Amount', value: formatCurrency(exportData.reduce((sum, item) => sum + item.ticketprice, 0)) },
+          { label: 'Generated', value: new Date().toLocaleString() },
+        ]
+      });
+      setShowDownloadModal(false);
+    } catch (e) {
+      alert('Failed to prepare Excel export.');
+    }
   };
 
   const columnsA = [
@@ -383,10 +538,10 @@ export default function Page() {
         </div>
       ),
     },
-    { key: "ticketunit", label: "UNIT TICKET RATE (NGN)" },
+    { key: "ticketunit", label: "UNIT TICKET RATE (NGN)", render: (row: any) => formatCurrency(row.ticketunit) },
     { key: "quantity", label: "QUANTITY" },
-    { key: "ticketprice", label: "TICKET PRICE (NGN)", sum: true },
-    { key: "ticketpurdate", label: "TICKET PURCHASE DATE" },
+    { key: "ticketprice", label: "TICKET REVENUE (NGN)", sum: true, render: (row: any) => formatCurrency(row.ticketprice) },
+    { key: "ticketpurdate", label: "TICKET PURCHASE DATE", render: (row: any) => (row.ticketpurdate ? new Date(row.ticketpurdate).toLocaleDateString("en-US") : "") },
     { key: "raffledrawdate", label: "RAFFLE DRAW DATE" },
     { key: "raffledrawtime", label: "RAFFLE DRAW TIME" },
   ];

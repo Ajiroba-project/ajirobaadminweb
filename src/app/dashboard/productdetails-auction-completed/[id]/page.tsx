@@ -9,6 +9,7 @@ import Cookies from "js-cookie";
 import { useGetDatanew } from "@/hooks/useGetData";
 import { FaStar } from "react-icons/fa6";
 import Loading from "@/app/components/Loading";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 export default function ProductDetailsAuctionPage() {
     // Mock data (replace with real data fetching logic)
@@ -134,11 +135,13 @@ export default function ProductDetailsAuctionPage() {
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Ticket amount:</span>
-                                    <span className="font-semibold text-[#222]">{prodInfo?.data?.product_info.ticket_amount}</span>
+                                    <span className="font-semibold text-[#222]">{formatCurrency(prodInfo?.data?.product_info.ticket_amount)}</span>
+                                    
                                 </div>
                                 <div className="flex gap-2 text-base md:text-lg flex-wrap">
                                     <span className="text-[#7B7B7B] font-medium">Total amount:</span>
-                                    <span className="font-semibold text-[#F25E26]">{prodInfo?.data?.product_info.total_amount}</span>
+                                    <span className="font-semibold text-[#F25E26]">{formatCurrency(prodInfo?.data?.product_info.total_amount)}</span>
+                                   
                                 </div>
                             </div>
                         </div>
