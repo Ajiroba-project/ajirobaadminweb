@@ -15,6 +15,7 @@ import { useGetDatanew } from "@/hooks/useGetData";
 import Loading from "@/app/components/Loading";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 import { formatCurrency } from "@/utils/formatCurrency";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 // Define the API response types
 interface Ticket {
@@ -126,6 +127,17 @@ export default function Page() {
     params.append('page', currentPage.toString());
 
     switch (dateFilter) {
+      case 'yesterday': {
+        // const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const todayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+        const yStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+        params.append('filter', 'custom');
+        params.append('start_date', todayStr);
+        params.append('end_date', yStr);
+        break;
+      }
       case 'last_week':
         params.append('filter', 'last_week');
         break;
@@ -592,120 +604,38 @@ export default function Page() {
             )}
           </div>
 
-          {/* Sort by dropdown */}
-          <div className="relative sort-dropdown">
-            <button
-              onClick={() => setShowSortDropdown(!showSortDropdown)}
-              className="w-full md:w-auto px-4 py-2 border border-[#E9E9E9] rounded-md bg-white text-[#353131] text-sm font-Poppins focus:outline-none focus:ring-2 focus:ring-[#F25E26] flex items-center justify-between min-w-[120px]"
-            >
-              {dateFilter ? dateFilter.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Sort by'}
-              <svg
-                className={`ml-2 h-4 w-4 transition-transform ${showSortDropdown ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            
-            {showSortDropdown && (
-              <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-10">
-                <div className="p-2 space-y-1">
-                  {[
-                    { value: 'last_week', label: 'Last Week' },
-                    { value: 'last_month', label: 'Last Month' },
-                    { value: 'last_year', label: 'Last Year' },
-                    { value: 'custom', label: 'Custom' }
-                  ].map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => {
-                        setDateFilter(option.value);
-                        if (option.value === 'custom') {
-                          setShowCustomDatePicker(true);
-                          setShowSortDropdown(false);
-                        } else {
-                          setShowSortDropdown(false);
-                        }
-                      }}
-                      className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-50 ${
-                        dateFilter === option.value ? 'bg-[#F25E26] text-white' : 'text-[#353131]'
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                  {dateFilter && (
-                    <div className="pt-2 border-t border-gray-200">
-                      <button
-                        onClick={() => {
-                          setDateFilter('');
-                          setCustomDateRange({ start: '', end: '' });
-                          setShowSortDropdown(false);
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded"
-                      >
-                        Clear filter
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Custom Date Picker - Positioned relative to the sort dropdown */}
-            {showCustomDatePicker && (
-              <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-20 p-4">
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-[#353131]">Select Date Range</h3>
-                  <div className="space-y-2">
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">Start Date</label>
-                      <input
-                        type="date"
-                        value={customDateRange.start}
-                        onChange={(e) => setCustomDateRange({ ...customDateRange, start: e.target.value })}
-                        className="w-full px-3 py-2 border border-[#E9E9E9] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#F25E26]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">End Date</label>
-                      <input
-                        type="date"
-                        value={customDateRange.end}
-                        onChange={(e) => setCustomDateRange({ ...customDateRange, end: e.target.value })}
-                        className="w-full px-3 py-2 border border-[#E9E9E9] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#F25E26]"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-2 pt-2">
-                    <button
-                      onClick={() => {
-                        if (customDateRange.start && customDateRange.end) {
-                          setShowCustomDatePicker(false);
-                          // Reset to page 1 when applying custom filter
-                          setCurrentPage(1);
-                        }
-                      }}
-                      className="flex-1 px-3 py-2 bg-[#F25E26] text-white text-sm rounded-md hover:bg-[#d63918]"
-                    >
-                      Apply
-                    </button>
-                    <button
-                      onClick={() => {
-                        setCustomDateRange({ start: '', end: '' });
-                        setShowCustomDatePicker(false);
-                      }}
-                      className="flex-1 px-3 py-2 border border-[#E9E9E9] text-[#353131] text-sm rounded-md hover:bg-gray-50"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+          {/* Date range filter (seamless like customersreport) */}
+          <div className="">
+            <Select value={dateFilter} onValueChange={(val) => setDateFilter(val)}>
+              <SelectTrigger className="h-10 w-[160px] rounded border px-3 selector">
+                <SelectValue placeholder="All Time" />
+              </SelectTrigger>
+              <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+                <SelectItem value="yesterday" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Yesterday</SelectItem>
+                <SelectItem value="last_week" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Week</SelectItem>
+                <SelectItem value="last_month" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Month</SelectItem>
+                <SelectItem value="last_year" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Year</SelectItem>
+                <SelectItem value="custom" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Custom</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+          {dateFilter === "custom" && (
+            <>
+              <input
+                type="date"
+                className="border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm"
+                value={customDateRange.start}
+                onChange={(e) => setCustomDateRange({ ...customDateRange, start: e.target.value })}
+              />
+              <span className="mx-1 text-xs sm:text-sm">to</span>
+              <input
+                type="date"
+                className="border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm"
+                value={customDateRange.end}
+                onChange={(e) => setCustomDateRange({ ...customDateRange, end: e.target.value })}
+              />
+            </>
+          )}
         </div>
       </div>
 

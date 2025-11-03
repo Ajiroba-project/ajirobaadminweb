@@ -11,6 +11,8 @@ import { DownloadModal } from "@/app/components/DownloadModal";
 import { exportToPDF, exportToXLS, exportToPDFTable, ExportData } from "@/utils/exportUtils";
 import { useGetDatanew } from "@/hooks/useGetData";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
+import axios from "axios";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 // TypeScript interfaces for API response
 interface ProductInfo {
@@ -113,20 +115,30 @@ export default function Page() {
   // Construct filter parameters for API
   const getFilterParams = () => {
     const params = new URLSearchParams();
-    
+
     if (currentPage > 1) {
       params.append('page', currentPage.toString());
     }
-    
-    if (dateFilter) {
+
+    // Seamless date filter handling (support 'yesterday' and 'custom')
+    if (dateFilter === 'yesterday') {
+      const today = new Date();
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      // const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      const todayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+      const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+      params.append('filter', 'custom');
+      params.append('start_date', todayStr);
+      params.append('end_date', yesterdayStr);
+    } else if (dateFilter === 'last_week' || dateFilter === 'last_month' || dateFilter === 'last_year') {
       params.append('filter', dateFilter);
-    }
-    
-    if (customDateRange.start && customDateRange.end) {
+    } else if (dateFilter === 'custom' && customDateRange.start && customDateRange.end) {
+      params.append('filter', 'custom');
       params.append('start_date', customDateRange.start);
       params.append('end_date', customDateRange.end);
     }
-    
+
     return params.toString();
   };
 
@@ -226,104 +238,253 @@ export default function Page() {
     setCurrentPage(page);
   };
 
-  // Download handlers
+  // Download handlers (export ALL pages with S/N like customersreport)
   const handleDownloadPDF = async () => {
-    const exportData: ExportData[] = transformedData.map((item) => ({
-      customername: item.customername,
-      email: item.email,
-      phone: item.phone,
-      gender: item.gender,
-      userid: item.userid,
-      productId: item.productId,
-      productname: item.productname,
-      costprice: item.costprice,
-      sellingprice: item.sellingprice,
-      discountprice: item.discountprice,
-      profit: item.profit,
-      vat: item.vat,
-      purchasetime: item.purchasetime,
-      modeofpayment: item.modeofpayment,
-      status: item.status,
-      quantity: item.quantity,
-      total_cost: item.total_cost
-    }));
+    try {
+      setShowDownloadModal(false);
 
-    setShowDownloadModal(false);
-    await exportToPDFTable(exportData, {
-      title: "Regular Customers Master Report",
-      fileName: "Regular_Customers_Master_Report",
-      columns: [
-        { key: 'customername', header: 'Customer Name' },
-        { key: 'email', header: 'Email' },
-        { key: 'phone', header: 'Phone' },
-        { key: 'gender', header: 'Gender' },
-        { key: 'userid', header: 'User ID' },
-        { key: 'productId', header: 'Product ID' },
-        { key: 'productname', header: 'Product Name' },
-        { key: 'costprice', header: 'Cost Price' },
-        { key: 'sellingprice', header: 'Selling Price' },
-        { key: 'discountprice', header: 'Discount Price' },
-        { key: 'profit', header: 'Profit' },
-        { key: 'vat', header: 'VAT' },
-        { key: 'purchasetime', header: 'Purchase Time' },
-        { key: 'modeofpayment', header: 'Mode of Payment' },
-        { key: 'status', header: 'Status' },
-        { key: 'quantity', header: 'Quantity' },
-        { key: 'total_cost', header: 'Total Cost' },
-      ],
-    });
+      const allRows: any[] = [];
+      const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/regular_customer_master_report/`;
+      const buildExportParams = () => {
+        const params = new URLSearchParams();
+        if (dateFilter === 'yesterday') {
+          const today = new Date();
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+          const yStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+          params.append('filter', 'custom');
+          params.append('start_date', todayStr);
+          params.append('end_date', yStr);
+        } else if (dateFilter === 'last_week' || dateFilter === 'last_month' || dateFilter === 'last_year') {
+          params.append('filter', dateFilter);
+        } else if (dateFilter === 'custom' && customDateRange.start && customDateRange.end) {
+          params.append('filter', 'custom');
+          params.append('start_date', customDateRange.start);
+          params.append('end_date', customDateRange.end);
+        }
+        return params.toString();
+      };
+      let nextUrl: string | null = `${baseUrl}?${buildExportParams()}`;
+      const headers = { headers: { Authorization: `Token ${userToken}` } } as const;
+
+      for (let i = 0; i < 200 && nextUrl; i++) {
+        const resp: any = await axios.get(nextUrl, headers);
+        const res: any = resp.data;
+        const pageItems: any[] = res?.results?.data || [];
+
+        pageItems.forEach((item) => {
+          const p: any = item.product_info || {};
+          const u: any = item.user_info || {};
+          const genderStr = u?.gender === true ? 'Male' : u?.gender === false ? 'Female' : 'N/A';
+          const dateDisp = p?.date_time
+            ? new Date(p.date_time).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()
+            : 'N/A';
+          const discount = (p?.discount ?? p?.discount_price ?? 0) as number;
+          const modeOfPayment = p?.mode_of_payment ?? p?.payment_method ?? 'N/A';
+
+          allRows.push({
+            customername: u?.customer_name || 'N/A',
+            email: u?.email || 'N/A',
+            phone: u?.phone || 'N/A',
+            gender: genderStr,
+            userid: u?.user_id || 'N/A',
+            productId: p?.product_no || 'N/A',
+            productname: p?.product_name || 'N/A',
+            costprice: Number(p?.cost_price || 0),
+            sellingprice: Number(p?.selling_price || 0),
+            discountprice: Number(discount || 0),
+            profit: Number(p?.profit || 0),
+            vat: p?.tax ?? p?.vat ?? '',
+            purchasetime: dateDisp,
+            modeofpayment: modeOfPayment,
+            status: p?.status || 'N/A',
+            quantity: Number(p?.quantity || 0),
+            total_cost: Number(p?.total_cost || 0),
+          });
+        });
+
+        nextUrl = res?.next || null;
+      }
+
+      if (allRows.length === 0) {
+        alert('No data available to export');
+        return;
+      }
+
+      const exportData: ExportData[] = allRows.map((row, idx) => ({
+        S_N: idx + 1,
+        customername: row.customername,
+        email: row.email,
+        phone: row.phone,
+        gender: row.gender,
+        userid: row.userid,
+        productId: row.productId,
+        productname: row.productname,
+        costprice: row.costprice,
+        sellingprice: row.sellingprice,
+        discountprice: row.discountprice,
+        profit: row.profit,
+        vat: row.vat,
+        purchasetime: row.purchasetime,
+        modeofpayment: row.modeofpayment,
+        status: row.status,
+        quantity: row.quantity,
+        total_cost: row.total_cost,
+      }));
+
+      await exportToPDFTable(exportData, {
+        title: "Regular Customers Master Report",
+        fileName: "Regular_Customers_Master_Report",
+        columns: [
+          { key: 'S_N', header: 'S/N' },
+          { key: 'customername', header: 'Customer Name' },
+          { key: 'email', header: 'Email' },
+          { key: 'phone', header: 'Phone' },
+          { key: 'gender', header: 'Gender' },
+          { key: 'userid', header: 'User ID' },
+          { key: 'productId', header: 'Product ID' },
+          { key: 'productname', header: 'Product Name' },
+          { key: 'costprice', header: 'Cost Price' },
+          { key: 'sellingprice', header: 'Selling Price' },
+          { key: 'discountprice', header: 'Discount Price' },
+          { key: 'profit', header: 'Profit' },
+          { key: 'vat', header: 'VAT' },
+          { key: 'purchasetime', header: 'Purchase Time' },
+          { key: 'modeofpayment', header: 'Mode of Payment' },
+          { key: 'status', header: 'Status' },
+          { key: 'quantity', header: 'Quantity' },
+          { key: 'total_cost', header: 'Total Cost' },
+        ],
+      });
+    } catch (err) {
+      alert('Failed to prepare PDF export.');
+    }
   };
 
-  const handleDownloadXLS = () => {
-    const exportData: ExportData[] = transformedData.map((item) => ({
-      customername: item.customername,
-      email: item.email,
-      phone: item.phone,
-      gender: item.gender,
-      userid: item.userid,
-      productId: item.productId,
-      productname: item.productname,
-      costprice: item.costprice,
-      sellingprice: item.sellingprice,
-      discountprice: item.discountprice,
-      profit: item.profit,
-      vat: item.vat,
-      purchasetime: item.purchasetime,
-      modeofpayment: item.modeofpayment,
-      status: item.status,
-      quantity: item.quantity,
-      total_cost: item.total_cost
-    }));
+  const handleDownloadXLS = async () => {
+    try {
+      setShowDownloadModal(false);
 
-    exportToXLS(exportData, {
-      title: "Regular Customers Master Report",
-      fileName: "Regular_Customers_Master_Report",
-      columns: [
-        { key: 'customername', header: 'Customer Name', width: 20 },
-        { key: 'email', header: 'Email Address', width: 25 },
-        { key: 'phone', header: 'Phone Number', width: 15 },
-        { key: 'gender', header: 'Gender', width: 10 },
-        { key: 'userid', header: 'User ID', width: 12 },
-        { key: 'productId', header: 'Product ID', width: 12 },
-        { key: 'productname', header: 'Product Name', width: 25 },
-        { key: 'costprice', header: 'Cost Price (NGN)', width: 15 },
-        { key: 'sellingprice', header: 'Selling Price (NGN)', width: 15 },
-        { key: 'discountprice', header: 'Discount Price (NGN)', width: 15 },
-        { key: 'profit', header: 'Profit (NGN)', width: 15 },
-        { key: 'vat', header: 'VAT', width: 10 },
-        { key: 'purchasetime', header: 'Purchase Time', width: 18 },
-        { key: 'modeofpayment', header: 'Mode of Payment', width: 15 },
-        { key: 'quantity', header: 'Quantity', width: 10 },
-        { key: 'totalcost', header: 'Total Cost', width: 10 },
-        { key: 'status', header: 'Status', width: 12 },
-      ],
-      summaryRows: [
-        { label: 'Total Records', value: exportData.length },
-        { label: 'Total Profit', value: `₦${exportData.reduce((sum, item) => sum + item.profit, 0).toLocaleString()}` },
-        { label: 'Generated', value: new Date().toLocaleString() },
-      ]
-    });
-    setShowDownloadModal(false);
+      const allRows: any[] = [];
+      const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/regular_customer_master_report/`;
+      const buildExportParams = () => {
+        const params = new URLSearchParams();
+        if (dateFilter === 'yesterday') {
+          const today = new Date();
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+          const yStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+          params.append('filter', 'custom');
+          params.append('start_date', todayStr);
+          params.append('end_date', yStr);
+        } else if (dateFilter === 'last_week' || dateFilter === 'last_month' || dateFilter === 'last_year') {
+          params.append('filter', dateFilter);
+        } else if (dateFilter === 'custom' && customDateRange.start && customDateRange.end) {
+          params.append('filter', 'custom');
+          params.append('start_date', customDateRange.start);
+          params.append('end_date', customDateRange.end);
+        }
+        return params.toString();
+      };
+      let nextUrl: string | null = `${baseUrl}?${buildExportParams()}`;
+      const headers = { headers: { Authorization: `Token ${userToken}` } } as const;
+
+      for (let i = 0; i < 200 && nextUrl; i++) {
+        const resp: any = await axios.get(nextUrl, headers);
+        const res: any = resp.data;
+        const pageItems: any[] = res?.results?.data || [];
+        pageItems.forEach((item) => {
+          const p: any = item.product_info || {};
+          const u: any = item.user_info || {};
+          const genderStr = u?.gender === true ? 'Male' : u?.gender === false ? 'Female' : 'N/A';
+          const dateDisp = p?.date_time
+            ? new Date(p.date_time).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()
+            : 'N/A';
+          const discount = (p?.discount ?? p?.discount_price ?? 0) as number;
+          const modeOfPayment = p?.mode_of_payment ?? p?.payment_method ?? 'N/A';
+          allRows.push({
+            customername: u?.customer_name || 'N/A',
+            email: u?.email || 'N/A',
+            phone: u?.phone || 'N/A',
+            gender: genderStr,
+            userid: u?.user_id || 'N/A',
+            productId: p?.product_no || 'N/A',
+            productname: p?.product_name || 'N/A',
+            costprice: Number(p?.cost_price || 0),
+            sellingprice: Number(p?.selling_price || 0),
+            discountprice: Number(discount || 0),
+            profit: Number(p?.profit || 0),
+            vat: p?.tax ?? p?.vat ?? '',
+            purchasetime: dateDisp,
+            modeofpayment: modeOfPayment,
+            status: p?.status || 'N/A',
+            quantity: Number(p?.quantity || 0),
+            total_cost: Number(p?.total_cost || 0),
+          });
+        });
+        nextUrl = res?.next || null;
+      }
+
+      if (allRows.length === 0) {
+        alert('No data available to export');
+        return;
+      }
+
+      const exportData: ExportData[] = allRows.map((item, idx) => ({
+        S_N: idx + 1,
+        customername: item.customername,
+        email: item.email,
+        phone: item.phone,
+        gender: item.gender,
+        userid: item.userid,
+        productId: item.productId,
+        productname: item.productname,
+        costprice: item.costprice,
+        sellingprice: item.sellingprice,
+        discountprice: item.discountprice,
+        profit: item.profit,
+        vat: item.vat,
+        purchasetime: item.purchasetime,
+        modeofpayment: item.modeofpayment,
+        quantity: item.quantity,
+        total_cost: item.total_cost,
+        status: item.status,
+      }));
+
+      exportToXLS(exportData, {
+        title: "Regular Customers Master Report",
+        fileName: "Regular_Customers_Master_Report",
+        columns: [
+          { key: 'S_N', header: 'S/N', width: 8 },
+          { key: 'customername', header: 'Customer Name', width: 20 },
+          { key: 'email', header: 'Email Address', width: 25 },
+          { key: 'phone', header: 'Phone Number', width: 15 },
+          { key: 'gender', header: 'Gender', width: 10 },
+          { key: 'userid', header: 'User ID', width: 12 },
+          { key: 'productId', header: 'Product ID', width: 12 },
+          { key: 'productname', header: 'Product Name', width: 25 },
+          { key: 'costprice', header: 'Cost Price (NGN)', width: 15 },
+          { key: 'sellingprice', header: 'Selling Price (NGN)', width: 15 },
+          { key: 'discountprice', header: 'Discount Price (NGN)', width: 15 },
+          { key: 'profit', header: 'Profit (NGN)', width: 15 },
+          { key: 'vat', header: 'VAT', width: 10 },
+          { key: 'purchasetime', header: 'Purchase Time', width: 18 },
+          { key: 'modeofpayment', header: 'Mode of Payment', width: 15 },
+          { key: 'quantity', header: 'Quantity', width: 10 },
+          { key: 'total_cost', header: 'Total Cost', width: 12 },
+          { key: 'status', header: 'Status', width: 12 },
+        ],
+        summaryRows: [
+          { label: 'Total Records', value: exportData.length },
+          { label: 'Total Profit', value: `₦${exportData.reduce((sum: number, it: any) => sum + Number(it.profit || 0), 0).toLocaleString()}` },
+          { label: 'Generated', value: new Date().toLocaleString() },
+        ]
+      });
+    } catch (err) {
+      alert('Failed to prepare Excel export.');
+    }
   };
 
   const columnsRegular = [
@@ -615,121 +776,40 @@ export default function Page() {
             )}
           </div>
 
-          {/* Sort by dropdown */}
-          <div className="relative sort-dropdown">
-            <button
-              onClick={() => setShowSortDropdown(!showSortDropdown)}
-              className="w-full md:w-auto px-4 py-2 border border-[#E9E9E9] rounded-md bg-white text-[#353131] text-sm font-Poppins focus:outline-none focus:ring-2 focus:ring-[#F25E26] flex items-center justify-between min-w-[120px]"
-            >
-              {dateFilter ? dateFilter.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Sort by'}
-              <svg
-                className={`ml-2 h-4 w-4 transition-transform ${showSortDropdown ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            
-            {showSortDropdown && (
-              <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-10">
-                <div className="p-2 space-y-1">
-                  {[
-                    { value: 'last_week', label: 'Last Week' },
-                    { value: 'last_month', label: 'Last Month' },
-                    { value: 'last_year', label: 'Last Year' },
-                    { value: 'custom', label: 'Custom' }
-                  ].map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => {
-                        setDateFilter(option.value);
-                        if (option.value === 'custom') {
-                          setShowCustomDatePicker(true);
-                          setShowSortDropdown(false);
-                        } else {
-                          setShowSortDropdown(false);
-                        }
-                      }}
-                      className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-50 ${
-                        dateFilter === option.value ? 'bg-[#F25E26] text-white' : 'text-[#353131]'
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                  {dateFilter && (
-                    <div className="pt-2 border-t border-gray-200">
-                      <button
-                        onClick={() => {
-                          setDateFilter('');
-                          setCustomDateRange({ start: '', end: '' });
-                          setShowSortDropdown(false);
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded"
-                      >
-                        Clear filter
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Custom Date Picker */}
-            {showCustomDatePicker && (
-              <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-[#E9E9E9] rounded-md shadow-lg z-20 p-4">
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-[#353131]">Select Date Range</h3>
-                  <div className="space-y-2">
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">Start Date</label>
-                      <input
-                        type="date"
-                        value={customDateRange.start}
-                        onChange={(e) => setCustomDateRange({ ...customDateRange, start: e.target.value })}
-                        className="w-full px-3 py-2 border border-[#E9E9E9] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#F25E26]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">End Date</label>
-                      <input
-                        type="date"
-                        value={customDateRange.end}
-                        onChange={(e) => setCustomDateRange({ ...customDateRange, end: e.target.value })}
-                        className="w-full px-3 py-2 border border-[#E9E9E9] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#F25E26]"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-2 pt-2">
-                    <button
-                      onClick={() => {
-                        if (customDateRange.start && customDateRange.end) {
-                          setShowCustomDatePicker(false);
-                        }
-                      }}
-                      className="flex-1 px-3 py-2 bg-[#F25E26] text-white text-sm rounded-md hover:bg-[#d63918]"
-                    >
-                      Apply
-                    </button>
-                    <button
-                      onClick={() => {
-                        setCustomDateRange({ start: '', end: '' });
-                        setShowCustomDatePicker(false);
-                      }}
-                      className="flex-1 px-3 py-2 border border-[#E9E9E9] text-[#353131] text-sm rounded-md hover:bg-gray-50"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+          {/* Date range filter (seamless like customersreport) */}
+          <div className="">
+            <Select value={dateFilter} onValueChange={(val) => setDateFilter(val)}>
+              <SelectTrigger className="h-10 w-[160px] rounded border px-3 selector">
+                <SelectValue placeholder="All Time" />
+              </SelectTrigger>
+              <SelectContent style={{ backgroundColor: '#ffffff', color: '#2A2A2A' }}>
+                <SelectItem value="yesterday" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Yesterday</SelectItem>
+                <SelectItem value="last_week" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Week</SelectItem>
+                <SelectItem value="last_month" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Month</SelectItem>
+                <SelectItem value="last_year" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Last Year</SelectItem>
+                <SelectItem value="custom" className='data-[highlighted]:bg-[#FCDFD4] data-[state=checked]:bg-[#FCDFD4] data-[state=checked]:text-[#111827]'>Custom</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {dateFilter === "custom" && (
+            <>
+              <input
+                type="date"
+                className="border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm"
+                value={customDateRange.start}
+                onChange={(e) => setCustomDateRange({ ...customDateRange, start: e.target.value })}
+              />
+              <span className="mx-1 text-xs sm:text-sm">to</span>
+              <input
+                type="date"
+                className="border border-gray-300 rounded px-2 py-1 text-xs sm:text-sm"
+                value={customDateRange.end}
+                onChange={(e) => setCustomDateRange({ ...customDateRange, end: e.target.value })}
+              />
+            </>
+          )}
           </div>
         </div>
-      </div>
-
       <div className=" bg-white rounded-lg shadow border mt-6 mb-12 overflow-x-scroll overflow-y-scroll px-4 md:px-14 py-4">
         <div className="flex flex-row items-center gap-4 px-4 md:px-8 pt-8 pb-2">
           <AjirobaLogo />

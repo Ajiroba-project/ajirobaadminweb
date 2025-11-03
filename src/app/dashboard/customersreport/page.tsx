@@ -176,7 +176,7 @@ export default function Page() {
       customername: d.customer_name || "",
       walletbalance: Number(d.wallet_balance || 0),
       phonenumber: d.phone_no || "",
-      wallet_point: <p className="text-[#F25E26] hover:text-[#d63918] underline cursor-pointer" onClick={() => { setPointsUserId(id || ""); setIsPointsModalOpen(true); }}>{(d.wallet_point || 0)}</p>,
+      wallet_point: <p className="text-[#F25E26] hover:text-[#d63918] underline cursor-pointer" onClick={() => { setPointsUserId(id || ""); setIsPointsModalOpen(true); }}>{Number(d.wallet_point || 0).toLocaleString()}</p>,
       email: d.email || "",
       gender: genderStr.toLowerCase(),
       address: d.address || "",
@@ -291,10 +291,31 @@ export default function Page() {
     try {
       setShowDownloadModal(false);
 
-      // Fetch all pages to export full dataset
+      // Fetch all pages to export full dataset (start from first page, ignore currentPage)
       const allRows: any[] = [];
       const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/customer_statistics_report/`;
-      let nextUrl: string | null = `${baseUrl}?${paramsString}`;
+      const buildExportParams = () => {
+        const params = new URLSearchParams();
+        if (dateFilter === "yesterday") {
+          const today = new Date();
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+          const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+          params.append("filter", "custom");
+          params.append("start_date", todayStr);
+          params.append("end_date", yesterdayStr);
+        } else if (dateFilter === "last_week") params.append("filter", "last_week");
+        else if (dateFilter === "last_month") params.append("filter", "last_month");
+        else if (dateFilter === "last_year") params.append("filter", "last_year");
+        else if (dateFilter === "custom" && customDateRange.start && customDateRange.end) {
+          params.append("filter", "custom");
+          params.append("start_date", customDateRange.start);
+          params.append("end_date", customDateRange.end);
+        }
+        return params.toString();
+      };
+      let nextUrl: string | null = `${baseUrl}?${buildExportParams()}`;
       const headers = { headers: { Authorization: `Token ${userToken}` } } as const;
 
       for (let i = 0; i < 200 && nextUrl; i++) {
@@ -322,6 +343,7 @@ export default function Page() {
             customername: d.customer_name || "",
             walletbalance: Number(d.wallet_balance || 0),
             phonenumber: d.phone_no || "",
+            wallet_point: Number(d.wallet_point || 0),
             email: d.email || "",
             gender: genderStr.toLowerCase(),
             address: d.address || "",
@@ -345,6 +367,7 @@ export default function Page() {
         Customer_Name: row.customername,
         Wallet_Balance: row.walletbalance,
         Phone_Number: row.phonenumber,
+        Wallet_Point: Number(row.wallet_point || 0).toLocaleString(),
         Email: row.email,
         Gender: row.gender,
         Address: row.address,
@@ -361,6 +384,7 @@ export default function Page() {
           { key: 'Customer_Name', header: 'Customer Name' },
           { key: 'Wallet_Balance', header: 'Wallet Balance (₦)' },
           { key: 'Phone_Number', header: 'Phone Number' },
+          { key: 'Wallet_Point', header: 'Wallet Point' },
           { key: 'Email', header: 'Email' },
           { key: 'Gender', header: 'Gender' },
           { key: 'Address', header: 'Address' },
@@ -378,10 +402,31 @@ export default function Page() {
     try {
       setShowDownloadModal(false);
 
-      // Fetch all pages
+      // Fetch all pages (start from first page, ignore currentPage)
       const allRows: any[] = [];
       const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/customer_statistics_report/`;
-      let nextUrl: string | null = `${baseUrl}?${paramsString}`;
+      const buildExportParams = () => {
+        const params = new URLSearchParams();
+        if (dateFilter === "yesterday") {
+          const today = new Date();
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+          const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+          params.append("filter", "custom");
+          params.append("start_date", todayStr);
+          params.append("end_date", yesterdayStr);
+        } else if (dateFilter === "last_week") params.append("filter", "last_week");
+        else if (dateFilter === "last_month") params.append("filter", "last_month");
+        else if (dateFilter === "last_year") params.append("filter", "last_year");
+        else if (dateFilter === "custom" && customDateRange.start && customDateRange.end) {
+          params.append("filter", "custom");
+          params.append("start_date", customDateRange.start);
+          params.append("end_date", customDateRange.end);
+        }
+        return params.toString();
+      };
+      let nextUrl: string | null = `${baseUrl}?${buildExportParams()}`;
       const headers = { headers: { Authorization: `Token ${userToken}` } } as const;
 
       for (let i = 0; i < 200 && nextUrl; i++) {
@@ -406,6 +451,7 @@ export default function Page() {
             customername: d.customer_name || "",
             walletbalance: Number(d.wallet_balance || 0),
             phonenumber: d.phone_no || "",
+            wallet_point: d.wallet_point || 0,
             email: d.email || "",
             gender: genderStr.toLowerCase(),
             address: d.address || "",
@@ -427,6 +473,7 @@ export default function Page() {
         Customer_Name: item.customername,
         Wallet_Balance: item.walletbalance,
         Phone_Number: item.phonenumber,
+        Wallet_Point: item.wallet_point,
         Email: item.email,
         Gender: item.gender,
         Address: item.address,
@@ -444,6 +491,7 @@ export default function Page() {
           { key: 'Wallet_Balance', header: 'Wallet Balance (₦)', width: 18 },
           { key: 'Phone_Number', header: 'Phone Number', width: 15 },
           { key: 'Email', header: 'Email', width: 25 },
+          { key: 'Wallet_Point', header: 'Wallet Point', width: 15, formatter: (v: any) => Number(v || 0).toLocaleString() },
           { key: 'Gender', header: 'Gender', width: 10 },
           { key: 'Address', header: 'Address', width: 30 },
           { key: 'State', header: 'State', width: 12 },

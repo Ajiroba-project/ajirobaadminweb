@@ -17,6 +17,7 @@ import { Pagination } from "@/app/components/Pagination";
 import { FaSearch } from "react-icons/fa";
 import ModalComponent from "@/app/components/ModalComponent";
 import useAuthMiddleware from "@/hooks/useAuthMiddleware";
+import { toast } from 'react-toastify';
 
 
 export default function ProductDetailsAuctionPage() {
@@ -27,6 +28,7 @@ export default function ProductDetailsAuctionPage() {
     const [userToken, setUserToken] = useState(Cookies.get("token"));
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalUser, setModalUser] = useState(null); // To know which user triggered the modal (optional for future API)
+    const [isNotifying, setIsNotifying] = useState(false);
 
     // Product details API
     let url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/view_admin_auction/${id}`;
@@ -46,6 +48,7 @@ const {
     data: winnerInfo,
     isLoading: winnerLoading,
     error: winnerError,
+    refetch: refetchWinners,
 } = useGetDatanew(urla, "get_prod_details", userToken || " ");
 
     //  console.log(winnerInfo?.data, 'winnerinfo')
@@ -68,6 +71,7 @@ const {
       ?.flatMap((group: any, index: number) =>
         group.winners_info.map((user: any, i: number) => ({
           id: user.ticket_id || `${index}-${i}`,
+          user_id: user.user_id || user.id || user.userId, // needed for notify API
           first_name: user.first_name || 'N/A',
           surname: user.last_name || 'N/A',
           email: user.email || 'N/A',
@@ -83,6 +87,42 @@ const {
         (user: any, index: number, self: any) =>
           index === self.findIndex((u: any) => u.ticket_number === user.ticket_number)
       ) || [];
+
+    const handleNotify = async () => {
+        try {
+            if (!modalUser) {
+                toast.error('No winner selected');
+                return;
+            }
+            const productNo = prodInfo?.data?.product_info?.product_no;
+            const userId = (modalUser as any)?.user_id;
+            if (!productNo || !userId) {
+                toast.error('Missing required data to notify winner');
+                return;
+            }
+            setIsNotifying(true);
+            const res = await fetch('/api/notify_winner/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Token ${userToken}`,
+                },
+                body: JSON.stringify({ product_no: productNo, user_id: userId }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                toast.success(data?.message || 'Winners notified successfully.');
+                setIsModalOpen(false);
+                await refetchWinners();
+            } else {
+                toast.error(data?.message || 'Failed to notify winner');
+            }
+        } catch (e) {
+            toast.error('An unexpected error occurred');
+        } finally {
+            setIsNotifying(false);
+        }
+    };
   
   
 
@@ -341,9 +381,10 @@ const {
                         <div className="flex flex-col gap-4 w-full items-center">
                             <button
                                 className="w-full bg-[#FDE6DF] text-[#222] font-Poppins font-medium rounded-lg py-3 mb-2 border-none focus:outline-none hover:bg-[#fcd2c2] transition"
-                                onClick={() => setIsModalOpen(false)}
+                                onClick={handleNotify}
+                                disabled={isNotifying}
                             >
-                                Yes
+                                {isNotifying ? 'Notifying…' : 'Yes'}
                             </button>
                             <button
                                 className="w-full bg-white text-[#222] font-Poppins font-medium rounded-lg py-3 border border-[#F25E26] focus:outline-none hover:bg-[#f9e3db] transition"

@@ -14,6 +14,7 @@ import useAuthMiddleware from "@/hooks/useAuthMiddleware";
 import Loading from "@/app/components/Loading";
 // import Loading from "@/app/components/Loading";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import axios from "axios";
 
 // TypeScript interfaces for API response
 interface ProductInfo {
@@ -121,14 +122,12 @@ export default function Page() {
   }
 
   if (debouncedDateFilter === 'yesterday') {
-    const today = new Date();
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-    const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
-    // Map 'Yesterday' to custom range (today -> yesterday)
-    params.append('raffle_start_date', todayStr);
-    params.append('raffle_end_date', yesterdayStr);
+    const yStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+    // Use the same date for start and end to represent "yesterday"
+    params.append('raffle_start_date', yStr);
+    params.append('raffle_end_date', yStr);
   } else if (debouncedDateFilter === 'custom') {
     if (debouncedStart && debouncedEnd) {
       params.append('raffle_start_date', debouncedStart);
@@ -404,58 +403,7 @@ const transformApiData = (apiData: any): any[] => {
       );
     }
 
-    // Date filtering - filter by raffle date
-    if (dateFilter === 'custom' && customDateRange.start && customDateRange.end) {
-      filteredData = filteredData.filter((item) => {
-        if (!item.raffledate || item.raffledate === 'N/A') return false;
-        
-        const raffleDate = new Date(item.raffledate);
-        const startDate = new Date(customDateRange.start);
-        const endDate = new Date(customDateRange.end);
-        
-        return raffleDate >= startDate && raffleDate <= endDate;
-      });
-    } else if (dateFilter && dateFilter !== 'custom') {
-      // Handle predefined date ranges
-      const now = new Date();
-      let startDate: Date, endDate: Date;
-      
-      switch (dateFilter) {
-        case 'yesterday': {
-          const today = new Date();
-          const yesterday = new Date();
-          yesterday.setDate(yesterday.getDate() - 1);
-
-          const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-          const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
-
-          startDate = new Date(yesterdayStr);
-          endDate = new Date(todayStr);
-          break;
-        }
-        case 'last_week':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          endDate = now;
-          break;
-        case 'last_month':
-          startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-          endDate = now;
-          break;
-        case 'last_year':
-          startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-          endDate = now;
-          break;
-        default:
-          return filteredData;
-      }
-      
-      filteredData = filteredData.filter((item) => {
-        if (!item.raffledate || item.raffledate === 'N/A') return false;
-        
-        const raffleDate = new Date(item.raffledate);
-        return raffleDate >= startDate && raffleDate <= endDate;
-      });
-    }
+  // Date filtering handled by backend via raffle_filter/raffle_start_date/raffle_end_date
 
     return filteredData;
   };
@@ -471,61 +419,175 @@ const transformApiData = (apiData: any): any[] => {
   //   console.log('Search:', search);
   // }, [transformedData.length, displayData.length, dateFilter, customDateRange, search]);
 
-  // Download handlers
+  // Download handlers (export ALL pages with S/N)
   const handleDownloadPDF = async () => {
-    const exportData: ExportData[] = displayData.map((item) => ({
-      productId: item.productId,
-      productName: item.productName,
-      numberOfTickets: item.ticketno,
-      ticketprice: item.ticketprice,
-      totalGtv: item.ticketgtv,
-      rda: item.ticketrda,
-      eca: item.ticketeca,
-    }));
-    setShowDownloadModal(false);
-    await exportToPDFTable(exportData, {
-      title: "Auction Transaction Report",
-      fileName: "Auction_Transaction_Report",
-      columns: [
-        { key: 'productId', header: 'Product ID' },
-        { key: 'productName', header: 'Product Name' },
-        { key: 'numberOfTickets', header: 'Number of Tickets' },
-        { key: 'ticketprice', header: 'Ticket Price' },
-        { key: 'totalGtv', header: 'Total GTV' },
-        { key: 'rda', header: 'RDA' },
-        { key: 'eca', header: 'ECA' },
-      ],
-    });
+    try {
+      setShowDownloadModal(false);
+
+      const allRows: any[] = [];
+      const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/auction_transaction_report/`;
+      const buildExportParams = () => {
+        const params = new URLSearchParams();
+        if (dateFilter === 'yesterday') {
+          const y = new Date();
+          y.setDate(y.getDate() - 1);
+          const yStr = `${y.getFullYear()}-${String(y.getMonth() + 1).padStart(2, '0')}-${String(y.getDate()).padStart(2, '0')}`;
+          params.append('raffle_start_date', yStr);
+          params.append('raffle_end_date', yStr);
+        } else if (dateFilter === 'custom' && customDateRange.start && customDateRange.end) {
+          params.append('raffle_start_date', customDateRange.start);
+          params.append('raffle_end_date', customDateRange.end);
+        } else if (dateFilter) {
+          params.append('raffle_filter', dateFilter);
+        }
+        return params.toString();
+      };
+
+      let nextUrl: string | null = `${baseUrl}?${buildExportParams()}`;
+      const headers = { headers: { Authorization: `Token ${userToken}` } } as const;
+
+      for (let i = 0; i < 200 && nextUrl; i++) {
+        const resp: any = await axios.get(nextUrl, headers);
+        const res: any = resp.data;
+        const pageItems: any[] = res?.results?.data || [];
+
+        pageItems.forEach((item) => {
+          const p: any = item.auction_info?.[0] || {};
+          const t: any = item.ticket_details || {};
+          const s: any = item.settlement_details || {};
+          allRows.push({
+            productId: p?.product_no || 'N/A',
+            productName: p?.product_name || 'N/A',
+            numberOfTickets: Number(t?.no_of_tickets || 0),
+            ticketprice: Number(t?.ticket_price || 0),
+            totalGtv: Number(t?.ticket_gtv || 0),
+            rda: Number(s?.rda || 0),
+            eca: Number(s?.eca || 0),
+          });
+        });
+
+        nextUrl = res?.next || null;
+      }
+
+      if (allRows.length === 0) {
+        alert('No data available to export');
+        return;
+      }
+
+      const exportData: ExportData[] = allRows.map((row, idx) => ({
+        S_N: idx + 1,
+        productId: row.productId,
+        productName: row.productName,
+        numberOfTickets: row.numberOfTickets,
+        ticketprice: row.ticketprice,
+        totalGtv: row.totalGtv,
+        rda: row.rda,
+        eca: row.eca,
+      }));
+
+      await exportToPDFTable(exportData, {
+        title: 'Auction Transaction Report',
+        fileName: 'Auction_Transaction_Report',
+        columns: [
+          { key: 'S_N', header: 'S/N' },
+          { key: 'productId', header: 'Product ID' },
+          { key: 'productName', header: 'Product Name' },
+          { key: 'numberOfTickets', header: 'Number of Tickets' },
+          { key: 'ticketprice', header: 'Ticket Price (NGN)' },
+          { key: 'totalGtv', header: 'Total GTV (NGN)' },
+          { key: 'rda', header: 'RDA (NGN)' },
+          { key: 'eca', header: 'ECA (NGN)' },
+        ],
+      });
+    } catch (err) {
+      alert('Failed to prepare PDF export.');
+    }
   };
 
-  const handleDownloadXLS = () => {
-    const exportData: ExportData[] = displayData.map((item) => ({
-      productId: item.productId,
-      productName: item.productName,
-      numberOfTickets: item.ticketno,
-      ticketprice: item.ticketprice,
-      totalGtv: item.ticketgtv,
-      rda: item.ticketrda,
-      eca: item.ticketeca,
-    }));
-    exportToXLS(exportData, {
-      title: "Auction Transaction Report",
-      fileName: "Auction_Transaction_Report",
-      columns: [
-        { key: "productId", header: "Product ID", width: 15 },
-        { key: "productName", header: "Product Name", width: 20 },
-        { key: "numberOfTickets", header: "Number of Tickets", width: 15 },
-        { key: "ticketPrice", header: "Ticket Price (NGN)", width: 15 },
-        { key: "totalGtv", header: "Total GTV (NGN)", width: 15 },
-        { key: "rda", header: "RDA (NGN)", width: 15 },
-        { key: "eca", header: "ECA (NGN)", width: 15 },
-      ],
-      summaryRows: [
-        { label: "Total Records", value: exportData.length },
-        { label: "Generated", value: new Date().toLocaleString() },
-      ],
-    });
-    setShowDownloadModal(false);
+  const handleDownloadXLS = async () => {
+    try {
+      setShowDownloadModal(false);
+
+      const allRows: any[] = [];
+      const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/auction_transaction_report/`;
+      const buildExportParams = () => {
+        const params = new URLSearchParams();
+        if (dateFilter === 'yesterday') {
+          const y = new Date();
+          y.setDate(y.getDate() - 1);
+          const yStr = `${y.getFullYear()}-${String(y.getMonth() + 1).padStart(2, '0')}-${String(y.getDate()).padStart(2, '0')}`;
+          params.append('raffle_start_date', yStr);
+          params.append('raffle_end_date', yStr);
+        } else if (dateFilter === 'custom' && customDateRange.start && customDateRange.end) {
+          params.append('raffle_start_date', customDateRange.start);
+          params.append('raffle_end_date', customDateRange.end);
+        } else if (dateFilter) {
+          params.append('raffle_filter', dateFilter);
+        }
+        return params.toString();
+      };
+
+      let nextUrl: string | null = `${baseUrl}?${buildExportParams()}`;
+      const headers = { headers: { Authorization: `Token ${userToken}` } } as const;
+
+      for (let i = 0; i < 200 && nextUrl; i++) {
+        const resp: any = await axios.get(nextUrl, headers);
+        const res: any = resp.data;
+        const pageItems: any[] = res?.results?.data || [];
+        pageItems.forEach((item) => {
+          const p: any = item.auction_info?.[0] || {};
+          const t: any = item.ticket_details || {};
+          const s: any = item.settlement_details || {};
+          allRows.push({
+            productId: p?.product_no || 'N/A',
+            productName: p?.product_name || 'N/A',
+            numberOfTickets: Number(t?.no_of_tickets || 0),
+            ticketprice: Number(t?.ticket_price || 0),
+            totalGtv: Number(t?.ticket_gtv || 0),
+            rda: Number(s?.rda || 0),
+            eca: Number(s?.eca || 0),
+          });
+        });
+        nextUrl = res?.next || null;
+      }
+
+      if (allRows.length === 0) {
+        alert('No data available to export');
+        return;
+      }
+
+      const exportData: ExportData[] = allRows.map((row, idx) => ({
+        S_N: idx + 1,
+        productId: row.productId,
+        productName: row.productName,
+        numberOfTickets: row.numberOfTickets,
+        ticketprice: row.ticketprice,
+        totalGtv: row.totalGtv,
+        rda: row.rda,
+        eca: row.eca,
+      }));
+
+      exportToXLS(exportData, {
+        title: 'Auction Transaction Report',
+        fileName: 'Auction_Transaction_Report',
+        columns: [
+          { key: 'S_N', header: 'S/N', width: 8 },
+          { key: 'productId', header: 'Product ID', width: 15 },
+          { key: 'productName', header: 'Product Name', width: 20 },
+          { key: 'numberOfTickets', header: 'Number of Tickets', width: 15 },
+          { key: 'ticketprice', header: 'Ticket Price (NGN)', width: 15 },
+          { key: 'totalGtv', header: 'Total GTV (NGN)', width: 15 },
+          { key: 'rda', header: 'RDA (NGN)', width: 15 },
+          { key: 'eca', header: 'ECA (NGN)', width: 15 },
+        ],
+        summaryRows: [
+          { label: 'Total Records', value: exportData.length },
+          { label: 'Generated', value: new Date().toLocaleString() },
+        ]
+      });
+    } catch (err) {
+      alert('Failed to prepare Excel export.');
+    }
   };
 
   const AjirobaLogo = ({
