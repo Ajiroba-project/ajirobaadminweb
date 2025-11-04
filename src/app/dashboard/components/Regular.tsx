@@ -206,8 +206,44 @@ export const Regular = () => {
     handleError,
   );
 
+  const parseAmount = (value: unknown): number => {
+    if (value === null || value === undefined) return NaN;
+    const numeric = String(value).replace(/[^0-9.]/g, "");
+    return numeric ? Number(numeric) : NaN;
+  };
+
   const sumbitForm = (data: any) => {
     const regularMedia = watch("regular_media") as string[];
+
+    const selling = parseAmount(data.selling_price);
+    const cost = parseAmount(data.cost_price);
+    const discount = parseAmount(data.discount);
+
+    if (!isNaN(discount) && !isNaN(selling) && discount > selling) {
+      setError("discount" as any, {
+        type: "manual",
+        message: "Discount price cannot exceed selling price",
+      } as any);
+      toast.error("Discount price cannot exceed selling price", {
+        position: "top-right",
+        autoClose: 5000,
+        theme: "light",
+      });
+      return;
+    }
+
+    if (!isNaN(discount) && !isNaN(cost) && discount < cost) {
+      setError("discount" as any, {
+        type: "manual",
+        message: "Discount price cannot be less than cost price",
+      } as any);
+      toast.error("Discount price cannot be less than cost price", {
+        position: "top-right",
+        autoClose: 5000,
+        theme: "light",
+      });
+      return;
+    }
 
     const formData = new FormData();
     formData.append("product_name", data.product_name);
