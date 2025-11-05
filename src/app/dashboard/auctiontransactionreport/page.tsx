@@ -126,12 +126,12 @@ export default function Page() {
     yesterday.setDate(yesterday.getDate() - 1);
     const yStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
     // Use the same date for start and end to represent "yesterday"
-    params.append('raffle_start_date', yStr);
-    params.append('raffle_end_date', yStr);
+    params.append('start_date', yStr);
+    params.append('end_date', yStr);
   } else if (debouncedDateFilter === 'custom') {
     if (debouncedStart && debouncedEnd) {
-      params.append('raffle_start_date', debouncedStart);
-      params.append('raffle_end_date', debouncedEnd);
+      params.append('start_date', debouncedStart);
+      params.append('end_date', debouncedEnd);
     }
   } else if (debouncedDateFilter) {
     // last_week, last_month, last_year
@@ -403,7 +403,7 @@ const transformApiData = (apiData: any): any[] => {
       );
     }
 
-  // Date filtering handled by backend via raffle_filter/raffle_start_date/raffle_end_date
+  // Date filtering handled by backend via raffle_filter/start_date/end_date
 
     return filteredData;
   };
@@ -432,11 +432,11 @@ const transformApiData = (apiData: any): any[] => {
           const y = new Date();
           y.setDate(y.getDate() - 1);
           const yStr = `${y.getFullYear()}-${String(y.getMonth() + 1).padStart(2, '0')}-${String(y.getDate()).padStart(2, '0')}`;
-          params.append('raffle_start_date', yStr);
-          params.append('raffle_end_date', yStr);
+          params.append('start_date', yStr);
+          params.append('end_date', yStr);
         } else if (dateFilter === 'custom' && customDateRange.start && customDateRange.end) {
-          params.append('raffle_start_date', customDateRange.start);
-          params.append('raffle_end_date', customDateRange.end);
+          params.append('start_date', customDateRange.start);
+          params.append('end_date', customDateRange.end);
         } else if (dateFilter) {
           params.append('raffle_filter', dateFilter);
         }
@@ -516,11 +516,11 @@ const transformApiData = (apiData: any): any[] => {
           const y = new Date();
           y.setDate(y.getDate() - 1);
           const yStr = `${y.getFullYear()}-${String(y.getMonth() + 1).padStart(2, '0')}-${String(y.getDate()).padStart(2, '0')}`;
-          params.append('raffle_start_date', yStr);
-          params.append('raffle_end_date', yStr);
+          params.append('start_date', yStr);
+          params.append('end_date', yStr);
         } else if (dateFilter === 'custom' && customDateRange.start && customDateRange.end) {
-          params.append('raffle_start_date', customDateRange.start);
-          params.append('raffle_end_date', customDateRange.end);
+          params.append('start_date', customDateRange.start);
+          params.append('end_date', customDateRange.end);
         } else if (dateFilter) {
           params.append('raffle_filter', dateFilter);
         }
