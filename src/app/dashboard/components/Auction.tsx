@@ -299,6 +299,9 @@ export const Auction = () => {
       start_time: formatTime(data.auction_starttime),
       end_time: formatTime(data.auction_endtime),
       description: data.description,
+      redeem_by_delivery: data.redeem_by_delivery ? "true" : "false",
+      redeem_by_cash: data.redeem_by_cash ? "true" : "false",
+      redeem_by_voucher: data.redeem_by_voucher ? "true" : "false",
       auction_images: auctionMedia  // Use file names for payload
     };
 
@@ -647,6 +650,23 @@ export const Auction = () => {
 
 
             <div className={`py-4 w-full`}>
+              <div className="pb-4">
+                <p className="text-sm font-medium text-gray-700 pb-2">Redemption Mode</p>
+                <div className="flex items-center gap-8">
+                  <label className="inline-flex items-center gap-2">
+                    <input type="checkbox" {...register("redeem_by_cash" as any)} className="accent-[#F25E26]" />
+                    <span>Cash Transfer</span>
+                  </label>
+                  <label className="inline-flex items-center gap-2">
+                    <input type="checkbox" {...register("redeem_by_voucher" as any)} className="accent-[#F25E26]" />
+                    <span>Gift Voucher</span>
+                  </label>
+                  <label className="inline-flex items-center gap-2">
+                    <input type="checkbox" {...register("redeem_by_delivery" as any)} className="accent-[#F25E26]" />
+                    <span>Delivery</span>
+                  </label>
+                </div>
+              </div>
               <DefaultButton
                 text={status === "pending" ? "loading..." : "Upload"}
                 type="submit"

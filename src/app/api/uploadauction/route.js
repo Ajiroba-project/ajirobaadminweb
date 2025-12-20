@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import Cookies from 'js-cookie';
+// import Cookies from 'js-cookie';
 import { cookies } from "next/headers";
 
 
@@ -16,6 +16,8 @@ export async function POST(request) {
 
           console.log(body, 'body')
    */
+
+        // console.log(body, 'body')
         const res = await fetch(`${process.env.BASE_URL}/admin/upload_auction/?${cacheBuster}`, {
             method: 'POST',
             maxBodyLength: Infinity,
@@ -30,12 +32,15 @@ export async function POST(request) {
         const data = await res.json();
         const status = res.status;
 
+        // console.log(data, 'data')
+        // console.log(status, 'status')
+
 
         // Return JSON response with data and status
         return NextResponse.json({ data, status });
     } catch (error) {
         // Handle any errors gracefully
-        console.error('Error processing request:', error.message);
+        // console.error('Error processing request:', error.message);
         return NextResponse.error(new Error('Internal Server Error'));
     }
 }
