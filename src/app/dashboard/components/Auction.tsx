@@ -291,6 +291,7 @@ export const Auction = () => {
       name: data.auction_name,
       category: data.auction_category,
       subcategory: data.sub_category,
+      top_deal: data.top_deal ? true : false,
       cost_price: data.cost_price,
       quantity: data.quantity,
       weight: `${data.weight}KG`,
@@ -514,6 +515,17 @@ export const Auction = () => {
                   }
                   classname={`text-sm w-full md:w-[300px] xl:w-[298px] 2xl:w-[298px] lg:w-[300px] h-12 p-2.5 border border-gray-300 rounded-lg font-Inter font-normal focus:outline-none`}
                 />
+                <div className="flex items-center gap-2 py-2">
+                  <input
+                    id="top_deal"
+                    type="checkbox"
+                    className="accent-[#F25E26]"
+                    {...register("top_deal" as any)}
+                  />
+                  <label htmlFor="top_deal" className="text-sm font-medium text-gray-700">
+                    Top Deals
+                  </label>
+                </div>
                 <TextAreaField
                   name="description"
                   label="Product Description"
