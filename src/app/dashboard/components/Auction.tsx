@@ -264,6 +264,20 @@ export const Auction = () => {
   }
 
   const sumbitForm = (data: any) => {
+    // Ensure at least one redemption mode is selected
+    const hasRedemption =
+      !!data.redeem_by_cash || !!data.redeem_by_voucher || !!data.redeem_by_delivery;
+    if (!hasRedemption) {
+      setError("redeem_by_cash" as any, { type: "manual", message: "Select at least one redemption mode" } as any);
+      setError("redeem_by_voucher" as any, { type: "manual", message: "Select at least one redemption mode" } as any);
+      setError("redeem_by_delivery" as any, { type: "manual", message: "Select at least one redemption mode" } as any);
+      toast.error("Please select at least one Redemption Mode", {
+        position: "top-right",
+        autoClose: 4000,
+        theme: "light",
+      });
+      return;
+    }
     // Prepare FormData to handle file uploads
     const formData = new FormData();
 
@@ -678,6 +692,11 @@ export const Auction = () => {
                     <span>Delivery</span>
                   </label>
                 </div>
+                <p className="text-xs text-rose-500 pt-1">
+                  {(errors as any)?.redeem_by_cash?.message ||
+                    (errors as any)?.redeem_by_voucher?.message ||
+                    (errors as any)?.redeem_by_delivery?.message}
+                </p>
               </div>
               <DefaultButton
                 text={status === "pending" ? "loading..." : "Upload"}
