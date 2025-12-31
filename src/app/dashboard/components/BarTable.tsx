@@ -183,7 +183,7 @@ const BarChart: React.FC = () => {
     userToken || " ",
   );
 
-  //  console.log(analyticsInfo?.data?.infromation?.customer_by_location, 'analyticsInfo')
+    console.log(analyticsInfo?.data?.infromation?.customer_by_location, 'analyticsInfo')
 
 
   if (anaLoading) {

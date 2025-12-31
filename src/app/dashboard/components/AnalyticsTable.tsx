@@ -2,20 +2,11 @@
 import React, { useState } from 'react'
 import icon from "../../asset/image/icon.svg"
 import Image from 'next/image';
-import chart from '../../asset/image/chart.svg'
-import { IoIosArrowRoundBack, IoIosArrowRoundForward } from 'react-icons/io';
-import { IoFilter } from 'react-icons/io5';
-import DatePicker from 'react-datepicker';
 import { useRouter } from "next/navigation";
 import ModalComponent from '@/app/components/ModalComponent';
-import { UpdateSubCategory } from './UpdateSubCategory';
 import BarChart from './BarTable';
-import GeoGrapgh from './GeoData';
-import MapChart from './GeoData'
-import TopZonesList from './TopZonesList';
 import Cookies from 'js-cookie';
 import { useGetDatanew } from '@/hooks/useGetData';
-import { GiftPointModal } from './GiftPointModal';
 import { toast } from 'react-toastify';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -38,11 +29,6 @@ function AnalyticsTable() {
   );
 
 
-  // console.log(analyticsInfo?.data, "analyticsInfo");
-
-  // console.log(analyticsInfo?.data?.infromation?.top_five_customers,
-  //   "analyticsInfo");
-
   const BASE_URL = "https://staging.ajiroba.ng/v1";
 
   const formatted = analyticsInfo?.data?.infromation?.top_five_customers.map((customer: { full_name: any; email: any; date: string | number | Date; picture: any; }, index: number) => ({
@@ -53,14 +39,6 @@ function AnalyticsTable() {
     originalDate: customer.date, // Keep original date for filtering
     img: customer.picture ? `https://staging.ajiroba.ng${customer.picture}` : icon, // Use fallback icon if picture is null
   })) || [];
-
-
-  // console.log(analyticsInfo?.data?.infromation?.top_five_customers, "analyticsInfo")
-
-  // console.log(formatted, "formatted")
-
-
-
 
   const [search, setSearch] = useState("");
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
@@ -100,8 +78,6 @@ function AnalyticsTable() {
   };
 
   const itemsPerPage = 5;
-
-  const [content, setContent] = useState<string>("");
 
   // Filtered Data Based on Search and Selected Option
   const filteredTransactions = formatted?.filter((transaction: { name: string; email: string; date: string; originalDate: string | number | Date; }) => {

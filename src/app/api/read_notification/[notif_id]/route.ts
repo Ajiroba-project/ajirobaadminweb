@@ -21,7 +21,7 @@ export async function PUT(
 
     // Make the API call to the backend
     const response = await fetch(
-      `https://staging.ajiroba.ng/v1/user/read_notification/${notif_id}`,
+      `https://staging.ajiroba.ng/v1/admin/read_admin_notification/${notif_id}/`,
       {
         method: 'PUT',
         headers: {
@@ -33,7 +33,7 @@ export async function PUT(
 
     const data = await response.json();
 
-    console.log(data, "data")
+    // console.log(data, "data")
 
     if (!response.ok) {
       // console.log(data, "data")

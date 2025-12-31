@@ -44,7 +44,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, navtitle }) => {
   const [notificationMessages, setNotificationMessages] = useState<Record<string, { type: 'success' | 'error'; message: string }>>({});
 
   const token = Cookies.get("token") as string | undefined;
-  const notificationsUrl = token ? `${process.env.NEXT_PUBLIC_BASE_URL}/user/notifications/` : "";
+  const notificationsUrl = token ? `${process.env.NEXT_PUBLIC_BASE_URL}/admin/admin_notifications/` : "";
   const { data: notificationsData, isLoading: notificationsLoading, refetch: refetchNotifications } = useGetDatanew(
     notificationsUrl,
     "get_notifications",
