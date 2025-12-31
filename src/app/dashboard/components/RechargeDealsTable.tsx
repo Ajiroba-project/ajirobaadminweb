@@ -62,7 +62,7 @@ function RechargeDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =
     date: new Date(item.date_created).toLocaleDateString("en-GB"),
     email: item?.email || 'N/A',
     name: item?.name || 'N/A',
-    img: item.profile_image ? `https://staging.ajiroba.ng${item.profile_image}` : null,
+    img: item.profile_image ? `${process.env.NEXT_PUBLIC_BASE_URL_IMG}${item.profile_image}` : null,
     reference: item?.reference,
     deviceId: item?.device_id || `ID${Math.floor(Math.random() * 1000000000)}`,
     item: typeof item?.item === 'string' ? item.item : (item?.item?.name || ''),

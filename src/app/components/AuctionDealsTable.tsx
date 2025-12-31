@@ -40,22 +40,20 @@ function AuctionDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =>
     retry: 1,
   });
 
-  // console.log(transInfo, "transInfo-----transInfo");
-
-  // Use raw data and map only what we need (page-sliced when no filters)
-  const rawData = useMemo<any[]>(() => (
-    Array.isArray(transInfo?.data) ? (transInfo?.data as any[]) : []
-  ), [transInfo]);
-  const toRow = (order: { ticket_number: any, auction: any, ticket_amount: any, status: any, name: any; email: any; date_created: string | number | Date; profile_image: any; }) => ({
-    id: order?.ticket_number,
-    name: order?.name,
-    email: order?.email,
-    status: order?.status || 'N/A',
-    amount: order?.ticket_amount || 'N/A',
-    item: typeof order?.auction === 'string' ? order?.auction : (order?.auction?.name || ''),
-    date: new Date(order?.date_created).toLocaleDateString('en-GB'),
-    img: order?.profile_image ? `https://staging.ajiroba.ng${order.profile_image}` : null,
-  });
+  // Pre-process all data once (like RegularDeals and RechargeDeals)
+  const transactions = useMemo(() => {
+    if (!transInfo?.data || !Array.isArray(transInfo.data)) return [];
+    return transInfo.data.map((order: any) => ({
+      id: order?.ticket_number,
+      name: order?.name || 'N/A',
+      email: order?.email || 'N/A',
+      status: order?.status || 'N/A',
+      amount: order?.ticket_amount || 'N/A',
+      item: typeof order?.auction === 'string' ? order?.auction : (order?.auction?.name || ''),
+      date: new Date(order?.date_created).toLocaleDateString('en-GB'),
+      img: order?.profile_image ? `${process.env.NEXT_PUBLIC_BASE_URL_IMG}${order.profile_image}` : null,
+    }));
+  }, [transInfo]);
 
   const [search, setSearch] = useState("");
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
@@ -71,30 +69,40 @@ function AuctionDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =>
 
   const hasActiveFilters = (search?.trim()?.length || 0) > 0 || !!statusFilter || !!selectedDate;
 
-  const filterFn = (transaction: { id: string | number; name: string; email: string; item: any; date: string | string[]; status?: string; }) => {
-    const matchesSearch =
-      transaction.name.toLowerCase().includes(search.toLowerCase()) ||
-      transaction.email.toLowerCase().includes(search.toLowerCase()) ||
-      String(transaction.item ?? '').toLowerCase().includes(search.toLowerCase()) ||
-      transaction.date.includes(search) ||
-      String(transaction.id ?? '').toLowerCase().includes(search.toLowerCase());
+  // Memoize filter function to avoid recreating on every render
+  const filterFn = useMemo(() => {
+    return (transaction: { id: string | number; name: string; email: string; item: any; date: string | string[]; status?: string; }) => {
+      const searchLower = search.toLowerCase();
+      const matchesSearch =
+        transaction.name.toLowerCase().includes(searchLower) ||
+        transaction.email.toLowerCase().includes(searchLower) ||
+        String(transaction.item ?? '').toLowerCase().includes(searchLower) ||
+        transaction.date.includes(search) ||
+        String(transaction.id ?? '').toLowerCase().includes(searchLower);
 
-    const matchesStatus = !statusFilter || (transaction.status || '').toLowerCase() === statusFilter.toLowerCase();
+      const matchesStatus = !statusFilter || (transaction.status || '').toLowerCase() === statusFilter.toLowerCase();
 
-    const matchesSelectedDate =
-      !selectedDate ||
-      (() => {
-        const [dd, mm, yyyy] = (transaction.date as string).split('/').map(Number);
-        const tx = new Date(yyyy, mm - 1, dd);
-        return (
-          tx.getFullYear() === selectedDate.getFullYear() &&
-          tx.getMonth() === selectedDate.getMonth() &&
-          tx.getDate() === selectedDate.getDate()
-        );
-      })();
+      const matchesSelectedDate =
+        !selectedDate ||
+        (() => {
+          const [dd, mm, yyyy] = (transaction.date as string).split('/').map(Number);
+          const tx = new Date(yyyy, mm - 1, dd);
+          return (
+            tx.getFullYear() === selectedDate.getFullYear() &&
+            tx.getMonth() === selectedDate.getMonth() &&
+            tx.getDate() === selectedDate.getDate()
+          );
+        })();
 
-    return matchesSearch && matchesStatus && matchesSelectedDate;
-  };
+      return matchesSearch && matchesStatus && matchesSelectedDate;
+    };
+  }, [search, statusFilter, selectedDate]);
+
+  // Filter transactions once (optimized)
+  const filteredTransactions = useMemo(() => {
+    if (!hasActiveFilters) return transactions;
+    return transactions.filter(filterFn);
+  }, [transactions, hasActiveFilters, filterFn]);
 
   // Register CSV exporter with parent using latest data on demand
   const exportColumns = useMemo(() => ([
@@ -104,33 +112,22 @@ function AuctionDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =>
     { key: 'item', header: 'Item' },
     { key: 'date', header: 'Date' },
   ]), []);
+  
   useEffect(() => {
     if (!onRegisterExport) return;
     onRegisterExport(() => {
-      const rows = hasActiveFilters
-        ? rawData.map(toRow).filter(filterFn)
-        : rawData.map(toRow);
-      exportToCSV(rows, { fileName: 'Auction_Transactions', columns: exportColumns });
+      exportToCSV(filteredTransactions, { fileName: 'Auction_Transactions', columns: exportColumns });
     });
-  }, [onRegisterExport, exportColumns, rawData, hasActiveFilters, search, statusFilter, selectedDate]);
+  }, [onRegisterExport, exportColumns, filteredTransactions]);
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = useMemo(() => {
-    if (!hasActiveFilters) {
-      const pageRaw = rawData.slice(startIndex, startIndex + itemsPerPage);
-      return pageRaw.map(toRow);
-    }
-    const filtered = rawData.map(toRow).filter(filterFn);
-    return filtered.slice(startIndex, startIndex + itemsPerPage);
-  }, [rawData, hasActiveFilters, startIndex, itemsPerPage, search, statusFilter, selectedDate]);
+    return filteredTransactions.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredTransactions, startIndex, itemsPerPage]);
+  
   const totalPages = useMemo(() => {
-    if (!hasActiveFilters) return Math.ceil((rawData.length || 0) / itemsPerPage);
-    const filteredCount = rawData.reduce((count: number, order: any) => {
-      const row = toRow(order);
-      return filterFn(row) ? count + 1 : count;
-    }, 0);
-    return Math.ceil(filteredCount / itemsPerPage);
-  }, [rawData, hasActiveFilters, itemsPerPage, search, statusFilter, selectedDate]);
+    return Math.ceil((filteredTransactions.length || 0) / itemsPerPage);
+  }, [filteredTransactions, itemsPerPage]);
 
   const isAllSelected =
     paginatedData?.length > 0 &&

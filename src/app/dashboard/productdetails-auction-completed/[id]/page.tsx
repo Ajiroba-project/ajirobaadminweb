@@ -254,7 +254,7 @@ export default function ProductDetailsAuctionPage() {
                             <div className="flex flex-wrap sm:flex-nowrap ">
                                 <div className="relative mt-6 ">
                                     <Image
-                                        src={`https://staging.ajiroba.ng/media/${prodInfo?.data?.product_info.images[0]}`}
+                                        src={`${process.env.NEXT_PUBLIC_BASE_URL_IMG}/media/${prodInfo?.data?.product_info.images[0]}`}
                                         alt={`Product Image`}
                                         width={220}
                                         height={220}
@@ -263,7 +263,7 @@ export default function ProductDetailsAuctionPage() {
                                 </div>
                                 <div className="relative opacity-35 sm:ml-4 mt-4 sm:mt-0">
                                     <Image
-                                        src={`https://staging.ajiroba.ng/media/${prodInfo?.data?.product_info.images[0]}`}
+                                        src={`${process.env.NEXT_PUBLIC_BASE_URL_IMG}/media/${prodInfo?.data?.product_info.images[0]}`}
                                         alt={`Product Image`}
                                         width={220}
                                         height={220}

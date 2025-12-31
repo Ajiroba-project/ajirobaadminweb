@@ -110,7 +110,7 @@ function Page({ params }: PageProps) {
                   <div className="w-20"></div>
                   <div className="w-[100px] h-[100px] rounded-full border-4 border-[#F25E26] overflow-hidden">
                     <Image
-                      src={`https://staging.ajiroba.ng${prodInfo?.data?.data?.profile_image}`}
+                      src={`${process.env.NEXT_PUBLIC_BASE_URL_IMG}${prodInfo?.data?.data?.profile_image}`}
                       className="w-full h-full object-cover"
                       width={100}
                       height={100}

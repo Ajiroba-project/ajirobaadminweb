@@ -288,7 +288,7 @@ const {
                         <div key={user.id} className="bg-[#fcf7f4] rounded-xl shadow p-6 flex flex-col gap-2 min-h-[320px] relative">
                             <div className="flex items-center gap-3 mb-2">
                                 <Image
-                                    src={user.profile_image.startsWith('http') ? user.profile_image : `https://staging.ajiroba.ng${user.profile_image}`}
+                                    src={user.profile_image.startsWith('http') ? user.profile_image : `${process.env.NEXT_PUBLIC_BASE_URL_IMG}${user.profile_image}`}
                                     alt={user.first_name}
                                     width={48}
                                     height={48}

@@ -65,7 +65,7 @@ export const AuctionsCard = ({ cardInfo }: ProductsCardProps) => {
                         <div className='py-2 bg-[#F6F6F6]'>
                             <div className='flex items-center justify-center'>
                                 <Image
-                                    src={`https://staging.ajiroba.ng${value?.images[0]?.image}`}
+                                    src={`${process.env.NEXT_PUBLIC_BASE_URL_IMG}${value?.images[0]?.image}`}
                                     alt="product"
                                     className=""
                                     width={120}

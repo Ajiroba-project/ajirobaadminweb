@@ -37,7 +37,7 @@ function AnalyticsTable() {
     email: customer.email,
     date: new Date(customer.date).toLocaleDateString("en-GB"), // Formats to dd/mm/yyyy
     originalDate: customer.date, // Keep original date for filtering
-    img: customer.picture ? `https://staging.ajiroba.ng${customer.picture}` : icon, // Use fallback icon if picture is null
+    img: customer.picture ? `${process.env.NEXT_PUBLIC_BASE_URL_IMG}${customer.picture}` : icon, // Use fallback icon if picture is null
   })) || [];
 
   const [search, setSearch] = useState("");
