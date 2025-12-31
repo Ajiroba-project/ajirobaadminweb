@@ -92,7 +92,7 @@ export const LiveChatCard: React.FC = () => {
       // console.log("Sending message with payload:", payload);
 
       const response = await axios.post(
-        "https://staging.ajiroba.ng/v1/admin/send_message/",
+        `${process.env.NEXT_PUBLIC_BASE_URL}/admin/send_message/`,
         payload,
         { headers }
       );
@@ -171,7 +171,7 @@ export const LiveChatCard: React.FC = () => {
         };
 
         const response = await axios.get(
-          `https://staging.ajiroba.ng/v1/admin/chatroom_messages/?chatroom_id=${chatroom_id}`,
+          `${process.env.NEXT_PUBLIC_BASE_URL}/admin/chatroom_messages/?chatroom_id=${chatroom_id}`,
           { headers }
         );
 

@@ -21,7 +21,7 @@ export async function PUT(
 
     // Make the API call to the backend
     const response = await fetch(
-      `https://staging.ajiroba.ng/v1/admin/read_admin_notification/${notif_id}/`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/admin/read_admin_notification/${notif_id}/`,
       {
         method: 'PUT',
         headers: {

@@ -77,15 +77,15 @@ function RechargeReportPage() {
   const baseUrl = useMemo(() => {
     switch (typeParam) {
       case "airtime":
-        return "https://staging.ajiroba.ng/v1/admin/airtime_transaction_report/";
+        return `${process.env.NEXT_PUBLIC_BASE_URL}/admin/airtime_transaction_report/`;
       case "data":
-        return "https://staging.ajiroba.ng/v1/admin/data_transaction_report/";
+        return `${process.env.NEXT_PUBLIC_BASE_URL}/admin/data_transaction_report/`;
       case "electricity":
-        return "https://staging.ajiroba.ng/v1/admin/electricity_transaction_report/";
+        return `${process.env.NEXT_PUBLIC_BASE_URL}/admin/electricity_transaction_report/`;
       case "cable":
-        return "https://staging.ajiroba.ng/v1/admin/cable_transaction_report/";
+        return `${process.env.NEXT_PUBLIC_BASE_URL}/admin/cable_transaction_report/`;
       default:
-        return "https://staging.ajiroba.ng/v1/admin/airtime_transaction_report/";
+        return `${process.env.NEXT_PUBLIC_BASE_URL}/admin/airtime_transaction_report/`;
     }
   }, [typeParam]);
 
