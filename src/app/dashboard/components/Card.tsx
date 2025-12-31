@@ -79,152 +79,6 @@ export const Card = ({ title, object }: cardProps) => {
 
 
 
-// export const ProductListCard = ({ object }: cardProps) => {
-
-//   const [currentPage, setCurrentPage] = useState<number>(0);
-//   const [filteredData, setFilteredData] = useState<any>([]);
-//   const [itemsPerPage] = useState<number>(5);
-
-//   const router = useRouter()
-
-
-//   console.log(filteredData, 'filteredData')
-
-//   useMemo(() => {
-//     if (object) {
-//       const filteredProducts = object.slice(
-//         currentPage * itemsPerPage,
-//         (currentPage + 1) * itemsPerPage
-//       );
-//       setFilteredData(filteredProducts);
-//     }
-//   }, [currentPage, itemsPerPage, object]);
-
-//   const handlePageChange = (pageNumber: number) => {
-//     setCurrentPage(pageNumber);
-//   };
-
-//   const pageCount = Math.ceil((object?.length || 0) / itemsPerPage);
-
-//   // Show message when no products are found
-//   if (!object || object.length === 0) {
-//     return (
-//       <div className="py-8 text-center">
-//         <p className="text-gray-500 text-lg">No products found for the selected criteria.</p>
-//         <p className="text-gray-400 text-sm mt-2">Try adjusting your search or date filters.</p>
-//       </div>
-//     );
-//   }
-
-//   return (
-
-//     <div>
-//       {/* Show total count and filtering status */}
-//       <div className="mb-4 flex justify-between items-center">
-//         <div className="text-sm text-gray-600">
-//           Showing {object.length} product{object.length !== 1 ? 's' : ''}
-//         </div>
-//         {object.length > 0 && (
-//           <div className="text-xs text-gray-500">
-//             {object[0]?.date_created && (
-//               <span>Products from: {new Date(object[0].date_created).toLocaleDateString()}</span>
-//             )}
-//           </div>
-//         )}
-//       </div>
-
-//       <section className="py-4 grid lg:grid-cols-3 gap-4 w-full">
-
-//         {filteredData?.map((val: Product, index: number) => (
-//           <Fragment key={index}>
-//             <div className="border rounded-lg p-4">
-//               <div className="flex items-center justify-between">
-//                 <p className="font-bold text-lg">{val.name}</p>
-//                 <Image onClick={() => router.push(`/dashboard/productdetails-product/${val.id}`)}
-//                   src={`https://staging.ajiroba.ng/media/${val?.images[0]?.image}`}
-//                   alt={val.category_name}
-//                   height={50}
-//                   width={50}
-//                   className="rounded-full cursor-pointer"
-//                 />
-//               </div>
-
-//               <div className="py-2 mt-5 grid-cols-2 grid gap-y-2 gap-x-3">
-//                 <h4 className="text-[#A09F9F] text-base font-Poppins">Category:</h4>
-//                 <p className="text-sm font-Poppins text-[#2A2A2A] ">
-//                   {val.category_name.length > 100
-//                     ? val.category_name.slice(0, 50) + "..."
-//                     : val.category_name}
-//                 </p>
-//                 <h4 className="text-[#A09F9F] text-base font-Poppins">Sub category:</h4>
-//                 <p className="text-sm font-Poppins text-[#2A2A2A] ">{val.subcategory_name}</p>
-//                 <h4 className="text-[#A09F9F] text-base font-Poppins">Selling Price:</h4>
-//                 <p className="text-sm font-Poppins text-[#2A2A2A] ">
-//                   {val.price !== null && val.price !== undefined
-//                     ? `₦${Number(val.price).toLocaleString('en-US', {
-//                       minimumFractionDigits: 2,
-//                       maximumFractionDigits: 2
-//                     })}`
-//                     : 'N/A'
-//                   }
-
-//                 </p>
-//                 <h4 className="text-[#A09F9F] text-base font-Poppins">Discount Price:</h4>
-//                 <p className="text-sm font-Poppins text-[#2A2A2A] ">{val.discount !== null && val.discount !== undefined
-//                   ? `₦${Number(val.discount).toLocaleString('en-US', {
-//                     minimumFractionDigits: 2,
-//                     maximumFractionDigits: 2
-//                   })}`
-//                   : 'N/A'
-//                 }</p>
-//                 <h4 className="text-[#A09F9F] text-base font-Poppins">Product Description:</h4>
-//                 <p className="text-sm font-Poppins text-[#2A2A2A] ">
-//                   {val.description.length > 100
-//                     ? val.description.slice(0, 50) + "..."
-//                     : val.description}
-//                 </p>
-
-//                 <div className="pt-4 flex justify-between col-span-2">
-//                   <div>
-//                     <Link
-//                       href={`/dashboard/product-details/edit/${val.id}`}
-//                       className=" bg-[#FCDFD4] transition delay-300 duration-300 ease-in-out hover:bg-[#F25E26] hover:text-white hover:transition-all flex gap-2 rounded-lg  p-2 font-Poppins text-sm items-center "
-//                     >
-//                       <MdOutlineEdit className="text-sm" />
-//                       Edit product
-//                     </Link>
-//                   </div>
-
-
-//                   <div>
-//                     <Link
-//                       href={`/dashboard/productdetails-product/${val.id}`}
-//                       className="bg-[#FCDFD4] transition delay-300 duration-300 ease-in-out hover:bg-[#F25E26] hover:text-white hover:transition-all flex gap-2 rounded-lg  p-2 font-Poppins text-sm items-center "
-//                     >
-
-//                       See More
-//                       <MdArrowRight className="text-sm" />
-//                     </Link>
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           </Fragment>
-//         ))}
-//       </section>
-
-//       <Pagination
-//         pageCount={pageCount}
-//         onPageChange={({ selected }) => handlePageChange(selected)}
-//         className='my-6 flex items-center justify-center gap-4 '
-//       />
-//     </div>
-
-
-//   );
-// };
-
-
 export const ProductListCard = ({ object }: cardProps) => {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [paginatedData, setPaginatedData] = useState<Product[]>([]);
@@ -297,7 +151,7 @@ export const ProductListCard = ({ object }: cardProps) => {
                 {val.images && val.images.length > 0 && (
                   <Image
                     onClick={() => router.push(`/dashboard/productdetails-product/${val.id}`)}
-                    src={`https://staging.ajiroba.ng/media/${val.images[0]?.image}`}
+                    src={`${process.env.NEXT_PUBLIC_BASE_URL_IMG}/media/${val.images[0]?.image}`}
                     alt={val.category_name}
                     height={50}
                     width={50}
@@ -453,7 +307,7 @@ export const AuctionListCard = ({ object }: cardProps) => {
               <div className="flex items-center justify-between">
                 <p className="font-bold text-lg">{val.name}</p>
                 <Image onClick={() => router.push(`/dashboard/productdetails-auction/${val.id}`)}
-                  src={`https://staging.ajiroba.ng/media/${val?.images[0]?.image}`}
+                  src={`${process.env.NEXT_PUBLIC_BASE_URL_IMG}/media/${val?.images[0]?.image}`}
                   alt={val.category_name}
                   height={50}
                   width={50}
@@ -577,7 +431,7 @@ export const AuctionListCardCompleted = ({ object }: cardProps) => {
               <div className="flex items-center justify-between">
                 <p className="font-bold text-lg">{val.name}</p>
                 <Image onClick={() => router.push(`/dashboard/productdetails-auction-completed/${val.id}`)}
-                  src={`https://staging.ajiroba.ng/media/${val?.images[0]?.image}`}
+                  src={`${process.env.NEXT_PUBLIC_BASE_URL_IMG}/media/${val?.images[0]?.image}`}
                   alt={val.category_name}
                   height={50}
                   width={50}

@@ -66,7 +66,7 @@ function RegularsDealTable({ onRegisterExport }: { onRegisterExport?: (fn: () =>
       ? order.products[0]
       : (order.products?.[0]?.name || order.products?.[0]?.product_name || ''),
     date: new Date(order.date_created).toLocaleDateString("en-GB"),
-    img: order.profile_image ? `https://staging.ajiroba.ng${order.profile_image}` : null,
+    img: order.profile_image ? `${process.env.NEXT_PUBLIC_BASE_URL_IMG}${order.profile_image}` : null,
   }));
 
   const [search, setSearch] = useState("");

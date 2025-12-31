@@ -354,7 +354,7 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
                                 <div className="mb-4 flex justify-center">
                                     <div className="w-full max-w-md bg-gray-100 rounded-lg p-8 flex items-center justify-center">
                                         <Image
-                                            src={`https://staging.ajiroba.ng/media/${item?.images?.[0]?.image}`}
+                                            src={`${process.env.NEXT_PUBLIC_BASE_URL_IMG}/media/${item?.images?.[0]?.image}`}
                                             alt="Post image"
                                             width={300}
                                             height={300}
@@ -559,7 +559,7 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
                                 <div className="mb-4 flex justify-center">
                                     <div className="w-full max-w-md bg-gray-100 rounded-lg p-8 flex items-center justify-center">
                                         <Image
-                                            src={`https://staging.ajiroba.ng/media/${item?.images?.[0]?.image}`}
+                                            src={`${process.env.NEXT_PUBLIC_BASE_URL_IMG}/media/${item?.images?.[0]?.image}`}
                                             alt="Post image"
                                             width={300}
                                             height={300}
@@ -630,7 +630,7 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
                                 <div className="mb-4 flex justify-center">
                                     <div className="w-full max-w-md bg-gray-100 rounded-lg p-8 flex items-center justify-center">
                                         <Image
-                                            src={`https://staging.ajiroba.ng/media/${item?.images?.[0]?.image}`}
+                                            src={`${process.env.NEXT_PUBLIC_BASE_URL_IMG}/media/${item?.images?.[0]?.image}`}
                                             alt="Post image"
                                             width={300}
                                             height={300}
