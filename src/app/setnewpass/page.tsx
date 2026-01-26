@@ -76,7 +76,7 @@ function Page() {
                 draggable: true,
                 progress: undefined,
                 theme: "light",
-                onClose: () => router.push('/passset')
+                onClose: () => router.push('/signin')
 
             })
             reset();
