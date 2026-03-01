@@ -1792,7 +1792,7 @@ const ReportsPageContent = () => {
                   <div className="grid grid-cols-2 gap-6">
                     <div className="flex flex-wrap ">
                       <p className="text-xs text-gray-600 mb-1 group-hover:text-teal-100">
-                        Auction Customers GTV.
+                        Raffle Customers GTV.
                       </p>
                       <p className="text-lg font-semibold text-gray-900 group-hover:text-white">
                         {reportInfo?.data
@@ -1816,7 +1816,7 @@ const ReportsPageContent = () => {
                     </div>
                     <div className="flex gap-1 flex-wrap">
                       <p className="text-xs text-gray-600 mb-1 group-hover:text-teal-100">
-                        No of Auction Customer.
+                        No of Raffle Customer.
                       </p>
                       <p className="text-base font-semibold text-gray-900 group-hover:text-white">
                         {reportInfo?.data?.total_auction_customers || 0}
@@ -1963,12 +1963,12 @@ const ReportsPageContent = () => {
                       </svg>
                     </div>
                     <h4 className="text-sm font-semibold text-gray-900 group-hover:text-white">
-                      Auction Transaction Report
+                      Raffle Transaction Report
                     </h4>
                   </div>
                   <div className="flex flex-col items-center justify-center flex-wrap">
                     <div className="text-sm text-gray-600 mb-2 group-hover:text-purple-100">
-                      Auction GTV
+                      Raffle GTV
                     </div>
                     <div className="text-2xl font-semibold text-gray-900 group-hover:text-white">
                     {reportInfo?.data

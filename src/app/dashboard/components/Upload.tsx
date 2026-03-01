@@ -30,7 +30,7 @@ export const Upload =()=>{
             } border-2 p-4 text-sm rounded-lg cursor-pointer w-[14em] text-center font-Poppins font-medium transition-all duration-200 hover:border-[#FCDFD4]`}
             onClick={() => setActive(1)}
           >
-            Auction
+            Raffle
           </div>
         </div>
 

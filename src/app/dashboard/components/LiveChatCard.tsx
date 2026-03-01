@@ -123,7 +123,7 @@ export const LiveChatCard: React.FC = () => {
         refetch();
       } else if (response.data.status === "failed") {
 
-        console.log(response, 'response?.data?.message')
+     
         toast.error(response?.data?.message || "Failed to send message", {
           position: "top-right",
           autoClose: 4000,

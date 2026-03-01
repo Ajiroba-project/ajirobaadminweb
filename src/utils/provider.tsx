@@ -8,14 +8,14 @@ function RQProviders({ children }: Readonly<{
 }>) {
     const [client] = React.useState(
         new QueryClient({
-            defaultOptions:
-            {
-                queries:
-                {
-                    staleTime: 5000,
-                    refetchOnWindowFocus: false
+            defaultOptions: {
+                queries: {
+                    staleTime: 60 * 1000, // 1 min – fewer refetches on slow networks
+                    refetchOnWindowFocus: false,
+                    retry: 2,
+                    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
                 },
-            }
+            },
         })
     );
 

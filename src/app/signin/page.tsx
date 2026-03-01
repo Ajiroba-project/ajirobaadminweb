@@ -97,12 +97,16 @@ function Page() {
       })
       // console.log(data, 'datat')
       setAuthCookie(data?.data?.token, 0)
-      Cookies.set("token", data?.data?.token, { expires: 1 });
+      Cookies.set("token", data?.data?.token, {
+        expires: 1,
+        sameSite: "strict",
+        secure: typeof window !== "undefined" && window.location?.protocol === "https:",
+      });
       setUser(data?.data)
       
       // Save email if remember me is checked
       if (rememberMe) {
-        Cookies.set("remembered_email", data.email_or_phone, { expires: 30 }); // Save for 30 days
+        Cookies.set("remembered_email", data.email_or_phone, { expires: 30, sameSite: "strict" }); // Save for 30 days
       } else {
         // Remove saved email if remember me is unchecked
         Cookies.remove("remembered_email");
@@ -211,12 +215,16 @@ function Page() {
       router.push('/dashboard/userdetails')
       
       setAuthCookie(data?.data?.token, 0)
-      Cookies.set("token", data?.data?.token, { expires: 1 });
+      Cookies.set("token", data?.data?.token, {
+        expires: 1,
+        sameSite: "strict",
+        secure: typeof window !== "undefined" && window.location?.protocol === "https:",
+      });
       setUser(data?.data)
       
       // Save email if remember me is checked, using the last submitted value
       if (rememberMe && lastEmailOrPhone.current) {
-        Cookies.set("remembered_email", lastEmailOrPhone.current, { expires: 30 }); // Save for 30 days
+        Cookies.set("remembered_email", lastEmailOrPhone.current, { expires: 30, sameSite: "strict" }); // Save for 30 days
       } else {
         // Remove saved email if remember me is unchecked
         Cookies.remove("remembered_email");

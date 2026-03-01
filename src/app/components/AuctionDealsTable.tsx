@@ -220,10 +220,11 @@ function AuctionDealsTable({ onRegisterExport }: { onRegisterExport?: (fn: () =>
     
     setIsConfirming(true);
     try {
-      const response = await fetch(`https://ajiroba.onrender.com/v1/admin/confirm_redeemed_ticket/${selectedTicket.id}`, {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+      const response = await fetch(`${baseUrl}/admin/confirm_redeemed_ticket/${selectedTicket.id}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${userToken}`,
+          'Authorization': `Token ${userToken}`,
           'Content-Type': 'application/json',
         },
       });

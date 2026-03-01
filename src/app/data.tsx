@@ -78,11 +78,17 @@ export const HeaderNavMenu = [
         name: "Profile",
         path: "/userprofile",
 
-    }, {
-        name: "Live Chat",
-        path: "/livechat",
+    }
+    
+    // , 
+    
+    // {
+    //     name: "Live Chat",
+    //     path: "/livechat",
 
-    }]
+    // }
+
+]
 
 export const regularDetails = [
     {

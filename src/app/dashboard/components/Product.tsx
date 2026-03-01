@@ -70,7 +70,7 @@ export const Product = () => {
                 } border-2 p-3 lg:p-4 text-sm rounded-lg cursor-pointer w-full sm:w-48 lg:w-56 xl:w-64 text-center transition-all duration-200 hover:bg-[#FCDFD4] hover:bg-opacity-50`}
                 onClick={() => setActive(1)}
               >
-                Auction
+                Raffle
               </div>
             </>
           )}

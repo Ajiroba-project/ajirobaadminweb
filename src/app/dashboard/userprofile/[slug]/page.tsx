@@ -30,7 +30,7 @@ export default function Page() {
   const params = useParams();
   const ticketId = params.slug;
 
-  console.log(ticketId, "params")
+
 
   const {
     reset,

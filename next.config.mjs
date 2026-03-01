@@ -1,10 +1,68 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-
-    images: {
-        domains: ["owayo-cdn.com", "media.istockphoto.com", "staging.ajiroba.ng",
-            "www.shutterstock.com", "www.google.com", "i0.wp.com", "ajiroba.onrender.comundefined", "ajiroba.onrender.comnull", "ajiroba.onrender.com", "img.daisyui.com"],
-    },
-}
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'owayo-cdn.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'media.istockphoto.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'staging.ajiroba.ng',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.shutterstock.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.google.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ajiroba.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i0.wp.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ajiroba.onrender.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.daisyui.com',
+      },
+    ],
+  },
+  // Security headers for all responses (including static)
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "X-XSS-Protection", value: "1; mode=block" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+          },
+        ],
+      },
+    ];
+  },
+  // Better compression for slow networks
+  compress: true,
+  // Reduce client JS where possible
+  reactStrictMode: true,
+  poweredByHeader: false,
+};
 
 export default nextConfig;
