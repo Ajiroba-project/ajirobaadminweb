@@ -5,7 +5,7 @@ export async function POST(request) {
         const body = await request.json();
         const cacheBuster = `cache=${Date.now()}`;
 
-        console.log(body, 'body')
+
 
         const res = await fetch(`${process.env.BASE_URL}/auth/resend_forgot_password_code/?${cacheBuster}`, {
             method: 'POST',
@@ -20,8 +20,7 @@ export async function POST(request) {
         const data = await res.json();
         const status = res.status;
 
-        console.log(data, 'data')
-        console.log(status, 'status')
+  
 
         // Return JSON response with data and status
         return NextResponse.json({ data, status });

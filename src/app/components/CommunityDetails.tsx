@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { FaThumbsUp, FaRegCommentDots, FaShareAlt } from "react-icons/fa";
 import { FiBookmark } from "react-icons/fi";
@@ -130,7 +130,7 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
     };
 
     const handleError = (error?: any) => {
-        console.log(error, 'errr', data, 'daaaattt');
+      
         setComment('');
         setCommentImage('');
         setSelectedImage(null);
@@ -703,6 +703,9 @@ const ContentPost = ({ activeTab }: { activeTab: string }) => {
 
 
 
+const ITEMS_PER_PAGE_OPTIONS = [10, 20, 50] as const;
+const MAX_VISIBLE_PAGE_BUTTONS = 5;
+
 const NotificationSidebar = () => {
     const { isLoggedIn, user, token } = useAuthStore((state) => ({
         isLoggedIn: state.isLoggedIn,
@@ -710,7 +713,6 @@ const NotificationSidebar = () => {
         token: state.token,
     }));
 
-    // const userToken = token;
     const userToken = Cookies.get("token") as string;
 
     const {
@@ -724,37 +726,74 @@ const NotificationSidebar = () => {
         userToken,
     );
 
-    const ITEMS_PER_PAGE = 50;
-
-    // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(20);
 
-    // Extract notifications array
-    const notifications = notinfo?.data?.data || [];
+    const notifications = notinfo?.data?.data ?? [];
 
-    // Calculate total pages
-    const totalPages = Math.ceil(notifications.length / ITEMS_PER_PAGE);
+    const totalItems = notifications.length;
+    const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / itemsPerPage);
+    const safePage = Math.max(1, Math.min(currentPage, totalPages || 1));
 
-    // Get paginated notifications
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const paginatedNotifications = notifications.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    const startIndex = (safePage - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+    const paginatedNotifications = notifications.slice(startIndex, endIndex);
+
+    const hasMultiplePages = totalPages > 1;
+    const showingFrom = totalItems === 0 ? 0 : startIndex + 1;
+    const showingTo = endIndex;
+
+    // Reset to page 1 when data length changes (e.g. after refetch) and current page would be out of range
+    useEffect(() => {
+        if (totalPages > 0 && currentPage > totalPages) {
+            setCurrentPage(1);
+        }
+    }, [totalPages, currentPage]);
+
+    const goToPage = (page: number) => {
+        const pageNum = Math.max(1, Math.min(page, totalPages));
+        setCurrentPage(pageNum);
+    };
+
+    const getVisiblePageNumbers = (): (number | "ellipsis")[] => {
+        if (totalPages <= MAX_VISIBLE_PAGE_BUTTONS) {
+            return Array.from({ length: totalPages }, (_, i) => i + 1);
+        }
+        const left = Math.max(1, safePage - 1);
+        const right = Math.min(totalPages, safePage + 1);
+        const pages: (number | "ellipsis")[] = [];
+        if (left > 1) {
+            pages.push(1);
+            if (left > 2) pages.push("ellipsis");
+        }
+        for (let i = left; i <= right; i++) pages.push(i);
+        if (right < totalPages) {
+            if (right < totalPages - 1) pages.push("ellipsis");
+            pages.push(totalPages);
+        }
+        return pages;
+    };
 
     return (
         <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h4 className="font-semibold text-lg mb-6 text-gray-800">Notifications</h4>
 
-            {notinfo?.data?.data?.length === 0 ? (
+            {notLoading ? (
+                <div className="text-center py-8">
+                    <p className="text-gray-500 font-medium">Loading notifications...</p>
+                </div>
+            ) : totalItems === 0 ? (
                 <div className="text-center py-8">
                     <p className="text-gray-500 font-medium">No notifications available</p>
                 </div>
             ) : (
-                <div className="space-y-4">
-                    {paginatedNotifications?.map(
-                        (item: any, key: React.Key | null | undefined) => {
+                <>
+                    <div className="space-y-4">
+                        {paginatedNotifications.map((item: any, index: number) => {
                             const timeAgo = formatDistanceToNow(new Date(item?.date_created), {
                                 addSuffix: true,
                             });
-
+                            const key = item?.id ?? item?.date_created ?? `notif-${startIndex + index}`;
                             return (
                                 <div key={key} className="border-b border-gray-100 pb-4 last:border-b-0">
                                     <p className="font-medium text-gray-800 text-sm mb-1">
@@ -765,40 +804,109 @@ const NotificationSidebar = () => {
                                     </span>
                                 </div>
                             );
-                        },
-                    )}
-                </div>
-            )}
+                        })}
+                    </div>
 
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-                <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
-                    <button
-                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                        className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                            currentPage === 1 
-                                ? "text-gray-400 cursor-not-allowed" 
-                                : "text-gray-600 hover:bg-gray-100"
-                        }`}
-                    >
-                        Prev
-                    </button>
-                    <span className="text-sm text-gray-600">
-                        Page {currentPage} of {totalPages}
-                    </span>
-                    <button
-                        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                        className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                            currentPage === totalPages 
-                                ? "text-gray-400 cursor-not-allowed" 
-                                : "text-gray-600 hover:bg-gray-100"
-                        }`}
-                    >
-                        Next
-                    </button>
-                </div>
+                    {/* Pagination */}
+                    <div className="mt-6 pt-4 border-t border-gray-100 space-y-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                                <span>Showing</span>
+                                <span className="font-medium text-gray-800">{showingFrom}</span>
+                                <span>–</span>
+                                <span className="font-medium text-gray-800">{showingTo}</span>
+                                <span>of</span>
+                                <span className="font-medium text-gray-800">{totalItems}</span>
+                                <span className="hidden sm:inline">notifications</span>
+                            </div>
+                            {totalPages > 1 && (
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => goToPage(1)}
+                                        disabled={safePage === 1}
+                                        className="p-2 rounded-md text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
+                                        aria-label="First page"
+                                    >
+                                        <span className="sr-only">First</span>
+                                        <span aria-hidden>«</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => goToPage(safePage - 1)}
+                                        disabled={safePage === 1}
+                                        className="p-2 rounded-md text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
+                                        aria-label="Previous page"
+                                    >
+                                        Prev
+                                    </button>
+                                    <div className="flex items-center gap-0.5 mx-1">
+                                        {getVisiblePageNumbers().map((page, i) =>
+                                            page === "ellipsis" ? (
+                                                <span key={`ellipsis-${i}`} className="px-2 text-gray-400">…</span>
+                                            ) : (
+                                                <button
+                                                    key={page}
+                                                    type="button"
+                                                    onClick={() => goToPage(page)}
+                                                    className={`min-w-[2rem] py-2 px-2 rounded-md text-sm font-medium transition-colors ${
+                                                        safePage === page
+                                                            ? "bg-gray-800 text-white"
+                                                            : "text-gray-600 hover:bg-gray-100"
+                                                    }`}
+                                                    aria-label={`Page ${page}`}
+                                                    aria-current={safePage === page ? "page" : undefined}
+                                                >
+                                                    {page}
+                                                </button>
+                                            )
+                                        )}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => goToPage(safePage + 1)}
+                                        disabled={safePage === totalPages}
+                                        className="p-2 rounded-md text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
+                                        aria-label="Next page"
+                                    >
+                                        Next
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => goToPage(totalPages)}
+                                        disabled={safePage === totalPages}
+                                        className="p-2 rounded-md text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
+                                        aria-label="Last page"
+                                    >
+                                        <span className="sr-only">Last</span>
+                                        <span aria-hidden>»</span>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex items-center justify-between text-sm text-gray-500">
+                            <label className="flex items-center gap-2">
+                                <span>Per page</span>
+                                <select
+                                    value={itemsPerPage}
+                                    onChange={(e) => {
+                                        const val = Number(e.target.value) as typeof ITEMS_PER_PAGE_OPTIONS[number];
+                                        setItemsPerPage(val);
+                                        setCurrentPage(1);
+                                    }}
+                                    className="border border-gray-300 rounded-md px-2 py-1 text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-gray-400"
+                                >
+                                    {ITEMS_PER_PAGE_OPTIONS.map((n) => (
+                                        <option key={n} value={n}>{n}</option>
+                                    ))}
+                                </select>
+                            </label>
+                            <span>
+                                Page {safePage} of {totalPages || 1}
+                            </span>
+                        </div>
+                    </div>
+                </>
             )}
         </div>
     );

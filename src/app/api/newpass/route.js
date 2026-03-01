@@ -4,7 +4,7 @@ export async function PUT(request) {
     try {
         const body = await request.json();
 
-        console.log(body, "body-----otpppp");
+      
 
         const payload = {
             password: body.password,
@@ -14,7 +14,7 @@ export async function PUT(request) {
 
         const cacheBuster = `cache=${Date.now()}`;
 
-         console.log(otp, "otp-----otpppp", `${process.env.BASE_URL}/auth/reset_password/${otp}/`);
+         
 
         const res = await fetch(`${process.env.BASE_URL}/auth/reset_password/${otp}/`, {
             method: 'PUT',

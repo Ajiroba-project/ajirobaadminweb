@@ -134,7 +134,7 @@ const handleSuccess = (data?: any) => {
 
 
   const handleError = (error: any) => {
-    console.log("API Error:", error);
+
       /*   setSubCategoryOpen(false); */
     toast.error(`${"An Error Occured"}`, {
       position: "top-right",

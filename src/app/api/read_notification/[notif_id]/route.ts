@@ -1,11 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Allow only digits or UUID-style IDs to prevent path traversal / injection
+function isValidNotifId(id: string): boolean {
+  if (!id || typeof id !== 'string') return false;
+  const trimmed = id.trim();
+  return /^\d+$/.test(trimmed) || /^[0-9a-fA-F-]{1,64}$/.test(trimmed);
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: { notif_id: string } }
 ) {
   try {
     const { notif_id } = params;
+
+    if (!isValidNotifId(notif_id)) {
+      return NextResponse.json(
+        { status: 'failed', message: 'Invalid notification ID' },
+        { status: 400 }
+      );
+    }
     
     // Get the authorization token from headers
     const authHeader = request.headers.get('authorization');

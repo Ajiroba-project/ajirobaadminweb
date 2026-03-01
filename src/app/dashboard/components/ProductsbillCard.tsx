@@ -29,7 +29,7 @@ export const ProductsbillCard = ({ cardInfo }: BillCardProps) => {
         <div className={`${poppins.className} my-8  border border-white shadow-sm p-6 rounded-lg`}>
             <div className="flex items-center gap-4">
                 {/*   <Image
-                    src={`https://staging.ajiroba.ng/v1${cardInfo.profile_image}`}
+                    src={`${process.env.NEXT_PUBLIC_BASE_URL_IMG || ''}${cardInfo.profile_image}`}
                     alt={cardInfo.name}
                     width={80}
                     height={80}

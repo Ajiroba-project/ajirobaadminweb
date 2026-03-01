@@ -443,8 +443,7 @@ export const ChangePassword = () => {
   };
 
   const handleError = (error: any) => {
-    console.log(data, 'datttataaa', error)
-    console.log(error, 'errrr')
+
     toast.error(`${'An Error Occured'}`, {
       position: "top-right",
       autoClose: 2000,
