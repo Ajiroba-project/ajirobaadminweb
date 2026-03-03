@@ -8,7 +8,7 @@ const useAuth = (router: any) => {
   }));
 
   useEffect(() => {
-    // Avoid redirecting if still checking the authentication status
+    // Avoid redirecting if still checking the authentication status 
     if (typeof isLoggedIn === 'undefined' || typeof user === 'undefined') {
       return;
     }
