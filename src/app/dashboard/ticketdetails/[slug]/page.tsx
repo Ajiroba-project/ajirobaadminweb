@@ -11,6 +11,25 @@ import Cookies from 'js-cookie'
 import RaffleTicket from "../../components/RaffleTicket";
 import { formatCurrency } from "@/utils/formatCurrency";
 
+/** Uses backend fields when present; avoids index-based "demo" winner rows that break under search/filter. */
+function isWinningTicket(ticket: Record<string, unknown>): boolean {
+    const t = ticket as Record<string, any>;
+    if (t.is_winner === true || t.is_winner === "true" || t.is_winner === 1) return true;
+    if (t.won === true || t.won === "true") return true;
+    if (t.winning_ticket === true || t.winning_ticket === "true") return true;
+    const status = t.status ?? t.ticket_status ?? t.raffle_status;
+    if (typeof status === "string" && /won|winner|winning/i.test(status.trim())) return true;
+    return false;
+}
+
+function ticketRowKey(ticket: Record<string, unknown>, index: number): string {
+    const t = ticket as Record<string, any>;
+    if (t.id != null && String(t.id) !== "") return String(t.id);
+    const num = t.ticket_number != null ? String(t.ticket_number) : "";
+    const d = t.date != null ? String(t.date) : "";
+    return `${num}-${d}-${index}`;
+}
+
 export default function Page() {
 
     const [userToken, setUserToken] = useState(Cookies.get('token'));
@@ -74,6 +93,7 @@ export default function Page() {
             (ticket.date && ticket.date.startsWith(formatDate(selectedDate)));
         return searchMatch && dateMatch;
     });
+
 
     // console.log(userDetails?.ticket_list, 'userDetails')
 
@@ -153,7 +173,7 @@ export default function Page() {
                         <tbody className='mt-8' >
                             {filteredTickets.length > 0 ? (
                                 filteredTickets.map((ticket: any, index: number) => (
-                                    <tr key={index} className="bg-[#F6F6F6] ">
+                                    <tr key={ticketRowKey(ticket, index)} className="bg-[#F6F6F6] ">
                                         {index === 0 && (
                                             <td
                                                 className="p-3 border border-gray-300 text-sm text-[#121212] font-Poppins font-medium"
@@ -165,17 +185,16 @@ export default function Page() {
                                         <td className="p-3 border border-gray-300 text-sm text-[#121212] font-Poppins font-medium">{ticket.date}</td>
                                         <td className="p-3 border border-gray-300 text-sm text-[#121212] font-Poppins font-medium">{formatCurrency(ticket.ticket_amount)}</td>
                                         <td className="p-3 border border-gray-300 text-sm text-[#121212] font-Poppins font-medium">
-                                            {index === 1 ? (
-                                                // Simulate "won" state for the second item
-                                                <p onClick={() => {
-                                                    setSelectedTicket(ticket);
-                                                    setShowTicket(true);
-                                                }}
-
+                                            {isWinningTicket(ticket) ? (
+                                                <p
+                                                    onClick={() => {
+                                                        setSelectedTicket(ticket);
+                                                        setShowTicket(true);
+                                                    }}
                                                     className="text-green-600 underline font-bold cursor-pointer"
-                                                    title="This ticket has won!"
+                                                    title="This ticket has won"
                                                 >
-                                                        {ticket.ticket_number}
+                                                    {ticket.ticket_number}
                                                 </p>
                                             ) : (
                                                 ticket.ticket_number
@@ -202,16 +221,18 @@ export default function Page() {
                                 <span className="text-gray-600"> Tickets Purchased</span>
                             </div>
                             {filteredTickets.map((ticket: any, index: number) => (
-                                <div key={index} className="bg-white border rounded-lg p-4 mb-4 shadow-sm">
+                                <div key={ticketRowKey(ticket, index)} className="bg-white border rounded-lg p-4 mb-4 shadow-sm">
                                     <div className="flex justify-between items-center border-b pb-2 mb-2">
                                         <span className="text-sm text-gray-500">Ticket No.</span>
-                                        {index === 1 ? (
-                                            <p onClick={() => {
-                                                setSelectedTicket(ticket);
-                                                setShowTicket(true);
-                                            }}
+                                        {isWinningTicket(ticket) ? (
+                                            <p
+                                                onClick={() => {
+                                                    setSelectedTicket(ticket);
+                                                    setShowTicket(true);
+                                                }}
                                                 className="text-green-600 underline font-bold cursor-pointer"
-                                                title="This ticket has won!">
+                                                title="This ticket has won"
+                                            >
                                                 {ticket.ticket_number}
                                             </p>
                                         ) : (

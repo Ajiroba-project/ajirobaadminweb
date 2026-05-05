@@ -9,8 +9,11 @@ import Cookies from 'js-cookie'
 import user_img from "@/app/asset/user.png"
 import Loading from '@/app/components/Loading'
 import { formatCurrency } from '@/utils/formatCurrency'
+import ModalComponent from '@/app/components/ModalComponent'
+import { toast } from 'react-toastify'
 
 interface User {
+  id?: number;
   first_name: string;
   surname: string;
   email: string;
@@ -28,6 +31,8 @@ export const UserSearch: React.FC = () => {
   const [active, setActive] = useState<number | null>(null);
   const [userToken, setUserToken] = useState(Cookies.get('token'));
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [resetPinModalOpen, setResetPinModalOpen] = useState(false);
+  const [resetPinLoading, setResetPinLoading] = useState(false);
 
  /*  console.log(filteredUsers, 'filteredUsers') */
 
@@ -66,6 +71,9 @@ export const UserSearch: React.FC = () => {
     }
   }, [userdetails]);
 
+  useEffect(() => {
+    setResetPinModalOpen(false);
+  }, [userInfo?.id]);
 
   const searchQuery = (value: string | undefined) => {
     if (!value) {
@@ -110,6 +118,57 @@ export const UserSearch: React.FC = () => {
     const { value } = event.target;
     setSearchVal(value);
     searchQuery(value);
+  };
+
+  const handleConfirmResetPin = async () => {
+    const email = userInfo?.email;
+    if (!email || email === 'N/A') {
+      toast.error('No valid email for this user.');
+      return;
+    }
+    const token = Cookies.get('token');
+    if (!token) {
+      toast.error('You must be signed in to reset a user pin.');
+      return;
+    }
+
+    setResetPinLoading(true);
+    try {
+      const res = await fetch('/api/request-pin-reset', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      let json: { data?: { status?: string; message?: string; detail?: unknown }; error?: string };
+      try {
+        json = await res.json();
+      } catch {
+        toast.error('Invalid response from server.');
+        return;
+      }
+      const payload = json.data;
+
+      if (res.ok && payload?.status === 'success') {
+        toast.success(payload?.message || 'Reset link sent');
+        setResetPinModalOpen(false);
+        return;
+      }
+
+      const errMsg =
+        payload?.message ||
+        payload?.detail ||
+        json?.error ||
+        'Could not send reset email.';
+      toast.error(typeof errMsg === 'string' ? errMsg : 'Request failed');
+    } catch {
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setResetPinLoading(false);
+    }
   };
 
   if (userLoading) {
@@ -171,9 +230,17 @@ export const UserSearch: React.FC = () => {
       </div>
 
       <div className="bg-[#FCDFD433] w-full rounded-lg span-2">
-        <div></div>
         {userInfo && (
           <div className="p-6 flex flex-col gap-5">
+            <div className="flex justify-end w-full">
+              <button
+                type="button"
+                onClick={() => setResetPinModalOpen(true)}
+                className="text-sm font-Poppins font-medium rounded-lg py-2 px-4 bg-[#FCDFD4] text-[#222] hover:bg-[#F25E26] hover:text-white transition-all duration-200 focus:outline-none"
+              >
+                Reset pin
+              </button>
+            </div>
 
             <Image src={userInfo.photo && typeof userInfo.photo === 'string' && userInfo.photo.includes('/media/users/') ? `${process.env.NEXT_PUBLIC_BASE_URL_IMG || ''}${userInfo.photo}` : user_img} alt={userInfo?.first_name} className="rounded-full w-20 h-20"
               width={50}
@@ -212,6 +279,36 @@ export const UserSearch: React.FC = () => {
             </div>
           </div>
         )}
+
+        <ModalComponent
+          isModalOpen={resetPinModalOpen}
+          handleCancel={() => setResetPinModalOpen(false)}
+          handleOk={() => setResetPinModalOpen(false)}
+          content={
+            <div className="flex flex-col items-center justify-center p-6">
+              <h2 className="text-xl font-Poppins font-bold text-black mb-3 text-center">
+                Reset pin?
+              </h2>
+              <p className="text-center text-sm font-Poppins text-[#353131] mb-8 leading-6 max-w-md">
+                This will initiate the pin reset for this user. A mail will be sent to this user to reset pin
+              </p>
+              <div className="flex w-full justify-center">
+                <button
+                  type="button"
+                  disabled={resetPinLoading}
+                  className={`w-full max-w-[280px] font-Poppins font-medium rounded-lg py-3 px-6 transition-colors duration-200 focus:outline-none ${
+                    resetPinLoading
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-[#FCDFD4] text-[#222] hover:bg-[#F25E26] hover:text-white'
+                  }`}
+                  onClick={handleConfirmResetPin}
+                >
+                  {resetPinLoading ? 'Sending…' : 'Confirm'}
+                </button>
+              </div>
+            </div>
+          }
+        />
       </div>
     </section>
   );
