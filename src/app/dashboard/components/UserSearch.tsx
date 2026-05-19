@@ -16,6 +16,7 @@ interface User {
   id?: number;
   first_name: string;
   surname: string;
+  date_of_birth: string;
   email: string;
   phone: string;
   city: string;
@@ -80,6 +81,7 @@ export const UserSearch: React.FC = () => {
       setFilteredUsers(userdetails?.data?.data?.users.map((user: any) => ({
         first_name: user.first_name,
         surname: user.last_name,
+        date_of_birth: user.date_of_birth,
         email: user.email || 'N/A',
         phone: user.phone || 'N/A',
         city: user.city || 'N/A',
@@ -98,6 +100,7 @@ export const UserSearch: React.FC = () => {
     ).map((user: any) => ({
       first_name: user.first_name,
       surname: user.last_name,
+      date_of_birth: user.date_of_birth,
       email: user.email || 'N/A',
       phone: user.phone || 'N/A',
       city: user.city || 'N/A',
@@ -250,6 +253,8 @@ export const UserSearch: React.FC = () => {
               <p>{userInfo?.first_name}</p>
               <p>Surname:</p>
               <p>{userInfo?.surname}</p>
+              <p>Date of Birth:</p>
+              <p>{userInfo?.date_of_birth || 'N/A'}</p>
               <p>Email:</p>
               <p>{userInfo?.email}</p>
               <p>Phone:</p>
