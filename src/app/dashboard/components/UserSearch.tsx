@@ -53,6 +53,7 @@ export const UserSearch: React.FC = () => {
       const usersdata: User[] = userdetails?.data?.data?.users.map((user: any) => ({
         first_name: user.first_name,
         surname: user.last_name,
+        date_of_birth: user.date_of_birth,
         email: user.email || 'N/A',
         phone: user.phone || 'N/A',
         city: user.city || 'N/A',
