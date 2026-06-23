@@ -145,7 +145,7 @@ export const ProductListCard = ({ object }: cardProps) => {
       <section className="py-4 grid lg:grid-cols-3 gap-4 w-full">
         {paginatedData?.map((val: Product, index: number) => (
           <Fragment key={val.id || index}>
-            <div className="border rounded-lg p-4">
+            <div className="border rounded-lg p-4 cursor-pointer" onClick={() => router.push(`/dashboard/productdetails-product/${val.id}`)}>
               <div className="flex items-center justify-between">
                 <p className="font-bold text-lg">{val.name}</p>
                 {val.images && val.images.length > 0 && (
@@ -303,7 +303,7 @@ export const AuctionListCard = ({ object }: cardProps) => {
       <section className="py-4 grid lg:grid-cols-3 gap-4 w-full">
         {filteredData?.map((val: any, index: number) => (
           <Fragment key={index}>
-            <div className="border rounded-lg p-4">
+            <div className="border rounded-lg p-4 cursor-pointer" onClick={() => router.push(`/dashboard/productdetails-auction/${val.id}`)}>
               <div className="flex items-center justify-between">
                 <p className="font-bold text-lg">{val.name}</p>
                 <Image onClick={() => router.push(`/dashboard/productdetails-auction/${val.id}`)}
