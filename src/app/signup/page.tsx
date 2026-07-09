@@ -13,9 +13,7 @@ import { useMutateData } from "@/hooks/useMutateData";
 import { ToastContainer, toast } from "react-toastify";
 // import "react-toastify/dist/ReactToastify.css";
 import "./style.css";
-import { Input } from "@nextui-org/react";
-
-import { Select, SelectSection, SelectItem } from "@nextui-org/select";
+import { Input, Select, SelectSection, SelectItem } from "@nextui-org/react";
 
 import { state_and_LGA } from "../../app/static-data";
 import { useState } from "react";

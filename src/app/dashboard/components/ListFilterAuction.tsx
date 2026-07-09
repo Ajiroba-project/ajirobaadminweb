@@ -2,11 +2,6 @@ import React, { useState, useRef, useMemo } from "react";
 import { CiSearch } from "react-icons/ci";
 // import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { Space } from 'antd';
-import type { RangePickerProps } from "antd/es/date-picker";
-import dayjs from "dayjs";
-
-import "react-datepicker/dist/react-datepicker.css";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
@@ -23,7 +18,6 @@ export const ListFilterAuction: React.FC<ListFilterProps> = ({ onSearch, data })
     // console.log(data, 'datat')
 
     const [searchVal, setSearchVal] = useState<string>("");
-    const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null]);
     const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
     const [calendarOpen, setCalendarOpen] = useState(true);
     const [tempDate, setTempDate] = useState<Date | null>(selectedDate);
