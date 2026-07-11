@@ -38,6 +38,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'img.daisyui.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'ajiroba-prod-bucket.fra1.digitaloceanspaces.com',
+      },
     ],
   },
   // Security headers for all responses (including static)
