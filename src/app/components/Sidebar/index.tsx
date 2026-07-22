@@ -166,7 +166,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
           <div className="flex gap-2 lg:gap-3 pb-4 items-center">
             <div className="rounded-full h-8 w-8 lg:h-10 lg:w-10 bg-[#FCDFD4] ring-[#F25E26] overflow-hidden">
               <Image 
-                src={userInfo?.profile_image_url || user_img} 
+                src={
+                  userInfo?.profile_image_url 
+                    ? `${process.env.NEXT_PUBLIC_BASE_URL_IMG}${userInfo.profile_image_url}` 
+                    : user_img
+                } 
                 alt="dp" 
                 width={40} 
                 height={40}
