@@ -94,7 +94,7 @@ export default function Page() {
   useEffect(() => {
     if (productDetails?.images) {
       const images = productDetails.images.map(
-        (img: any) => `${process.env.NEXT_PUBLIC_BASE_URL_IMG}/media/${img.image}`
+        (img: any) => `${process.env.NEXT_PUBLIC_BASE_URL_IMG}/${img.image}`
       );
       setSelectedImg(images);
       setMainImage(images[0]);
@@ -161,7 +161,7 @@ export default function Page() {
     if (productDetails?.images && Array.isArray(productDetails.images)) {
       const existingMedia: MediaFile[] = productDetails.images.map((img: any, index: number) => ({
         id: `existing-${index}`,
-        url: `${process.env.NEXT_PUBLIC_BASE_URL_IMG}/media/${img.image}`,
+        url: `${process.env.NEXT_PUBLIC_BASE_URL_IMG}/${img.image}`,
         type: 'image' as const,
         isExisting: true
       }));

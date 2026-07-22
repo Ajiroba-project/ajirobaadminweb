@@ -84,7 +84,7 @@ export default function Page() {
     if (productDetails?.images && Array.isArray(productDetails.images)) {
       const existingMedia: MediaFile[] = productDetails.images.map((img: any, index: number) => ({
         id: `existing-${index}`,
-        url: `${process.env.NEXT_PUBLIC_BASE_URL_IMG}/media/${img.image}`,
+        url: `${process.env.NEXT_PUBLIC_BASE_URL_IMG}/${img.image}`,
         type: 'image' as const,
         isExisting: true
       }));

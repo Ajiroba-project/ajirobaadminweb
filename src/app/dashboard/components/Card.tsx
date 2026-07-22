@@ -151,7 +151,7 @@ export const ProductListCard = ({ object }: cardProps) => {
                 {val.images && val.images.length > 0 && (
                   <Image
                     onClick={() => router.push(`/dashboard/productdetails-product/${val.id}`)}
-                    src={`${process.env.NEXT_PUBLIC_BASE_URL_IMG}/media/${val.images[0]?.image}`}
+                    src={`${process.env.NEXT_PUBLIC_BASE_URL_IMG}/${val.images[0]?.image}`}
                     alt={val.category_name}
                     height={50}
                     width={50}
@@ -307,7 +307,7 @@ export const AuctionListCard = ({ object }: cardProps) => {
               <div className="flex items-center justify-between">
                 <p className="font-bold text-lg">{val.name}</p>
                 <Image onClick={() => router.push(`/dashboard/productdetails-auction/${val.id}`)}
-                  src={`${process.env.NEXT_PUBLIC_BASE_URL_IMG}/media/${val?.images[0]?.image}`}
+                  src={`${process.env.NEXT_PUBLIC_BASE_URL_IMG}/${val?.images[0]?.image}`}
                   alt={val.category_name}
                   height={50}
                   width={50}
@@ -431,7 +431,7 @@ export const AuctionListCardCompleted = ({ object }: cardProps) => {
               <div className="flex items-center justify-between">
                 <p className="font-bold text-lg">{val.name}</p>
                 <Image onClick={() => router.push(`/dashboard/productdetails-auction-completed/${val.id}`)}
-                  src={`${process.env.NEXT_PUBLIC_BASE_URL_IMG}/media/${val?.images[0]?.image}`}
+                  src={`${process.env.NEXT_PUBLIC_BASE_URL_IMG}/${val?.images[0]?.image}`}
                   alt={val.category_name}
                   height={50}
                   width={50}
