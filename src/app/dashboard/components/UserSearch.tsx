@@ -60,7 +60,9 @@ export const UserSearch: React.FC = () => {
         address: user.address || 'N/A',
         ticketPurchase: user.tickets || 'N/A',
         totalAmount: formatCurrency(user.total_amount) || 'N/A',
-        photo: user.profile_image || user_img,
+        photo: user.profile_image
+        ? `${process.env.NEXT_PUBLIC_BASE_URL_IMG}${user.profile_image}`
+        : user_img,
         id: user.id,
       }));
 
@@ -216,7 +218,7 @@ export const UserSearch: React.FC = () => {
                   }}
                 >
                   <Image
-                    src={val.photo && typeof val.photo === 'string' && val.photo.includes('/media/users/') ? `${process.env.NEXT_PUBLIC_BASE_URL_IMG || ''}${val.photo}` : user_img}
+                    src={val.photo}
                     alt={val.first_name}
                     className="rounded-full w-10 h-10"
                     width={50}
@@ -246,9 +248,13 @@ export const UserSearch: React.FC = () => {
               </button>
             </div>
 
-            <Image src={userInfo.photo && typeof userInfo.photo === 'string' && userInfo.photo.includes('/media/users/') ? `${process.env.NEXT_PUBLIC_BASE_URL_IMG || ''}${userInfo.photo}` : user_img} alt={userInfo?.first_name} className="rounded-full w-20 h-20"
+            <Image
+              src={userInfo.photo}
+              alt={userInfo?.first_name}
+              className="rounded-full w-20 h-20"
               width={50}
-              height={50} />
+              height={50}
+            />
             <div className="grid lg:grid-cols-2 md:grid-cols-2 grid-cols-1 gap-2 items-center mt-3">
               <p>FirstName:</p>
               <p>{userInfo?.first_name}</p>
